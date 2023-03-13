@@ -27,21 +27,23 @@ spec:
     spec:
       serviceAccountName: default
       terminationGracePeriodSeconds: 5
-      securityContext:
-        fsGroup: 1000
-        runAsGroup: 1000
-        runAsNonRoot: true
-        runAsUser: 1000
+#      securityContext:
+#        fsGroup: 1000
+#        runAsGroup: 1000
+#        runAsNonRoot: true
+#        runAsUser: 1000
       containers:
       - name: server
-        securityContext:
-          allowPrivilegeEscalation: false
-          capabilities:
-            drop:
-              - ALL
-          privileged: false
-          readOnlyRootFilesystem: true
+#        securityContext:
+#          allowPrivilegeEscalation: false
+#          capabilities:
+#            drop:
+#              - ALL
+#          privileged: false
+#          readOnlyRootFilesystem: true
         image: emailservice
+        # image: email-stress
+        # imagePullPolicy: Never
         ports:
         - containerPort: 8080
         env:

@@ -16,10 +16,11 @@ FROM python:3.10.8-slim@sha256:49749648f4426b31b20fca55ad854caa55ff59dc604f2f76b
 
 FROM base as builder
 
-RUN apt-get -qq update \
+USER root
+RUN apt-get update \
+    && apt-get install stress \
     && apt-get install -y --no-install-recommends \
-        wget g++ \
-    && rm -rf /var/lib/apt/lists/*
+        wget g++
 
 # Download the grpc health probe
 # renovate: datasource=github-releases depName=grpc-ecosystem/grpc-health-probe
@@ -51,3 +52,5 @@ ENTRYPOINT [ "python", "email_server.py" ]
 FROM without-grpc-health-probe-bin
 
 COPY --from=builder /bin/grpc_health_probe /bin/grpc_health_probe
+
+USER root

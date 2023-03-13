@@ -26,21 +26,22 @@ spec:
         app: shippingservice
     spec:
       serviceAccountName: default
-      securityContext:
-        fsGroup: 1000
-        runAsGroup: 1000
-        runAsNonRoot: true
-        runAsUser: 1000
+      # securityContext:
+      #   fsGroup: 1000
+      #   runAsGroup: 1000
+      #   runAsNonRoot: true
+      #   runAsUser: 1000
       containers:
       - name: server
-        securityContext:
-          allowPrivilegeEscalation: false
-          capabilities:
-            drop:
-              - ALL
-          privileged: false
-          readOnlyRootFilesystem: true
+        # securityContext:
+        #   allowPrivilegeEscalation: false
+        #   capabilities:
+        #     drop:
+        #       - ALL
+        #   privileged: false
+        #   readOnlyRootFilesystem: true
         image: shippingservice
+    
         ports:
         - containerPort: 50051
         env:
