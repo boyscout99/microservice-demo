@@ -42,7 +42,7 @@ spec:
 #          privileged: false
 #          readOnlyRootFilesystem: true
         image: emailservice
-        # image: email-stress
+        # image: email-stress test
         # imagePullPolicy: Never
         ports:
         - containerPort: 8080
