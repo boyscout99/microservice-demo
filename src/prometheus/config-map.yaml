@@ -159,8 +159,6 @@ data:
           target_label: kubernetes_name
 
       - job_name: frontend
-        metrics_path: /prometheus
-        static_configs:
-          - targets:
-            - frontend:8080
+        http_sd_configs:
+        - url: "http://localhost:8080/prometheus"
       
