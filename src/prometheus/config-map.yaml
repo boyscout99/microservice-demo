@@ -159,6 +159,24 @@ data:
           target_label: kubernetes_name
 
       - job_name: frontend
-        http_sd_configs:
-        - url: "http://localhost:8080/prometheus"
+        kubernetes_sd_configs:
+        - role: service
+          namespaces:
+            names:
+            - default
+        relabel_configs:
+        - source_labels: [__meta_kubernetes_service_port_name]
+          action: keep
+          regex: http
+        - source_labels: [__meta_kubernetes_service_name]
+          action: replace
+          target_label: instance
+        - action: labelmap
+          regex: __meta_kubernetes_service_label_(.+)
+        metrics_path: /prometheus
+        scheme: http
+        honor_labels: true
+        static_configs:
+        - targets: ['frontend']
+
       
