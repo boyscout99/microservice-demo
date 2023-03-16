@@ -42,7 +42,7 @@ spec:
 #          privileged: false
 #          readOnlyRootFilesystem: true
         image: adservice
-        # imagePullPolicy: Never
+        imagePullPolicy: Never
         ports:
         - containerPort: 9555
         env:
