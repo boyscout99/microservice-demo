@@ -1,0 +1,16 @@
+# Documentation: http://docs/backstage/defining-components-using-yaml/
+
+id: master-thesis-hpa
+description: master-thesis-hpa
+system: master-thesis-hpa
+owner: tommasop
+visibility: public
+dependencies: []
+
+facts:
+  role: master-thesis-hpa
+  helios_agent: false
+  service_tier: 4
+  lifecycle: experimental
+  component_type: service
+  service_type: request-response
