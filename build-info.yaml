@@ -12,11 +12,9 @@ pipelines:
   - stage: "Deployment - production" 
     tasks: 
     - task: "tugboat" 
-      steps:
-      - id: 'Deploy application to cluster'
-        name: 'gcr.io/k8s-skaffold/skaffold:v2.2.0'
-        entrypoint: 'bash'
-        args:
-        - '-c'
-        - >
-          skaffold run -f=skaffold.yaml --default-repo=gcr.io/$PROJECT_ID;
+      steps: 
+      - action: "gcr.io/k8s-skaffold/skaffold:v2.2.0" 
+        args: 
+        - "-c" 
+        - "skaffold run -f=skaffold.yaml --default-repo=gcr.io/$PROJECT_ID;" 
+        entrypoint: "bash" 
