@@ -1,0 +1,29 @@
+# Cloned from https://ghe.spotify.net/kubernetes/kubernetes-templates
+# Please refer to that repo and documentation there for best practices.
+apiVersion: autoscaling/v2beta2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: master-thesis-hpa
+  namespace: master-thesis-hpa
+  labels:
+    app: master-thesis-hpa
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: master-thesis-hpa
+  maxReplicas: 10
+  minReplicas: 2
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 80
+  behavior:
+    scaleDown:  # NOTE: This scaling behavior is generated, remove this comment when changing it!
+      policies:
+      - type: Percent
+        value: 10
+        periodSeconds: 1800

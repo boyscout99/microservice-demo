@@ -1,0 +1,83 @@
+# Cloned from https://ghe.spotify.net/kubernetes/kubernetes-templates
+# Please refer to that repo and documentation there for best practices.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: master-thesis-hpa
+  namespace: master-thesis-hpa
+  labels:
+    app: master-thesis-hpa
+spec:
+  # replicas: 1
+  selector:
+    matchLabels:
+      app: master-thesis-hpa
+      role: masterthesishpa
+  minReadySeconds: 30
+  template:
+    metadata:
+      labels:
+        app: master-thesis-hpa
+        role: masterthesishpa
+    spec:
+      automountServiceAccountToken: false
+      terminationGracePeriodSeconds: 150
+      volumes:
+      - name: masterthesishpa-secrets-volume
+        secret:
+          secretName: masterthesishpa-secrets
+          defaultMode: 0444
+          items:
+            - key: '--cpu_limit'
+              path: --cpu_limit
+            - key: 'masterthesishpa.json'
+              path: masterthesishpa.json
+      containers:
+      - name: master-thesis-hpa
+        image: $DEPLOYMENT_IMAGE
+        env:
+        - name: JVM_ARGS
+          value: >
+            -XX:+AlwaysActAsServerClassMachine
+            -XX:MaxRAMPercentage=80.0
+            -XX:MinRAMPercentage=60.0
+            -XX:InitialRAMPercentage=60.0
+        ports:
+        - name: http
+          containerPort: 8080
+          protocol: TCP
+        - name: hm
+          containerPort: 5700
+          protocol: TCP
+        - name: hm-snoop
+          containerPort: 5701
+          protocol: TCP
+        - name: grpc
+          containerPort: 5990
+          protocol: TCP
+        readinessProbe:
+          exec:
+            command:
+              - grpc_health_probe
+              - -addr
+              - localhost:5990
+
+        resources:
+          requests:
+            cpu: 200m
+            memory: 4G
+          limits:
+            cpu: 800m
+            memory: 4G
+
+        # This is to ensure that deployments are zero downtime
+        # however it will make deployments slower
+        # for more details see:
+        # https://backstage.spotify.net/docs/gke-docs/developers/connection-draining/
+        lifecycle:
+          preStop:
+            exec:
+              command: ["sleep", "120"]
+        volumeMounts:
+          - name: masterthesishpa-secrets-volume
+            mountPath: /etc/spotify/secrets
