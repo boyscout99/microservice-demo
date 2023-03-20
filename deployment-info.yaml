@@ -3,5 +3,5 @@ components:
   tugboat:
     backends:
     - backend: kubernetes
-    - backend: helios
+      manifestsDir: ./kubernetes
 version: 1
