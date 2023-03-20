@@ -1,31 +1,170 @@
-# Cloned from https://ghe.spotify.net/kubernetes/kubernetes-templates
-# Please refer to that repo and documentation there for best practices.
+---
 apiVersion: v1
 kind: Service
 metadata:
-  name: master-thesis-hpa
+  name: emailservice
   namespace: master-thesis-hpa
-  labels:
-    app: master-thesis-hpa
-    # Change the value for the nameless.spotify.com/enabled label
-    # to "true" to enable registration in service discovery and for
-    # associated workloads to take production traffic
-    nameless.spotify.com/enabled: "false"
-    nameless.spotify.com/expose-srv: "true"
-
 spec:
-  selector:
-    app: master-thesis-hpa
-    role: masterthesishpa
   type: ClusterIP
-  clusterIP: None
+  selector:
+    app: emailservice
+  ports:
+  - name: grpc
+    port: 5000
+    targetPort: 8080
+---
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: checkoutservice
+  namespace: master-thesis-hpa
+spec:
+  type: ClusterIP
+  selector:
+    app: checkoutservice
+  ports:
+  - name: grpc
+    port: 5050
+    targetPort: 5050
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: recommendationservice
+  namespace: master-thesis-hpa
+spec:
+  type: ClusterIP
+  selector:
+    app: recommendationservice
+  ports:
+  - name: grpc
+    port: 8080
+    targetPort: 8080
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend
+  namespace: master-thesis-hpa
+spec:
+  type: ClusterIP
+  selector:
+    app: frontend
   ports:
   - name: http
-    port: 8080
-    protocol: TCP
-  - name: hm
-    port: 5700
-    protocol: TCP
+    port: 80
+    targetPort: 8080
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend-external
+  namespace: master-thesis-hpa
+spec:
+  type: LoadBalancer
+  selector:
+    app: frontend
+  ports:
+  - name: http
+    port: 80
+    targetPort: 8080
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: paymentservice
+  namespace: master-thesis-hpa
+spec:
+  type: ClusterIP
+  selector:
+    app: paymentservice
+  ports:
   - name: grpc
-    port: 5990
-    protocol: TCP
+    port: 50051
+    targetPort: 50051
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: productcatalogservice
+  namespace: master-thesis-hpa
+spec:
+  type: ClusterIP
+  selector:
+    app: productcatalogservice
+  ports:
+  - name: grpc
+    port: 3550
+    targetPort: 3550
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: cartservice
+  namespace: master-thesis-hpa
+spec:
+  type: ClusterIP
+  selector:
+    app: cartservice
+  ports:
+  - name: grpc
+    port: 7070
+    targetPort: 7070
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: currencyservice
+  namespace: master-thesis-hpa
+spec:
+  type: ClusterIP
+  selector:
+    app: currencyservice
+  ports:
+  - name: grpc
+    port: 7000
+    targetPort: 7000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: shippingservice
+  namespace: master-thesis-hpa
+spec:
+  type: ClusterIP
+  selector:
+    app: shippingservice
+  ports:
+  - name: grpc
+    port: 50051
+    targetPort: 50051
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis-cart
+  namespace: master-thesis-hpa
+spec:
+  type: ClusterIP
+  selector:
+    app: redis-cart
+  ports:
+  - name: tcp-redis
+    port: 6379
+    targetPort: 6379
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: adservice
+  namespace: master-thesis-hpa
+spec:
+  type: ClusterIP
+  selector:
+    app: adservice
+  ports:
+  - name: grpc
+    port: 9555
+    targetPort: 9555
+# [END gke_release_kubernetes_manifests_microservices_demo]
