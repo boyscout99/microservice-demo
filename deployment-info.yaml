@@ -1,7 +1,5 @@
 components:
 - componentId: master-thesis-hpa
   tugboat:
-    backends:
-    - backend: kubernetes
-      manifestsDir: ./kubernetes
+    path: ./kubernetes/service.yaml
 version: 1
