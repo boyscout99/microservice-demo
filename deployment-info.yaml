@@ -1,0 +1,7 @@
+components:
+- componentId: master-thesis-hpa
+  tugboat:
+    backends:
+    - backend: kubernetes
+    - backend: helios
+version: 1

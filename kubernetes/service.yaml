@@ -1,0 +1,31 @@
+# Cloned from https://ghe.spotify.net/kubernetes/kubernetes-templates
+# Please refer to that repo and documentation there for best practices.
+apiVersion: v1
+kind: Service
+metadata:
+  name: master-thesis-hpa
+  namespace: master-thesis-hpa
+  labels:
+    app: master-thesis-hpa
+    # Change the value for the nameless.spotify.com/enabled label
+    # to "true" to enable registration in service discovery and for
+    # associated workloads to take production traffic
+    nameless.spotify.com/enabled: "false"
+    nameless.spotify.com/expose-srv: "true"
+
+spec:
+  selector:
+    app: master-thesis-hpa
+    role: masterthesishpa
+  type: ClusterIP
+  clusterIP: None
+  ports:
+  - name: http
+    port: 8080
+    protocol: TCP
+  - name: hm
+    port: 5700
+    protocol: TCP
+  - name: grpc
+    port: 5990
+    protocol: TCP
