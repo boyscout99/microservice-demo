@@ -1,12 +1,23 @@
-version: 2
-pipelines:
-- pipeline: "Master build"
-  ref: "master"
-  stages:
-  - stage: "Deployment - production"
-    tasks:
-    - task: tugboat
-      steps:
-      - step: "Deploy using Tugboat"
-        action: "gcr.io/action-containers/tugboat:1.2.6-1"
-        args: ["--user", "jenkins", "installations", "create", "service"]
+# Endpoint used: https://backstage-proxy.spotify.net/api/alchemist 
+ 
+--- 
+version: "2" 
+beta: false 
+useBuildIdentity: false 
+timeout: 30 
+pipelines: 
+- pipeline: "Master build" 
+  ref: "master" 
+  stages: 
+  - stage: "Deployment - production" 
+    tasks: 
+    - task: "tugboat" 
+      steps: 
+      - action: "gcr.io/action-containers/tugboat:1.2.6-1" 
+        step: "Deploy using Tugboat" 
+        args: 
+        - "--user" 
+        - "jenkins" 
+        - "installations" 
+        - "create" 
+        - "service" 
