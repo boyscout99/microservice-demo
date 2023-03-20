@@ -68,7 +68,7 @@ spec:
         #   privileged: false
         #   readOnlyRootFilesystem: true
         image: loadgenerator
-        imagePullPolicy: Never
+        # imagePullPolicy: Never
         env:
         - name: FRONTEND_ADDR
           value: "frontend:80"
