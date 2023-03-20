@@ -3,13 +3,6 @@ pipelines:
 - pipeline: "Master build"
   ref: "master"
   stages:
-  - stage: Build
-    tasks:
-    - task: maven
-      steps:
-      - step: "Build, test and deploy"
-        action: "gcr.io/action-containers/mvn:3.5.4-java8-5"
-        args: ["clean", "deploy"]
   - stage: "Deployment - production"
     tasks:
     - task: tugboat
