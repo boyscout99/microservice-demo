@@ -6,15 +6,82 @@ beta: false
 useBuildIdentity: false 
 timeout: 30 
 pipelines: 
+- pipeline: "Review build" 
+  ref: "pr/.*/merge" 
+  stages: 
+  - stage: "Build" 
+    tasks: 
+    - task: "Docker-build" 
+      steps: 
+      - action: "gcr.io/action-containers/docker-builder:20.10.18-4_20230307T161834@sha256:a25e42cdad719f69d4675ed6e246bd51629432198b61f0e621044346440a302f" 
+        envs: 
+          GCP_PROJECT_ID: "master-thesis-hpa" 
+          IMAGE_NAME: "emailservice" 
+          IMAGE_TAG: "temporary" 
+      - action: "gcr.io/action-containers/docker:20.10.18-1_20230315T092655@sha256:f0ea32ae05d3d5b510012180255c2234f9704fb3eeffad360c432028001f1679" 
+        args: 
+        - "-c" 
+        - "docker inspect gcr.io/master-thesis-hpa/emailservice:temporary --format={{.Size}}\ 
+          \ > _image_size" 
+        entrypoint: "/bin/bash" 
+  - stage: "Test" 
+    tasks: 
+    - task: "Test-action-container" 
+      steps: 
+      - action: "gcr.io/google-samples/microservices-demo/emailservice:v0.5.2" 
 - pipeline: "Master build" 
   ref: "master" 
   stages: 
-  - stage: "Deployment - production" 
+  - stage: "Build" 
     tasks: 
-    - task: "tugboat" 
+    - task: "Docker-build" 
       steps: 
-      - action: "gcr.io/k8s-skaffold/skaffold:v2.2.0" 
+      - action: "gcr.io/action-containers/docker-builder:20.10.18-4_20230307T161834@sha256:a25e42cdad719f69d4675ed6e246bd51629432198b61f0e621044346440a302f" 
+        envs: 
+          GCP_PROJECT_ID: "master-thesis-hpa" 
+          IMAGE_NAME: "emailservice" 
+          IMAGE_TAG: "temporary" 
+      - action: "gcr.io/action-containers/docker:20.10.18-1_20230315T092655@sha256:f0ea32ae05d3d5b510012180255c2234f9704fb3eeffad360c432028001f1679" 
         args: 
         - "-c" 
-        - "skaffold run -f=skaffold.yaml --default-repo=gcr.io/$PROJECT_ID;" 
-        entrypoint: "bash" 
+        - "docker inspect gcr.io/master-thesis-hpa/emailservice:temporary --format={{.Size}}\ 
+          \ > _image_size" 
+        entrypoint: "/bin/bash" 
+  - stage: "Test" 
+    tasks: 
+    - task: "Test-action-container" 
+      steps: 
+      - action: "gcr.io/google-samples/microservices-demo/emailservice:v0.5.2" 
+  - stage: "Push" 
+    tasks: 
+    - task: "Docker-build-push" 
+      steps: 
+      - action: "gcr.io/action-containers/docker-builder:20.10.18-4_20230307T161834@sha256:a25e42cdad719f69d4675ed6e246bd51629432198b61f0e621044346440a302f" 
+        args: 
+        - "--push" 
+        envs: 
+          GCP_PROJECT_ID: "master-thesis-hpa" 
+          IMAGE_NAME: "emailservice" 
+          IMAGE_TAG: "YOUR_VERSION_20230321T085928" 
+          TAG_LATEST: "true" 
+  - stage: "Save version" 
+    tasks: 
+    - task: "Write _library_version file" 
+      steps: 
+      - action: "gcr.io/action-containers/docker:20.10.18-1_20230315T092655@sha256:f0ea32ae05d3d5b510012180255c2234f9704fb3eeffad360c432028001f1679" 
+        args: 
+        - "-c" 
+        - "echo 'YOUR_VERSION_20230321T085928' > _library_version" 
+        entrypoint: "/bin/bash" 
+  - stage: "Deploy" 
+    tasks: 
+    - task: "tugboat - ." 
+      steps: 
+      - action: "gcr.io/action-containers/tugboat:2.6.2@sha256:5a5d609043368ce65a7d638539b2c3caeadb1bf095b913bcda8b62dad7f69c1e" 
+        args: 
+        - "-c" 
+        - "tugboat deploy COMPONENT-ID --component-id=COMPONENT-ID --role=YOURROLE\ 
+          \ --path=. --git-commit=$COMMIT_SHA --docker-image-name=gcr.io/master-thesis-hpa/emailservice:YOUR_VERSION_20230321T085928" 
+        entrypoint: "/bin/bash" 
+  next: 
+  - type: "Documentation" 
