@@ -1,9 +1,8 @@
 version: 2
 
 template:
-  type: dockerImage
-  dockerImage:
-    name: "emailservice"
+  type: pythonBackend
+  pythonBackend:
     gcpProject: "master-thesis-hpa"
     tugboat:
       path: .
