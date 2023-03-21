@@ -1,34 +1,34 @@
-# version: 1
-# components:
-# - componentId: master-thesis-hpa
-#   tugboat:
-#     backends:
-#     - backend: kubernetes
-#       manifestsDir: ./kubernetes/deployment.yaml
-#       modules:
-#       - name: emailservice
-#         path: ./src/emailservice
-      # - name: productcatalogservice
-      #   path: ./src/productcatalogservice
-      # - name: recommendationservice
-      #   path: ./src/recommendationservice
-      # - name: shippingservice
-      #   path: ./src/shippingservice
-      # - name: checkoutservice
-      #   path: ./src/checkoutservice
-      # - name: paymentservice
-      #   path: ./src/paymentservice
-      # - name: currencyservice
-      #   path: ./src/currencyservice
-      # - name: cartservice
-      #   path: ./src/cartservice/src
-      # - name: frontend
-      #   path: ./src/frontend
-      # - name: adservice
-      #   path: ./src/adservice
+version: 1
 components:
 - componentId: master-thesis-hpa
   tugboat:
     backends:
     - backend: kubernetes
-version: 1
+      manifestsDir: ./kubernetes/deployment.yaml
+      modules:
+      - name: emailservice
+        path: ./src/emailservice
+      - name: productcatalogservice
+        path: ./src/productcatalogservice
+      - name: recommendationservice
+        path: ./src/recommendationservice
+      - name: shippingservice
+        path: ./src/shippingservice
+      - name: checkoutservice
+        path: ./src/checkoutservice
+      - name: paymentservice
+        path: ./src/paymentservice
+      - name: currencyservice
+        path: ./src/currencyservice
+      - name: cartservice
+        path: ./src/cartservice/src
+      - name: frontend
+        path: ./src/frontend
+      - name: adservice
+        path: ./src/adservice
+# components:
+# - componentId: master-thesis-hpa
+#   tugboat:
+#     backends:
+#     - backend: kubernetes
+# version: 1
