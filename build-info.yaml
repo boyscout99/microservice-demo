@@ -1,8 +1,18 @@
-version: 2
-
-template:
-  type: pythonBackend
-  pythonBackend:
-    gcpProject: "master-thesis-hpa"
-    tugboat:
-      path: .
+--- 
+version: "2" 
+beta: false 
+useBuildIdentity: false 
+timeout: 30 
+pipelines: 
+- pipeline: "Master build" 
+  ref: "master" 
+  stages: 
+  - stage: "Deployment - production"
+    tasks:
+    - task: "skaffold"
+      steps:
+      - action: "gcr.io/k8s-skaffold/skaffold:v2.2.0" 
+        args: 
+        - "-c" 
+        - "gcloud config set project gke-xpn-1; gcloud container clusters get-credentials --zone=europe-west1 europe-west1-v4s4; skaffold run -f=skaffold.yaml --default-repo=gcr.io/gke-xpn-1/master-thesis-hpa;" 
+        entrypoint: "bash" 

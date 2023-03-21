@@ -1,13 +1,13 @@
-version: 1
-components:
-- componentId: master-thesis-hpa
-  tugboat:
-    backends:
-    - backend: kubernetes
-      manifestsDir: ./kubernetes/deployment.yaml
-      modules:
-      - name: emailservice
-        path: ./src/emailservice
+# version: 1
+# components:
+# - componentId: master-thesis-hpa
+#   tugboat:
+#     backends:
+#     - backend: kubernetes
+#       manifestsDir: ./kubernetes/deployment.yaml
+#       modules:
+#       - name: emailservice
+#         path: ./src/emailservice
       # - name: productcatalogservice
       #   path: ./src/productcatalogservice
       # - name: recommendationservice
@@ -26,3 +26,9 @@ components:
       #   path: ./src/frontend
       # - name: adservice
       #   path: ./src/adservice
+components:
+- componentId: hpa-demoapp
+  tugboat:
+    backends:
+    - backend: kubernetes
+version: 1
