@@ -4,7 +4,7 @@ components:
   tugboat:
     backends:
     - backend: kubernetes
-      manifestsDir: ./kubernetes/deployment.yaml
+      #manifestsDir: ./kubernetes/deployment.yaml
       modules:
       - name: emailservice
         path: ./src/emailservice
