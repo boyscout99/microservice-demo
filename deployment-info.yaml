@@ -27,7 +27,7 @@
       # - name: adservice
       #   path: ./src/adservice
 components:
-- componentId: hpa-demoapp
+- componentId: master-thesis-hpa
   tugboat:
     backends:
     - backend: kubernetes
