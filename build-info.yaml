@@ -17,3 +17,5 @@ pipelines:
         #- "gcloud config set project gke-xpn-1; gcloud container clusters get-credentials --zone=europe-west1 europe-west1-v4s4; skaffold run -f=skaffold.yaml --default-repo=gcr.io/gke-xpn-1/master-thesis-hpa;"
         - "gcloud config set project gke-xpn-1; gcloud container clusters get-credentials --zone=europe-west1 europe-west1-v4s4; skaffold run -f=skaffold.yaml --default-repo=gcr.io/master-thesis-hpa;"
         entrypoint: "bash"
+
+# test
