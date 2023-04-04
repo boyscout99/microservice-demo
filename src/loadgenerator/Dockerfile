@@ -28,8 +28,10 @@ COPY --from=builder /install /usr/local
 
 # Add application code.
 COPY locustfile.py .
+COPY workload_gen.py .
 
 # enable gevent support in debugger
 ENV GEVENT_SUPPORT=True
 
-ENTRYPOINT locust --host="http://${FRONTEND_ADDR}" --headless -u "${USERS:-10}" 2>&1
+# ENTRYPOINT locust --host="http://${FRONTEND_ADDR}" --headless -u "${USERS:-10}" 2>&1
+ENTRYPOINT [ "python3", "workload_gen.py"]
