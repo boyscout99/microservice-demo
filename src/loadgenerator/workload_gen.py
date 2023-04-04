@@ -1,6 +1,6 @@
 import subprocess
 
-host = "http://${FRONTEND_ADDR}"
+host = "http://frontend:80"
 
 def init():
     # Initialise the workload to 50 users
