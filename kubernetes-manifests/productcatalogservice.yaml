@@ -34,7 +34,7 @@ spec:
       #   runAsNonRoot: true
       #   runAsUser: 1000
       imagePullSecrets:
-      - name: my.secret.to.gcr.io
+      - name: regcred
       containers:
       - name: server
         # securityContext:
