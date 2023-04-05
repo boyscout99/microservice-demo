@@ -60,7 +60,7 @@ spec:
         - name: FRONTEND_ADDR
           value: "frontend:80"
       imagePullSecrets:
-        - name: my.secret.to.gcr.io
+      - name: regcred
       containers:
       - name: main
         # securityContext:
@@ -71,7 +71,7 @@ spec:
         #   privileged: false
         #   readOnlyRootFilesystem: true
         image: gcr.io/master-thesis-hpa/loadgenerator:0cff6aa
-        imagePullPolicy: Always
+        # imagePullPolicy: Always
         env:
         - name: FRONTEND_ADDR
           value: "frontend:80"
