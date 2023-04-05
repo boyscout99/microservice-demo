@@ -70,7 +70,7 @@ spec:
         #       - ALL
         #   privileged: false
         #   readOnlyRootFilesystem: true
-        image: gcr.io/master-thesis-hpa/my-loadgenerator
+        image: gcr.io/master-thesis-hpa/loadgenerator
         env:
         - name: FRONTEND_ADDR
           value: "frontend:80"
