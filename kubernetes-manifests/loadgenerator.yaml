@@ -69,7 +69,8 @@ spec:
         #   privileged: false
         #   readOnlyRootFilesystem: true
         image: gcr.io/master-thesis-hpa/my-loadgenerator
-        # imagePullPolicy: Never
+        imagePullSecrets:
+        - name: my.secret.to.gcr.io
         env:
         - name: FRONTEND_ADDR
           value: "frontend:80"
