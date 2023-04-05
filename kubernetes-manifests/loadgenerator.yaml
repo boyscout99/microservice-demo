@@ -71,6 +71,7 @@ spec:
         #   privileged: false
         #   readOnlyRootFilesystem: true
         image: gcr.io/master-thesis-hpa/loadgenerator
+        imagePullPolicy: Always
         env:
         - name: FRONTEND_ADDR
           value: "frontend:80"
