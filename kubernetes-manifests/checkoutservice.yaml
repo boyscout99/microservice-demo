@@ -41,7 +41,7 @@ spec:
           #       - ALL
           #   privileged: false
           #   readOnlyRootFilesystem: true
-          image: checkoutservice
+          image: gcr.io/master-thesis-hpa/checkoutservice
           # imagePullPolicy: Never
           ports:
           - containerPort: 5050

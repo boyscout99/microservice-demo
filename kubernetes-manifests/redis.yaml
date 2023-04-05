@@ -40,7 +40,7 @@ spec:
         #       - ALL
         #   privileged: false
         #   readOnlyRootFilesystem: true
-        image: redis:alpine
+        image: gcr.io/master-thesis-hpa/redis:alpine
         ports:
         - containerPort: 6379
         readinessProbe:

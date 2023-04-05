@@ -41,7 +41,7 @@ spec:
         #       - ALL
         #   privileged: false
         #   readOnlyRootFilesystem: true
-        image: shippingservice
+        image: gcr.io/master-thesis-hpa/shippingservice
     
         ports:
         - containerPort: 50051

@@ -42,7 +42,7 @@ spec:
         #       - ALL
         #   privileged: false
         #   readOnlyRootFilesystem: true
-        image: recommendationservice
+        image: gcr.io/master-thesis-hpa/recommendationservice
         ports:
         - containerPort: 8080
         readinessProbe:

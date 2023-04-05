@@ -42,7 +42,7 @@ spec:
         #       - ALL
         #   privileged: false
         #   readOnlyRootFilesystem: true
-        image: productcatalogservice
+        image: gcr.io/master-thesis-hpa/productcatalogservice
         ports:
         - containerPort: 3550
         env:

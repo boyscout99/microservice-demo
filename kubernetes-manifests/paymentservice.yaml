@@ -42,7 +42,7 @@ spec:
         #       - ALL
         #   privileged: false
         #   readOnlyRootFilesystem: true
-        image: paymentservice
+        image: gcr.io/master-thesis-hpa/paymentservice
         ports:
         - containerPort: 50051
         env:

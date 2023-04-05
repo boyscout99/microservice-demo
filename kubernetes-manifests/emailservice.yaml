@@ -42,7 +42,7 @@ spec:
 #              - ALL
 #          privileged: false
 #          readOnlyRootFilesystem: true
-        image: emailservice
+        image: gcr.io/master-thesis-hpa/emailservice
         # image: email-stress
         # imagePullPolicy: Never
         ports:

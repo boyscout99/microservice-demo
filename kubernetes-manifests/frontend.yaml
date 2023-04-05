@@ -43,7 +43,7 @@ spec:
           #       - ALL
           #   privileged: false
           #   readOnlyRootFilesystem: true
-          image: frontend
+          image: gcr.io/master-thesis-hpa/frontend
           # imagePullPolicy: Never
           ports:
           - containerPort: 8080
