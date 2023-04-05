@@ -34,4 +34,4 @@ COPY workload_gen.py .
 ENV GEVENT_SUPPORT=True
 
 # ENTRYPOINT locust --host="http://${FRONTEND_ADDR}" --headless -u "${USERS:-10}" 2>&1
-ENTRYPOINT [ "python3", "workload_gen.py"]
+# ENTRYPOINT [ "python3", "workload_gen.py"]

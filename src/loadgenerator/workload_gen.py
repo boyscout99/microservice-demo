@@ -23,28 +23,23 @@ def periodic_workload():
     actions = [
         {
         'users': 1500,
-        'rate': 30,
-        'wait': 60*5,
+        'rate': 5,
+        'wait': 60*10,
         },
         {
-        'users': 10,
-        'rate': 10,
-        'wait': 60
-        },
-        {
-        'users': 1000,
-        'rate': 25,
-        'wait': 60*9
-        },
-        {
-        'users': 50,
-        'rate': 50,
+        'users': 750,
+        'rate': 750,
         'wait': 60*5
         },
         {
-        'users': 1500,
-        'rate': 1500,
-        'wait': 60*5,
+        'users': 150,
+        'rate': 150,
+        'wait': 60*5
+        },
+        {
+        'users': 1000,
+        'rate': 1000,
+        'wait': 60*5
         }
     ]
     while(True):
