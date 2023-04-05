@@ -35,7 +35,7 @@ spec:
       #   runAsNonRoot: true
       #   runAsUser: 1000
       imagePullSecrets:
-      - name: regcred2
+      - name: gcr-json-key
       containers:
         - name: server
           # securityContext:
