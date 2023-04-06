@@ -15,7 +15,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: loadgenerator
-  namespace: default #master-thesis-hpa
+  namespace: master-thesis-hpa
 spec:
   selector:
     matchLabels:
@@ -70,7 +70,7 @@ spec:
         #       - ALL
         #   privileged: false
         #   readOnlyRootFilesystem: true
-        image: gcr.io/master-thesis-hpa/loadgenerator:latest
+        image: gcr.io/master-thesis-hpa/my-images/loadgenerator:latest
         # imagePullPolicy: Always
         env:
         - name: FRONTEND_ADDR
