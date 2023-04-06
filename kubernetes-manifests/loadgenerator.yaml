@@ -60,7 +60,7 @@ spec:
         - name: FRONTEND_ADDR
           value: "frontend:80"
       imagePullSecrets:
-      - name: regcred
+      - name: gcr-json-key
       containers:
       - name: main
         # securityContext:
