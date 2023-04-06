@@ -16,7 +16,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: frontend
-  namespace: default #master-thesis-hpa
+  namespace: master-thesis-hpa
 spec:
   selector:
     matchLabels:
