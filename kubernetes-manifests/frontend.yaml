@@ -45,7 +45,7 @@ spec:
           #       - ALL
           #   privileged: false
           #   readOnlyRootFilesystem: true
-          image: gcr.io/master-thesis-hpa/frontend:
+          image: gcr.io/master-thesis-hpa/frontend:0cff6aa
           ports:
           - containerPort: 8080
           readinessProbe:
