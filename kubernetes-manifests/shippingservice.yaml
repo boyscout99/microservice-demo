@@ -32,6 +32,8 @@ spec:
       #   runAsGroup: 1000
       #   runAsNonRoot: true
       #   runAsUser: 1000
+      imagePullSecrets:
+      - name: gcr-json-key
       containers:
       - name: server
         # securityContext:
@@ -41,8 +43,7 @@ spec:
         #       - ALL
         #   privileged: false
         #   readOnlyRootFilesystem: true
-        image: gcr.io/master-thesis-hpa/shippingservice
-    
+        image: gcr.io/master-thesis-hpa/shippingservice:0cff6aa
         ports:
         - containerPort: 50051
         env:

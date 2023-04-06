@@ -31,6 +31,8 @@ spec:
       #   runAsGroup: 1000
       #   runAsNonRoot: true
       #   runAsUser: 1000
+      imagePullSecrets:
+      - name: gcr-json-key
       containers:
       - name: redis
         # securityContext:
@@ -40,7 +42,7 @@ spec:
         #       - ALL
         #   privileged: false
         #   readOnlyRootFilesystem: true
-        image: gcr.io/master-thesis-hpa/redis:alpine
+        image: redis:alpine #gcr.io/master-thesis-hpa/redis:alpine
         ports:
         - containerPort: 6379
         readinessProbe:
