@@ -16,7 +16,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: currencyservice
-  namespace: master-thesis-hpa
+  namespace: rl-agent
 spec:
   selector:
     matchLabels:
