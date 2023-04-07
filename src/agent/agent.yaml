@@ -1,0 +1,45 @@
+# Deploy the RL agent with a Python script manually changing replicas
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: agent
+  namespace: master-thesis-hpa
+spec:
+  selector:
+    matchLabels:
+      app: agent
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: agent
+      annotations:
+        sidecar.istio.io/rewriteAppHTTPProbers: "true"
+    spec:
+      serviceAccountName: default
+      terminationGracePeriodSeconds: 5
+      restartPolicy: Always
+      imagePullSecrets:
+      - name: gcr-json-key
+      containers:
+      - name: server
+        image: gcr.io/master-thesis-hpa/agent:0.4.1
+        readinessProbe:
+            httpGet:
+              path: /healthz
+              port: 80
+            initialDelaySeconds: 5
+            periodSeconds: 10
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 80
+          initialDelaySeconds: 30
+          periodSeconds: 30
+        resources:
+          requests:
+            cpu: 500m
+            memory: 512Mi
+          limits:
+            cpu: 1000m
+            memory: 1024Mi
