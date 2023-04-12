@@ -102,6 +102,6 @@ build:
     context: src/loadgenerator
 manifests:
   rawYaml:
-  - ./kubernetes-manifests/rl-agent/loadgenerator.yaml
+  - ./kubernetes-manifests/default/loadgenerator.yaml
 deploy:
   kubectl: {}
