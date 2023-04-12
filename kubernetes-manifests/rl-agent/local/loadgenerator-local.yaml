@@ -62,8 +62,8 @@ spec:
         env:
         - name: FRONTEND_ADDR
           value: "frontend:80"
-      imagePullSecrets:
-      - name: gcr-json-key
+      # imagePullSecrets:
+      # - name: gcr-json-key
       containers:
       - name: main
         # securityContext:
