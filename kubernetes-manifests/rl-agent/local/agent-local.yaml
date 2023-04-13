@@ -29,6 +29,9 @@ spec:
         volumeMounts:
           - name: kubeconfig-volume
             mountPath: /root/.kube/
+        volumeMounts:
+          - name: app
+            mountPath: /app
         readinessProbe:
             httpGet:
               path: /healthz
@@ -52,3 +55,6 @@ spec:
         - name: kubeconfig-volume
           secret: 
             secretName: kubeconfig
+        - name: app
+          hostPath:
+            path: /app/microservice-demo/src/agent-local

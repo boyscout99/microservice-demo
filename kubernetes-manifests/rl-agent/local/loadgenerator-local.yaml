@@ -34,11 +34,6 @@ spec:
       serviceAccountName: default
       terminationGracePeriodSeconds: 5
       restartPolicy: Always
-      # securityContext:
-      #   fsGroup: 1000
-      #   runAsGroup: 1000
-      #   runAsNonRoot: true
-      #   runAsUser: 1000
       initContainers:
       - command:
         - /bin/sh
@@ -51,13 +46,6 @@ spec:
               exit 1
           fi
         name: frontend-check
-        # securityContext:
-        #   allowPrivilegeEscalation: false
-        #   capabilities:
-        #     drop:
-        #       - ALL
-        #   privileged: false
-        #   readOnlyRootFilesystem: true
         image: busybox:latest
         env:
         - name: FRONTEND_ADDR
@@ -66,13 +54,6 @@ spec:
       # - name: gcr-json-key
       containers:
       - name: main
-        # securityContext:
-        #   allowPrivilegeEscalation: false
-        #   capabilities:
-        #     drop:
-        #       - ALL
-        #   privileged: false
-        #   readOnlyRootFilesystem: true
         image: loadgenerator
         imagePullPolicy: Never
         env:

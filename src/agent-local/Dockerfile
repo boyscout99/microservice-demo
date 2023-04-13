@@ -1,8 +1,5 @@
 FROM python:3.9-slim-buster
 
-# Create a volume for kubeconfig directory
-COPY /Users/tommasop/.kube/config /root/.kube/config
-
 WORKDIR /app
 
 COPY scale_out_api.py .
@@ -28,7 +25,7 @@ RUN pip install prometheus-api-client \
 
 EXPOSE 80
 
-ENTRYPOINT [ "python3", "health_check.py" ]
+ENTRYPOINT [ "python3", "scale_out_api.py" ]
 
 
 

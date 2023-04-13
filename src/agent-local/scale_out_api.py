@@ -1,6 +1,6 @@
+import os
 from kubernetes import client, config
 from kubernetes.client.rest import ApiException
-import os
 
 # Load the Kubernetes configuration
 if os.getenv('KUBERNETES_SERVICE_HOST'): 
