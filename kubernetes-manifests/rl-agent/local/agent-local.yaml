@@ -24,8 +24,11 @@ spec:
       containers:
       - name: server
         # image: gcr.io/master-thesis-hpa/agent:0.4.1
-        image: agent
+        image: agent:0.5
         imagePullPolicy: Never
+        volumeMounts:
+          - name: kubeconfig-volume
+            mountPath: /root/.kube/
         readinessProbe:
             httpGet:
               path: /healthz
@@ -45,3 +48,7 @@ spec:
           limits:
             cpu: 1000m
             memory: 1024Mi
+      volumes:
+        - name: kubeconfig-volume
+          hostPath:
+            path: /Users/tommasop/.kube/

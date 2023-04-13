@@ -5,6 +5,8 @@ ENV ZONE=europe-west1-b
 ENV CLUSTER_NAME=master-thesis-hpa-agent
 ENV GOOGLE_APPLICATION_CREDENTIALS=key.json
 
+WORKDIR /app
+
 COPY key.json .
 COPY scale_out_api.py .
 COPY promQL.py .
