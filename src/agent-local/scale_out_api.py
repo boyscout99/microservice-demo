@@ -1,8 +1,12 @@
 from kubernetes import client, config
 from kubernetes.client.rest import ApiException
+import os
 
 # Load the Kubernetes configuration
-config.load_kube_config()
+if os.getenv('KUBERNETES_SERVICE_HOST'): 
+    config.load_incluster_config()
+else:
+    config.load_kube_config()
 # Create in instance of the K8s API client
 api = client.AppsV1Api()
 # Simulate and action of the RL agent

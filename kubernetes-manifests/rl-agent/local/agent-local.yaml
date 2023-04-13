@@ -24,7 +24,7 @@ spec:
       containers:
       - name: server
         # image: gcr.io/master-thesis-hpa/agent:0.4.1
-        image: agent:0.5
+        image: agent:0.6
         imagePullPolicy: Never
         volumeMounts:
           - name: kubeconfig-volume
@@ -50,5 +50,5 @@ spec:
             memory: 1024Mi
       volumes:
         - name: kubeconfig-volume
-          hostPath:
-            path: /Users/tommasop/.kube/
+          secret: 
+            secretName: kubeconfig

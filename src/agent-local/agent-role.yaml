@@ -1,0 +1,9 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: agent-role
+  namespace: rl-agent
+rules:
+- apiGroups: ["*"]
+  resources: ["*"]
+  verbs: ["*"]

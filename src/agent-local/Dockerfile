@@ -1,7 +1,7 @@
 FROM python:3.9-slim-buster
 
 # Create a volume for kubeconfig directory
-VOLUME /root/.kube/
+COPY /Users/tommasop/.kube/config /root/.kube/config
 
 WORKDIR /app
 
