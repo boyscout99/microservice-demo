@@ -29,7 +29,7 @@ class KubernetesEnvironment:
             if deployment.spec.replicas is not None:
                 current_replicas = int(deployment.spec.replicas)
             else:
-                current_replicas = 0
+                current_replicas = 1
 
             return current_replicas
 
@@ -49,14 +49,19 @@ class KubernetesEnvironment:
                     name = self.name,
                     namespace = self.namespace
                 )
-                deployment.spec.replicas = current_replicas + action
+
+                if (current_replicas + action <= 0):
+                    deployment.spec.replicas = 1
+                    print("Cannot have 0 replicas. Setting to 1.")
+                else:
+                    deployment.spec.replicas = current_replicas + action
+                    print("New number of replicas: ", deployment.spec.replicas)
 
                 self.api.replace_namespaced_deployment_scale(
                     name = self.name,
                     namespace = self.namespace,
                     body = deployment
                 )
-                print("New number of replicas: ", deployment.spec.replicas)
 
         except ApiException as e:
             print("Exception when calling AppsV1Api->replace_namespaced_deployment_scale: %s\n" % e)
@@ -75,7 +80,7 @@ class KubernetesEnvironment:
                 namespace = self.namespace,
                 body = deployment
             )
-            print("New number of replicas: ", deployment.spec.replicas)
+            print("Reset to number of replicas: ", deployment.spec.replicas)
 
         except ApiException as e:
             print("Exception when calling AppsV1Api->replace_namespaced_deployment_scale: %s\n" % e)

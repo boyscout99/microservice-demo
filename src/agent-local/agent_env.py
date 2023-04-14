@@ -36,22 +36,24 @@ class GymEnvironment(gym.Env):
     def step(self, action):
         # Take a step in the environment based on the given action
         # Update the pod states, calculate reward, and return the new observation, reward, done, and info
-
-        scale = KubernetesEnvironment(self.name, self.namespace)
+        print("##### NEW ACTION #####")
         # Update the pod states based on the action
         if action == 0:  # No change in replicas
+            print("Taking action 0")
             pass
         elif action == 1:  # Increase replicas
-            scale.update_replicas(1)
+            print("Taking action +1")
+            self.scale.update_replicas(1)
             self.current_replicas += 1
         elif action == 2:  # Decrease replicas
-            scale.update_replicas(-1)
+            print("Taking action -1")
+            self.scale.update_replicas(-1)
             self.current_replicas -= 1
 
         # Get the new observation from Prometheus API
         # TODO wait 15 seconds to stabilise?
-        time.sleep(30)
         print("Waiting 30 seconds to stabilise ...")
+        time.sleep(30)
         new_observation = self._get_observation()
 
         # Calculate reward based on the new observation and previous response time
@@ -67,8 +69,8 @@ class GymEnvironment(gym.Env):
         info = {}
 
         # wait one minute before taking another action
-        time.sleep(60)
         print("Waiting 1 minute before taking next scaling action ...")
+        time.sleep(60)
 
         return new_observation, reward, done, info
 

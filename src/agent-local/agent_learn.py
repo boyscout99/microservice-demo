@@ -46,7 +46,7 @@ env.reset()
 # Wrap the environment with Monitor to log training stats
 # env = Monitor(env, logs_dir)
 # Create the A2C model
-model = A2C("MlpPolicy", env, verbose=1, tensorboard_logs=logs_dir)
+model = A2C("MlpPolicy", env, verbose=1, tensorboard_log=logs_dir)
 
 TIMESTEPS = 10000
 # training

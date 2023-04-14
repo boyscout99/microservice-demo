@@ -19,3 +19,5 @@ pkg/
 *.tfvars
 release/wi-kubernetes-manifests.yaml
 src/agent/key.json
+src/agent-local/logs
+src/agent-local/models
