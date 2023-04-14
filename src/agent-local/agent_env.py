@@ -57,10 +57,12 @@ class GymEnvironment(gym.Env):
         new_observation = self._get_observation()
 
         # Calculate reward based on the new observation and previous response time
+        # reward = -(self.alpha * int(new_observation[1] > self.previous_response_time) + self.current_replicas)
+        # TODO modify so that time for productcatalogservice is below 100 ms
         reward = -(self.alpha * int(new_observation[1] > self.previous_response_time) + self.current_replicas)
 
         # Update the previous response time for the next step
-        self.previous_response_time = new_observation[1]
+        # self.previous_response_time = new_observation[1]
 
         # Set done to False as the environment is not terminated in this example
         done = False
