@@ -75,7 +75,7 @@ The folder for this development is in `/kubernetes-manifests/rl-agent/local`
 10. On a new terminal, to run the load generator execute the file `workload_gen.py` from within the pod. `kubectl exec -it -n rl-agent loadgenerator-<id> -- /bin/sh`
 11. On a new terminal, to run the agent code execute `kubectl exec -it -n rl-agent agent-<id> -- /bin/sh`
 
->[!danger] REMEMBER that when creating a volume, everything you modify in the pod (including deleted files) will be reflected on the host volume!
+> ❗️ REMEMBER that when creating a volume, everything you modify in the pod (including deleted files) will be reflected on the host volume!
 
 
 ### Image versioning
