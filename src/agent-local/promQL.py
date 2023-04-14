@@ -1,5 +1,6 @@
 from prometheus_api_client import PrometheusConnect
 import requests.exceptions
+import json
 
 prom = PrometheusConnect(url='http://prometheus.istio-system.svc.cluster.local:9090')
 
@@ -28,7 +29,8 @@ for query in queries:
 
     try:
         result = prom.custom_query(query=query)
-        print("Query result: ", result[0]['value'])
+        values = [q["value"] for q in result]
+        print("Query result: ", values)
         results.append(result)
 
     except requests.exceptions.RequestException as e:
@@ -37,4 +39,5 @@ for query in queries:
     except Exception as e:
         print(f"Unexpected error occurred: {e}")
 
-print("Results: \n", results)
+json_results = json.dumps(results, indent=2)
+print("Results: \n", json_results)
