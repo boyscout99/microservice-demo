@@ -54,7 +54,7 @@ spec:
       # - name: gcr-json-key
       containers:
       - name: main
-        image: loadgenerator
+        image: loadgenerator:0.1
         imagePullPolicy: Never
         env:
         - name: FRONTEND_ADDR

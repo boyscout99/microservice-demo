@@ -25,7 +25,7 @@ RUN pip install prometheus-api-client \
 
 EXPOSE 80
 
-ENTRYPOINT [ "python3", "scale_out_api.py" ]
+ENTRYPOINT [ "python3", "health_check.py" ]
 
 
 

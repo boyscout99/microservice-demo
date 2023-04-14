@@ -11,7 +11,7 @@ else:
 api = client.AppsV1Api()
 # Simulate and action of the RL agent
 actions_space = [-1, 0, 1] # scale in, do not scale, scale out
-action = actions_space[2]
+action = actions_space[1]
 # Get current number of replicas of the Deployment
 name = "frontend"
 namespace = "rl-agent"
