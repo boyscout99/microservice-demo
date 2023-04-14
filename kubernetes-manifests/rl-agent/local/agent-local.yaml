@@ -24,7 +24,7 @@ spec:
       containers:
       - name: server
         # image: gcr.io/master-thesis-hpa/agent:0.4.1
-        image: agent:0.1.1
+        image: agent:0.2
         imagePullPolicy: Never
         volumeMounts:
           - name: kubeconfig-volume
@@ -46,11 +46,11 @@ spec:
           periodSeconds: 30
         resources:
           requests:
-            cpu: 500m
-            memory: 512Mi
-          limits:
             cpu: 1000m
             memory: 1024Mi
+          limits:
+            cpu: 1500m
+            memory: 2048Mi
       volumes:
         - name: kubeconfig-volume
           secret: 

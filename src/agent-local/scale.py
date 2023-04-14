@@ -4,6 +4,7 @@ from kubernetes import client, config
 from kubernetes.client.rest import ApiException
 
 class KubernetesEnvironment:
+
     def __init__(self, name, namespace):
         self.name = name
         self.namespace = namespace
@@ -56,6 +57,25 @@ class KubernetesEnvironment:
                     body = deployment
                 )
                 print("New number of replicas: ", deployment.spec.replicas)
+
+        except ApiException as e:
+            print("Exception when calling AppsV1Api->replace_namespaced_deployment_scale: %s\n" % e)
+
+    def reset_replicas(self):
+        # Reset the number of replicas to 1
+        try:
+            deployment = self.api.read_namespaced_deployment_scale(
+                name = self.name,
+                namespace = self.namespace
+            )
+            deployment.spec.replicas = 1
+
+            self.api.replace_namespaced_deployment_scale(
+                name = self.name,
+                namespace = self.namespace,
+                body = deployment
+            )
+            print("New number of replicas: ", deployment.spec.replicas)
 
         except ApiException as e:
             print("Exception when calling AppsV1Api->replace_namespaced_deployment_scale: %s\n" % e)

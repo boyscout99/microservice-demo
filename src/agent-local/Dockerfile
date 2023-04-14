@@ -2,8 +2,8 @@ FROM python:3.9-slim-buster
 
 WORKDIR /app
 
-COPY scale_out_api.py .
-COPY promQL.py .
+# COPY scale_out_api.py .
+# COPY promQL.py .
 COPY health_check.py .
 
 RUN apt-get update && \
@@ -21,7 +21,9 @@ RUN apt-get install -y git && \
     rm -rf /var/lib/apt/lists/*
 
 RUN pip install prometheus-api-client \
-    Flask
+    Flask \
+    stable-baselines3 \
+    gym
 
 EXPOSE 80
 

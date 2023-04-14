@@ -35,3 +35,4 @@ class PrometheusClient:
 
         json_results = json.dumps(results, indent=2)
         print("Results: \n", json_results)
+        return results

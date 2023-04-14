@@ -1,43 +1,64 @@
 import gym
 from gym import spaces
-from scale import KubernetesEnvironment
-from query import PrometheusClient
+
+from Scale import KubernetesEnvironment
+from Query import PrometheusClient
 
 import numpy as np
+import time
 
 class GymEnvironment(gym.Env):
-    def __init__(self, alpha):
+    def __init__(self, alpha, queries, url, name, namespace):
         self.alpha = alpha
+
+        self.queries = queries
+        self.url = url
+        self.prom = PrometheusClient(self.url)
+
+        self.name = name
+        self.namespace = namespace
+        self.scale = KubernetesEnvironment(self.name, self.namespace)
+
         self.action_space = spaces.Discrete(3)  # Action space with 3 discrete actions: 1, 0, -1
         self.observation_space = spaces.Box(low=0, high=np.inf, shape=(4,), dtype=np.float64)  # Observation space with 4 continuous elements: response time, CPU usage, memory usage, replicas
 
     def reset(self):
         # Reset the environment, e.g., initialize the pod states and retrieve initial observation
-        self.previous_response_time = 0  # Initialize previous response time as 0
-        self.current_replicas = 0  # Initialize current number of replicas as 0
+        # TODO do I need to reset the workload pattern?
+        self.scale.reset_replicas() # Initialize current number of replicas as 1
+        time.sleep(15)
+
         self.current_observation = self._get_observation()  # Retrieve initial observation from Prometheus API
+        self.current_replicas = self.current_observation[0]
+        self.previous_response_time = self.current_observation[1]  # Initialize previous response time
         return self.current_observation
 
     def step(self, action):
         # Take a step in the environment based on the given action
         # Update the pod states, calculate reward, and return the new observation, reward, done, and info
 
+        scale = KubernetesEnvironment(self.name, self.namespace)
         # Update the pod states based on the action
         if action == 0:  # No change in replicas
             pass
         elif action == 1:  # Increase replicas
+            scale.update_replicas(1)
             self.current_replicas += 1
         elif action == 2:  # Decrease replicas
+            scale.update_replicas(-1)
             self.current_replicas -= 1
 
         # Get the new observation from Prometheus API
+        # TODO wait 15 seconds to stabilise?
+        time.sleep(30)
+        print("Waiting 30 seconds to stabilise ...")
         new_observation = self._get_observation()
 
         # Calculate reward based on the new observation and previous response time
-        reward = -(self.alpha * int(new_observation[0] > self.previous_response_time) + self.current_replicas)
+        reward = -(self.alpha * int(new_observation[1] > self.previous_response_time) + self.current_replicas)
 
         # Update the previous response time for the next step
-        self.previous_response_time = new_observation[0]
+        self.previous_response_time = new_observation[1]
 
         # Set done to False as the environment is not terminated in this example
         done = False
@@ -45,11 +66,15 @@ class GymEnvironment(gym.Env):
         # Set info to an empty dictionary
         info = {}
 
+        # wait one minute before taking another action
+        time.sleep(60)
+        print("Waiting 1 minute before taking next scaling action ...")
+
         return new_observation, reward, done, info
 
     def _get_observation(self):
         # Retrieve observation from Prometheus API, e.g., query response time, CPU usage, memory usage, and replicas
-        
+        observation = self.prom.get_results(self.queries)
+        observation = np.array(observation)
 
-        observation = [0, 0, 0, 0]  # Placeholder observation
         return observation

@@ -1,5 +1,5 @@
-from query import PrometheusClient
-from scale import KubernetesEnvironment
+from Query import PrometheusClient
+from Scale import KubernetesEnvironment
 
 url = 'http://prometheus.istio-system.svc.cluster.local:9090'
 prom = PrometheusClient(url)
@@ -26,8 +26,8 @@ queries = [
 prom.get_results(queries)
 
 ## Test scaling action
-deployment = "frontend"
+name = "frontend"
 namespace = "rl-agent"
 
-scale = KubernetesEnvironment(deployment, namespace)
+scale = KubernetesEnvironment(name, namespace)
 scale.update_replicas(-1)
