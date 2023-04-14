@@ -1,144 +1,97 @@
 
 ---
 # Developing environment
- One local cluster for testing the interaction between the agent and the frontend, Prometheus and Grafana.
- One GKE cluster to check the actual behaviour and compare the two autoscalers.
- Use `skaffold` to deploy Online Boutique
-	 - on `default` namespace
-	 - on `rl-agent` namespace
+
+One local cluster for testing the interaction between the agent and the frontend, Prometheus and Grafana.
+
+One GKE cluster to check the actual behaviour and compare the two autoscalers.
 
 Use the repo `microservice-demo` to build everything.
-	- Folder `/agent` to develop the algorithm.
-		- `Dockerfile` to build the container in the cluster so that it will call Prometheus API
-	- Folder `/local-dev` for developing locally. 
-		- Same address for Prometheus API?
-	- Folder `/gke-dev` to develop on GKE.
+- Folder `/agent` to develop the algorithm and the image.
+- `Dockerfile` to build the container in the cluster so that it will call Prometheus API
+- Folder `/agent-local` for local development. 
 
 Branches of the repository:
-	- `master` main branch
-	- `dev-agent` only to develop in `/src/agent` 
-	- `dev-load` to modify loadgenerator and update Docker image
-		- modify `/src/loadgenerator`
-		- modify `/kubernetes-manifests/loadgenerator.yaml` for the version of the image
-	- `dev-cluster` to modify anything else outside the two folders above
-
-Then I have created `istio-prom.yaml` to deploy Istio with the kube-state-metric server → instructions on how to download repo and deploy.
+- `master` main branch
+- `dev-agent` only to develop in `/src/agent` 
+- `dev-load` to modify loadgenerator and update Docker image
+- `dev-cluster` to modify anything else outside the two folders above
 
 ## Local cluster
-Refer to [[Create a local testing environment on Docker]].
-No secrets needed.
-Just to see behaviour of the agent and test the algorithm on one pod.
-Build image locally on Docker → both loadgenerator and agent
-	Create table with versions and updates.
-| version | update | published to gcr.io |
+
+Only used to see behaviour of the agent and test the algorithm on one pod.
+The folder for this development is in `/kubernetes-manifests/rl-agent/local`
+```
+.
+├── README.md
+├── default
+│   ├── kubernetes-manifests.yaml
+│   ├── kustomization.yaml
+│   └── loadgenerator.yaml
+├── istio-system
+│   ├── grafana.yaml
+│   ├── kiali.yaml
+│   └── prometheus.yaml
+└── rl-agent
+    ├── app
+    │   ├── adservice.yaml
+    │   ├── ...
+    └── local
+        ├── agent-local.yaml
+        ├── agent-role.yaml
+        ├── agent-roleBind.yaml
+        ├── kube-manifests-local.yaml
+        └── loadgenerator-local.yaml
+```
+
+
+### Guide to develop locally on minikube
+
+##### Starting minikube and building images
+1. `minikube start`
+2. `minikube mount ${HOME}/Documents/microservice-demo:/app/microservice-demo` to mount the volume that will be used by the agent pod to run the code developed locally
+3. Open a new terminal
+4. `minikube docker-env` and `eval $(minikube -p minikube docker-env)`
+5. `cd src/agent-local`
+6. `docker build -t agent:<version> .` Remember to change the version of the image in the deployment file to deploy that image in the cluster.
+7. `cd src/loadgenerator`
+8. `docker build -t loadgenerator:<version> .`
+
+##### Use Istio for monitoring
+1. Install Istio following the [official documentation](https://istio.io/latest/docs/setup/getting-started/#download).
+2. `istioctl install --set profile=demo -y`
+3. `kubectl label namespace rl-agent istio-injection=enabled`
+4. Verify the labelling with `kubectl get namespaces --show-labels`
+5. `cd kubernetes-manifests/`
+6. `kubectl -f apply ./istio-system` to deploy Istio components
+
+##### Deploy the Online Boutique application
+1. Go to `kubernetes-manifests/rl-agent/local`
+4. `kubectl apply -f kube-manifests-local.yaml`
+6. `kubectl apply -f loadgenerator-local.yaml`
+7. `kubectl apply -f agent-role.yaml`
+8. `kubectl apply -f agent-roleBind.yaml`
+9. `kubectl apply -f agent-local.yaml`
+10. On a new terminal, to run the load generator execute the file `workload_gen.py` from within the pod. `kubectl exec -it -n rl-agent loadgenerator-<id> -- /bin/sh`
+11. On a new terminal, to run the agent code execute `kubectl exec -it -n rl-agent agent-<id> -- /bin/sh`
+
+>[!danger] REMEMBER that when creating a volume, everything you modify in the pod (including deleted files) will be reflected on the host volume!
+
+
+### Image versioning
+
+Once the image is built and updated, keep track of updates in the tables below.
+| agent version | update | published to gcr.io |
 | :---: | :---: | :---: |
-| 0.2 | test | ✅ |
+| 0.0 | test | ✅ |
+|0.1 |working Prom and K8s API calls||
+|0.1.1|health_check.py entrypoint||
 | 0.4.1 | working Prom API calls | ✅ |
 
-### Set up
-For the default namespace, deploy from `/default`, while for cluster with agent deploy from `/rl-agent`.
-Documents in `/src` are the same for both deployments.
-`/istio-system` is deployed in the namespace `istio-system`
-
-Should create the following tree
-```
-- kubernetes-manifests/
-	- istio-system/
-		- prometheus.yaml 👉 updated version with kube-state-metrics
-		- grafana.yaml
-		- kiali.yaml
-	- default/
-		- istio-manifests/ 
-			- allow-egress
-			- frontend-gateway
-			- frontend
-		- app/ 👉 pulling images from gcr.io/google-example/
-			- all services YAML 
-			- loadgenerator.yaml
-	- rl-agent/
-		- istio-manifests/ 👉 modify namespace ✅
-			- allow-egress
-			- frontend-gateway
-			- frontend
-		- app/
-			- all services YAML
-			- loadgenerator.yaml
-		- local/ 👉 with imagePullPolicy: Never ✅
-			- agent-local.yaml
-			- loadgenerator-local.yaml
-			- kube-manifests-local.yaml
-- src/
-	- all services/
-- autoscaler/
-	- frontend/
-		- hpa-v2.yaml
-- skaffold.yaml 👉 one for default and for rl-agent deploy from folder after default
-```
-
-
-#### Guide to develop locally
-1. `cd src/agent`
-2. `docker build -t agent:x.x .`
-3. `cd src/loadgenerator`
-4. `docker build -t loadgenerator .`
-5. go to `kubernetes-manifests/rl-agent/local`
-6. `kubectl apply -f kube-manifests-local.yaml`
-7. `kubectl apply -f loadgenerator-local.yaml`
-8. `kubectl apply -f agent-local.yaml`
-9. ❗️mount a volume on agent's Dockerfile with the folder `/src/agent`
-10. `kubectl delete deployment -n rl-agent agent`
-11. `kubectl apply -f deployment agent`
-
-Use Istio and monitoring
-1. `cd kubernetes-manifests/rl-agent`
-2. `kubectl apply -f ./istio-manifests`
-3. `cd kubernetes-manifests/`
-4. `kubectl -f apply ./istio-system`
-
-#### Guide to develop on GKE
-1. `kubectl create namespace rl-agent`
-2. cd `microservice-demo/`
-3. `cd src/agent`
-4. `docker build -t agent:x.x .`
-5. `docker tag agent:x.x gcr.io/master-thesis-hpa/agent:x.x`
-6. `docker push gcr.io/master-thesis-hpa/agent:x.x`
-7. `skaffold run --default-repo gcr.io/master-thesis-hpa`
-8. `cd kubernetes-manifests/default`
-9. `kubectl apply -f `
->[!note] To delete all resources in the cluster in a namespace `kubectl delete all --all`.
-
-1. build images
-	1. locally: go to every /src/ and build one by one
-2. deploy images
-	1. locally: deploy with a single `kubectl apply -f` all services except `loadgenerator-local.yaml` and `agent-local.yaml`. Deploy kube-state-metrics, Prometheus and Grafana managed by Istio in `istio-system`. 
-	2. on GKE: use `skaffold run --default-repo gcr.io/master-thesis-hpa` to deploy `default` namespace, then deploy `rl-agent` namespace with `kubectl apply -f` after building and uploading `agent` and `loadgenerator`.
-
-#### Service mesh with Istio
-What is Istio and how to enable it. Following the official documentations.
-
-##### Enabling Prometheus and Grafana
-Copy the deployment files for Grafana, Prometheus, Kiali from Istio 1.17.1 in the repository, then ideally deploy an Istio folder with all required manifests inside.
-
-#### Using the loadgenerator
-Deployed with skaffold, but activate it by executing inside the pod.
-Update images. Update version in `/kubernetes-manifests/loadgenerator.yaml` and re-deploy it.
->[!warning] Update image version both in `/kubernetes-manifests/default/app` and `kubernetes-manifests/rl-agent/app`
-
-#### Using the HPA
-In the folder `/autoscaler` developing different versions of the HPA as YAML files.
-Always for the `default` namespace though.
-
-#### Developing the RL agent
-In the folder agent. Can be deployed with `skaffold`.
-Update images. Update version in `/src/agent/agent.yaml`.
-
-## GKE cluster
-Refer to [[Deploy GKE cluster from scratch]].
-Copy the local developments to the repository.
-Publish image to `gcr.io/master-thesis-hpa`, update version of image on Deployment file (*how to take always latest version? Should I create a template?*).
-
-#### Set up
-Using skaffold to deploy in namespaces `default` and `rl-agent`.
+| loadgenerator version | update | published to gcr.io |
+| :---: | :---: | :---: |
+| 0.0 | test | ✅ |
+|0.1 |workload pattern 25 min||
 
 ---
 <p align="center">
