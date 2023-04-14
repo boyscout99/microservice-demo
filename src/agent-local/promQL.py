@@ -29,7 +29,8 @@ for query in queries:
 
     try:
         result = prom.custom_query(query=query)
-        values = [q["value"] for q in result]
+        values = [float(q["value"][1]) for q in result]
+        # cast to float type
         print("Query result: ", values)
         results.append(result)
 
