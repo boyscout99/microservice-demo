@@ -2,14 +2,12 @@ FROM python:3.9-slim-buster
 
 ENV PROJECT_ID=master-thesis-hpa
 ENV ZONE=europe-west1-b 
-ENV CLUSTER_NAME=master-thesis-hpa-agent
+ENV CLUSTER_NAME=master-thesis-hpa
 ENV GOOGLE_APPLICATION_CREDENTIALS=key.json
 
 WORKDIR /app
-
-COPY key.json .
-COPY scale_out_api.py .
-COPY promQL.py .
+# COPY scale_out_api.py .
+# COPY promQL.py .
 COPY health_check.py .
 
 RUN apt-get update && \
@@ -26,6 +24,7 @@ RUN curl https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud
     gcloud config set component_manager/disable_update_check true && \
     gcloud config set metrics/environment github_docker_image
 
+# install Kubernetes API client for Python
 RUN apt-get install -y git && \
     git clone --recursive https://github.com/kubernetes-client/python.git && \
     cd python && \
@@ -41,8 +40,14 @@ RUN pip install google-auth \
     google-auth-oauthlib \
     google-auth-httplib2 \
     prometheus-api-client \
-    Flask
+    Flask \
+    stable-baselines3 \
+    gym\
+    tensorboard
 
+# Authenticate to the GKE cluster
+WORKDIR /secrets
+COPY key.json .
 RUN gcloud auth activate-service-account --key-file=${GOOGLE_APPLICATION_CREDENTIALS} \
     && gcloud config set project ${PROJECT_ID} \
     && gcloud config set compute/zone ${ZONE} \
@@ -50,6 +55,7 @@ RUN gcloud auth activate-service-account --key-file=${GOOGLE_APPLICATION_CREDENT
 
 EXPOSE 80
 
+WORKDIR /app
 ENTRYPOINT [ "python3", "health_check.py" ]
 
 

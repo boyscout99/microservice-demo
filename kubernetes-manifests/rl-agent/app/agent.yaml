@@ -23,7 +23,10 @@ spec:
       - name: gcr-json-key
       containers:
       - name: server
-        image: gcr.io/master-thesis-hpa/agent:0.4.1
+        image: gcr.io/master-thesis-hpa/agent:0.2.1
+        volumeMounts:
+          - name: app
+            mountPath: /app
         readinessProbe:
             httpGet:
               path: /healthz
@@ -38,8 +41,12 @@ spec:
           periodSeconds: 30
         resources:
           requests:
-            cpu: 500m
-            memory: 512Mi
-          limits:
             cpu: 1000m
             memory: 1024Mi
+          limits:
+            cpu: 1500m
+            memory: 2048Mi
+      volumes:
+        - name: app
+          hostPath:
+            path: ${HOME}/microservice-demo/src/agent

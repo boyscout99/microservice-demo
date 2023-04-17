@@ -24,7 +24,7 @@ RUN pip install prometheus-api-client \
     Flask \
     stable-baselines3 \
     gym\
-    tensorboard
+    tensorboard \
 
 EXPOSE 80
 
