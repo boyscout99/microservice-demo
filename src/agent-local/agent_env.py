@@ -61,6 +61,7 @@ class GymEnvironment(gym.Env):
         # TODO modify so that time for productcatalogservice is below 100 ms
         SLA_RESP_TIME = 100 # 100 ms
         reward = -(self.alpha * int(new_observation[1] > SLA_RESP_TIME) + self.current_replicas)
+        print("Reward: ", reward)
 
         # Update the previous response time for the next step
         # self.previous_response_time = new_observation[1]
@@ -72,8 +73,8 @@ class GymEnvironment(gym.Env):
         info = {}
 
         # wait one minute before taking another action
-        print("Waiting 1 minute before taking next scaling action ...")
-        time.sleep(60)
+        print("Waiting 30 seconds before taking next scaling action ...")
+        time.sleep(30)
 
         return new_observation, reward, done, info
 

@@ -5,8 +5,8 @@ from stable_baselines3 import A2C
 
 from agent_env import GymEnvironment
 
-models_dir = "models/A2C_agent"
-logs_dir = "logs/A2C_agent"
+models_dir = "models/"
+logs_dir = "logs/"
 
 if not os.path.exists(models_dir):
     os.makedirs(models_dir)
@@ -49,7 +49,7 @@ model = A2C("MlpPolicy", env, verbose=1, tensorboard_log=logs_dir)
 
 TIMESTEPS = 10000
 # training
-for i in range(1,100000):
+for i in range(1,100):
     model.learn(total_timesteps=TIMESTEPS, reset_num_timesteps=False, tb_log_name="A2C")
     model.save(f"{models_dir}/{TIMESTEPS*i}")
 
