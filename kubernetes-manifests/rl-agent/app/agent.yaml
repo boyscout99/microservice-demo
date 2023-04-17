@@ -23,7 +23,7 @@ spec:
       - name: gcr-json-key
       containers:
       - name: server
-        image: gcr.io/master-thesis-hpa/agent:0.2.1
+        image: gcr.io/master-thesis-hpa/agent:0.2.2
         volumeMounts:
           - name: app
             mountPath: /app
