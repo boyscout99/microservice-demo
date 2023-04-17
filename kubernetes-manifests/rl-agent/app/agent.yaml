@@ -25,9 +25,6 @@ spec:
       - name: server
         image: gcr.io/master-thesis-hpa/agent:0.2.1
         volumeMounts:
-          - name: kubeconfig
-            mountPath: /secrets
-        volumeMounts:
           - name: app
             mountPath: /app
         readinessProbe:
@@ -53,6 +50,3 @@ spec:
         - name: app
           hostPath:
             path: ${HOME}/microservice-demo/src/agent
-        - name: secrets
-          hostPath:
-            path: ${HOME}/keys
