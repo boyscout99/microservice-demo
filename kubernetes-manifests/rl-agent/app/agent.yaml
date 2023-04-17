@@ -49,4 +49,4 @@ spec:
       volumes:
         - name: app
           hostPath:
-            path: ${HOME}/microservice-demo/src/agent
+            path: /microservice-demo/src/agent
