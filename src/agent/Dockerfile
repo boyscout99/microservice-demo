@@ -2,7 +2,7 @@ FROM python:3.9-slim-buster
 
 ENV PROJECT_ID=master-thesis-hpa
 ENV ZONE=europe-west1-b 
-ENV CLUSTER_NAME=master-thesis-hpa
+ENV CLUSTER_NAME=master-thesis-hpa-agent
 ENV GOOGLE_APPLICATION_CREDENTIALS=kube_api_keys.json
 
 WORKDIR /app
