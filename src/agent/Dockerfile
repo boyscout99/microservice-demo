@@ -47,7 +47,7 @@ RUN pip install google-auth \
 
 # Authenticate to the GKE cluster
 WORKDIR /secrets
-COPY ${HOME}/keys/kube_api_keys.json .
+# COPY ${HOME}/keys/kube_api_keys.json .
 RUN gcloud auth activate-service-account --key-file=${GOOGLE_APPLICATION_CREDENTIALS} \
     && gcloud config set project ${PROJECT_ID} \
     && gcloud config set compute/zone ${ZONE} \
