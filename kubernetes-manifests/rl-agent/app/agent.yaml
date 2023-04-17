@@ -51,4 +51,3 @@ spec:
           hostPath:
             path: /microservice-demo/src/agent
             type: Directory
-            readOnly: false
