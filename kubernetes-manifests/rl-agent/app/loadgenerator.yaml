@@ -70,7 +70,7 @@ spec:
         #       - ALL
         #   privileged: false
         #   readOnlyRootFilesystem: true
-        image: gcr.io/master-thesis-hpa/my-images/loadgenerator:0.1
+        image: gcr.io/master-thesis-hpa/loadgenerator:0.1
         # imagePullPolicy: Always
         env:
         - name: FRONTEND_ADDR
