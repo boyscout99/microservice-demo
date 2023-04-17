@@ -3,7 +3,7 @@ FROM python:3.9-slim-buster
 ENV PROJECT_ID=master-thesis-hpa
 ENV ZONE=europe-west1-b 
 ENV CLUSTER_NAME=master-thesis-hpa
-ENV GOOGLE_APPLICATION_CREDENTIALS=key.json
+ENV GOOGLE_APPLICATION_CREDENTIALS=kube_api_keys.json
 
 WORKDIR /app
 # COPY scale_out_api.py .
@@ -42,12 +42,12 @@ RUN pip install google-auth \
     prometheus-api-client \
     Flask \
     stable-baselines3 \
-    gym\
-    tensorboard
+    gym
+    # tensorboard
 
 # Authenticate to the GKE cluster
 WORKDIR /secrets
-COPY key.json .
+COPY kube_api_keys.json .
 RUN gcloud auth activate-service-account --key-file=${GOOGLE_APPLICATION_CREDENTIALS} \
     && gcloud config set project ${PROJECT_ID} \
     && gcloud config set compute/zone ${ZONE} \
