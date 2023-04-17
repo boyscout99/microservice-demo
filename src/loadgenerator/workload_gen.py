@@ -13,12 +13,12 @@ def periodic_workload():
     """
     This function creates a periodic workload in a window
     of 25 minutes.
-    [0,5] steady increase from 0 to 1500 users
-    [5] abrupt decrease to 10 users
-    [6, 10] steady increase to 1000 users
-    [11, 15] constant level to 1000 users
-    [16, 20] abrupt decrease to 50 users
-    [21] abrupt increase to 1500 users
+    [0,10] steady increase from 0 to 1500 users
+    [10] abrupt decrease to 750 users
+    [11, 15] constant 750 users
+    [15] abrupt decreast to 150 users
+    [16, 20] constant 150 users
+    [21] abrupt increase to 1000 users
     """
     actions = [
         {
