@@ -46,21 +46,21 @@ class PrometheusClient:
         results = []
         for query in queries:
             result = self.query(query = query)
+            found = 0
+            tentatives = 0
 
             if result is not None:
                 results.append(result)
             else:
                 # retake the query
-                tentatives = 0
-                found = 0
                 while(tentatives < 3 or found):
                     result = self.query(query = query)
-                    if results is not None:
+                    if result is not None:
                         results.append(result)
                         found = 1
                     else:
                         tentatives += 1
-                        print("Missing value, repeating query. Tentative %d", tentatives)
+                        print(f"Missing value, repeating query. Tentative {tentatives}.")
                 # if tentatives == 3:
                 #     # call for interpolation
                 #     interpolation()
