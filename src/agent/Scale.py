@@ -64,9 +64,11 @@ class KubernetesEnvironment:
                 if (current_replicas + action < self.minReplicas):
                     deployment.spec.replicas = self.minReplicas
                     print("Cannot have less than minReplicas. Setting to %d.", self.minReplicas)
+
                 elif (current_replicas + action > self.maxReplicas):
                     deployment.spec.replicas = self.maxReplicas
                     print("Cannot have more than maxReplicas. Setting to %d.", self.maxReplicas)
+                    
                 else:
                     deployment.spec.replicas = current_replicas + action
                     print("New number of replicas: ", deployment.spec.replicas)

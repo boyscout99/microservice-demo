@@ -8,7 +8,7 @@ import numpy as np
 import time
 
 class GymEnvironment(gym.Env):
-    def __init__(self, alpha, queries, url, name, namespace):
+    def __init__(self, alpha, queries, url, name, namespace, minReplicas, maxReplicas):
         self.alpha = alpha
 
         self.queries = queries
@@ -17,7 +17,9 @@ class GymEnvironment(gym.Env):
 
         self.name = name
         self.namespace = namespace
-        self.scale = KubernetesEnvironment(self.name, self.namespace)
+        self.minReplicas = minReplicas
+        self.maxReplicas = maxReplicas
+        self.scale = KubernetesEnvironment(self.name, self.namespace, self.minReplicas, self.maxReplicas)
 
         self.action_space = spaces.Discrete(3)  # Action space with 3 discrete actions: 1, 0, -1
         self.observation_space = spaces.Box(low=0, high=np.inf, shape=(4,), dtype=np.float64)  # Observation space with 4 continuous elements: response time, CPU usage, memory usage, replicas
