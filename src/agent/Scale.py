@@ -1,13 +1,18 @@
 # This is a class to interact with Kubernetes API and scale a deployment
+'''
+This class is used to connect to the Kubernetes API and scale deployments.
+'''
 import os
 from kubernetes import client, config
 from kubernetes.client.rest import ApiException
 
 class KubernetesEnvironment:
 
-    def __init__(self, name, namespace):
+    def __init__(self, name, namespace, minReplicas, maxReplicas):
         self.name = name
         self.namespace = namespace
+        self.minReplicas = minReplicas
+        self.maxReplicas = maxReplicas
         self.api = None
 
         # Load the Kubernetes configuration
@@ -20,6 +25,9 @@ class KubernetesEnvironment:
         self.api = client.AppsV1Api()
 
     def get_current_replicas(self):
+        '''
+        Get the current number of replicas for a deployment.
+        '''
         try:
             # Get the current number of replicas of the Deployment
             deployment = self.api.read_namespaced_deployment_scale(
@@ -29,7 +37,7 @@ class KubernetesEnvironment:
             if deployment.spec.replicas is not None:
                 current_replicas = int(deployment.spec.replicas)
             else:
-                current_replicas = 1
+                current_replicas = self.minReplicas
 
             return current_replicas
 
@@ -39,6 +47,9 @@ class KubernetesEnvironment:
             return None
 
     def update_replicas(self, action):
+        '''
+        Update the number of replicas by summing action to it.
+        '''
         try:
             # Update the number of replicas
             current_replicas = self.get_current_replicas()
@@ -50,9 +61,12 @@ class KubernetesEnvironment:
                     namespace = self.namespace
                 )
 
-                if (current_replicas + action <= 0):
-                    deployment.spec.replicas = 1
-                    print("Cannot have 0 replicas. Setting to 1.")
+                if (current_replicas + action < self.minReplicas):
+                    deployment.spec.replicas = self.minReplicas
+                    print("Cannot have less than minReplicas. Setting to %d.", self.minReplicas)
+                elif (current_replicas + action > self.maxReplicas):
+                    deployment.spec.replicas = self.maxReplicas
+                    print("Cannot have more than maxReplicas. Setting to %d.", self.maxReplicas)
                 else:
                     deployment.spec.replicas = current_replicas + action
                     print("New number of replicas: ", deployment.spec.replicas)
@@ -73,7 +87,7 @@ class KubernetesEnvironment:
                 name = self.name,
                 namespace = self.namespace
             )
-            deployment.spec.replicas = 1
+            deployment.spec.replicas = self.minReplicas
 
             self.api.replace_namespaced_deployment_scale(
                 name = self.name,

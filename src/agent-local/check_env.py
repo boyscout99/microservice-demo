@@ -25,6 +25,8 @@ queries = [
 url = 'http://prometheus.istio-system.svc.cluster.local:9090'  # URL for Prometheus API
 name = "frontend" # deployment name
 namespace = "rl-agent" # namespace
+minReplicas = 1
+maxReplicas = 10
 
 # Create an instance of GymEnvironment
 env = GymEnvironment(alpha, queries, url, name, namespace)
