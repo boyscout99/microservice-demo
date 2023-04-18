@@ -32,7 +32,7 @@ RUN apt-get install -y git && \
     pip install kubernetes && \
     cd .. && \
     rm -rf python && \
-    apt-get remove -y git && \
+    # apt-get remove -y git && \
     apt-get autoremove -y && \
     rm -rf /var/lib/apt/lists/*
 
