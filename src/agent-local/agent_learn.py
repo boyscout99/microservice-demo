@@ -1,4 +1,5 @@
 import os
+import json
 
 from stable_baselines3 import A2C
 # from stable_baselines3.common.monitor import Monitor
@@ -14,32 +15,26 @@ if not os.path.exists(models_dir):
 if not os.path.exists(logs_dir):
     os.makedirs(logs_dir)
 
+q_file = open("queries.json", "r")
+data = json.load(q_file)
+
 # Define the hyperparameters for training
 alpha = 100  # Your desired value for alpha
 # QUERIES FOR FRONTEND DEPLOYMENT
-# take slowest service request duration [ms]
-# request duration [ms]
-q_request_duration = 'max(rate(istio_request_duration_milliseconds_count{pod=~"frontend-.*", request_protocol="grpc", response_code="200", namespace="rl-agent"}[1m]))'
-# cpu utilisation [%]
-q_cpu_usage = 'rate(container_cpu_usage_seconds_total{pod=~"frontend-.*", namespace="rl-agent"}[1m])/0.1*100'
-# memory usage [%]
-q_memory_usage = 'rate(container_memory_usage_bytes{pod=~"frontend-.*", namespace="rl-agent"}[1m])/64000000'
-# number of replicas per deployment
-q_pod_replicas = 'count(kube_pod_info{pod=~"frontend-.*", namespace="rl-agent"})'
-
-# list of queries
+_queries = data["minikube"]
 queries = [
-    q_pod_replicas,
-    q_request_duration,
-    q_cpu_usage,
-    q_memory_usage
+    _queries["q_pod_replicas"],
+    _queries["q_request_duration"],
+    _queries["q_cpu_usage"],
+    _queries["q_memory_usage"],
 ]
+q_file.close()
 
 url = 'http://prometheus.istio-system.svc.cluster.local:9090'  # URL for Prometheus API
 name = "frontend" # deployment name
 namespace = "rl-agent" # namespace
 minReplicas = 1
-maxReplicas = 10
+maxReplicas = 15
 
 # Create an instance of GymEnvironment
 env = GymEnvironment(alpha, queries, url, name, namespace, minReplicas, maxReplicas)

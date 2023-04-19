@@ -26,9 +26,11 @@ RUN pip install prometheus-api-client \
     gym \
     tensorboard
 
+EXPOSE 6006
 EXPOSE 80
 
-ENTRYPOINT [ "python3", "health_check.py" ]
+# CMD [ "python3", "health_check.py" ]
+CMD ["python3", "agent_learn.py"]
 
 
 

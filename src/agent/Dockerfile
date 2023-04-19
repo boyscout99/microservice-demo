@@ -61,10 +61,14 @@ RUN gcloud auth activate-service-account --key-file=${GOOGLE_APPLICATION_CREDENT
     && gcloud config set compute/zone ${ZONE} \
     && gcloud container clusters get-credentials ${CLUSTER_NAME}
 
+# health check HTTP
 EXPOSE 80
+# tensorboard
+EXPOSE 6006 
 
 WORKDIR /app
-ENTRYPOINT [ "python3", "health_check.py" ]
+# ENTRYPOINT [ "python3", "health_check.py" ]
+CMD ["python3", "agent_learn.py"]
 
 
 

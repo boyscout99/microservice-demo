@@ -21,10 +21,24 @@ spec:
       restartPolicy: Always
       # imagePullSecrets:
       # - name: gcr-json-key
+      initContainers:
+      - name: prometheus-check
+        image: curlimages/curl:latest
+        command:
+        - /bin/sh
+        - -c
+        - |
+          echo "Checking Prometheus API..."
+          if ! curl -sf http://prometheus.istio-system.svc.cluster.local:9090; then
+            echo "Error: Could not reach Prometheus API"
+            exit 1
+          fi
+      # - name: kubernetes-check
+      # ! TODO
       containers:
       - name: server
         # image: gcr.io/master-thesis-hpa/agent:0.4.1
-        image: agent:0.2.1
+        image: agent:0.4
         imagePullPolicy: Never
         volumeMounts:
           - name: kubeconfig-volume
@@ -32,18 +46,18 @@ spec:
         volumeMounts:
           - name: app
             mountPath: /app
-        readinessProbe:
-            httpGet:
-              path: /healthz
-              port: 80
-            initialDelaySeconds: 5
-            periodSeconds: 10
-        livenessProbe:
-          httpGet:
-            path: /healthz
-            port: 80
-          initialDelaySeconds: 30
-          periodSeconds: 30
+        # readinessProbe:
+        #     httpGet:
+        #       path: /healthz
+        #       port: 80
+        #     initialDelaySeconds: 5
+        #     periodSeconds: 10
+        # livenessProbe:
+        #   httpGet:
+        #     path: /healthz
+        #     port: 80
+        #   initialDelaySeconds: 30
+        #   periodSeconds: 30
         resources:
           requests:
             cpu: 1000m
