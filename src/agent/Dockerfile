@@ -67,8 +67,8 @@ EXPOSE 80
 EXPOSE 6006 
 
 WORKDIR /app
-# ENTRYPOINT [ "python3", "health_check.py" ]
-CMD ["python3", "agent_learn.py"]
+ENTRYPOINT [ "python3", "health_check.py" ]
+# CMD ["python3", "agent_learn.py"]
 
 
 

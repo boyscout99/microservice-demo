@@ -35,19 +35,19 @@ spec:
           fi
       containers:
       - name: server
-        image: gcr.io/master-thesis-hpa/agent:0.4
-        # readinessProbe:
-        #     httpGet:
-        #       path: /healthz
-        #       port: 80
-        #     initialDelaySeconds: 5
-        #     periodSeconds: 10
-        # livenessProbe:
-        #   httpGet:
-        #     path: /healthz
-        #     port: 80
-        #   initialDelaySeconds: 30
-        #   periodSeconds: 30
+        image: gcr.io/master-thesis-hpa/agent:0.3
+        readinessProbe:
+            httpGet:
+              path: /healthz
+              port: 80
+            initialDelaySeconds: 5
+            periodSeconds: 10
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 80
+          initialDelaySeconds: 30
+          periodSeconds: 30
         resources:
           requests:
             cpu: 1000m
