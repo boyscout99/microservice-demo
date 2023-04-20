@@ -22,8 +22,9 @@ RUN apt-get install -y git && \
 
 RUN pip install prometheus-api-client \
     Flask \
-    stable-baselines3 \
+    torch torchvision torchaudio \
     gym \
+    stable-baselines3 \
     tensorboard
 
 EXPOSE 6006
