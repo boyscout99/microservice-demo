@@ -35,6 +35,8 @@ spec:
           fi
       # - name: kubernetes-check
       # ! TODO
+      # should I use ConfigMap? with the certificate and mount it in the curl image?
+      # should I create a secret and mount this?
       containers:
       - name: server
         # image: gcr.io/master-thesis-hpa/agent:0.4.1

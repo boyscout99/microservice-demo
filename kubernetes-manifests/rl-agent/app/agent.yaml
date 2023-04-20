@@ -36,6 +36,9 @@ spec:
       containers:
       - name: server
         image: gcr.io/master-thesis-hpa/agent:0.3
+        volumeMounts:
+          - name: file-storage
+            mountPath: /app
         readinessProbe:
             httpGet:
               path: /healthz
@@ -55,3 +58,7 @@ spec:
           limits:
             cpu: 1500m
             memory: 2048Mi
+      volumes:
+        - name: files-storage
+          persistentVolumeClaim:
+            claimName: nfs-server-claim
