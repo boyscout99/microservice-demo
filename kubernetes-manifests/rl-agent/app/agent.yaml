@@ -35,10 +35,10 @@ spec:
           fi
       containers:
       - name: server
-        image: gcr.io/master-thesis-hpa/agent:0.3
+        image: gcr.io/master-thesis-hpa/agent:0.3.1
         volumeMounts:
           - name: file-storage
-            mountPath: /app
+            mountPath: /app1
         readinessProbe:
             httpGet:
               path: /healthz
