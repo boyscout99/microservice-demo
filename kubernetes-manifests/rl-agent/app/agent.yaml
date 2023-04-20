@@ -59,6 +59,6 @@ spec:
             cpu: 1500m
             memory: 2048Mi
       volumes:
-        - name: files-storage
+        - name: file-storage
           persistentVolumeClaim:
             claimName: nfs-server-claim
