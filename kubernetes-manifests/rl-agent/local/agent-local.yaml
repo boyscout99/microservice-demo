@@ -33,7 +33,7 @@ spec:
             echo "Error: Could not reach Prometheus API"
             exit 1
           fi
-      # - name: kubernetes-check
+      - name: kubernetes-check
       # ! TODO
       # should I use ConfigMap? with the certificate and mount it in the curl image?
       # should I create a secret and mount this?
@@ -43,23 +43,23 @@ spec:
         image: agent:0.4
         imagePullPolicy: Never
         volumeMounts:
-          - name: kubeconfig-volume
+          - name: kubeconfig-volume # be able to access the configuration of the cluster
             mountPath: /root/.kube/
         volumeMounts:
           - name: app
             mountPath: /app
-        # readinessProbe:
-        #     httpGet:
-        #       path: /healthz
-        #       port: 80
-        #     initialDelaySeconds: 5
-        #     periodSeconds: 10
-        # livenessProbe:
-        #   httpGet:
-        #     path: /healthz
-        #     port: 80
-        #   initialDelaySeconds: 30
-        #   periodSeconds: 30
+        readinessProbe:
+            httpGet:
+              path: /healthz
+              port: 80
+            initialDelaySeconds: 5
+            periodSeconds: 10
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 80
+          initialDelaySeconds: 30
+          periodSeconds: 30
         resources:
           requests:
             cpu: 1000m

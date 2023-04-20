@@ -4,7 +4,8 @@ WORKDIR /app
 
 # COPY scale_out_api.py .
 # COPY promQL.py .
-COPY health_check.py .
+COPY entrypoint.sh .
+RUN chmod +x /app/entrypoint.sh
 
 RUN apt-get update && \
     apt-get install curl -y
@@ -31,7 +32,8 @@ EXPOSE 6006
 EXPOSE 80
 
 # CMD [ "python3", "health_check.py" ]
-CMD ["python3", "agent_learn.py"]
+# CMD ["python3", "agent_learn.py"]
+ENTRYPOINT ["/app/entrypoint.sh"]
 
 
 
