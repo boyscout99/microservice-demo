@@ -6,6 +6,7 @@ ENV CLUSTER_NAME=master-thesis-hpa-agent
 ENV GOOGLE_APPLICATION_CREDENTIALS=kube_api_keys.json
 
 COPY entrypoint.sh .
+COPY requirements.txt .
 RUN chmod +x entrypoint.sh
 
 RUN apt-get update && \
@@ -23,25 +24,26 @@ RUN curl https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud
     gcloud config set metrics/environment github_docker_image
 
 # install Kubernetes API client for Python
-RUN apt-get install -y git && \
-    git clone --recursive https://github.com/kubernetes-client/python.git && \
-    cd python && \
-    pip install -r requirements.txt && \
-    pip install kubernetes && \
-    cd .. && \
-    rm -rf python && \
-    apt-get remove -y git && \
-    apt-get autoremove -y && \
-    rm -rf /var/lib/apt/lists/*
+# RUN apt-get install -y git && \
+#     git clone --recursive https://github.com/kubernetes-client/python.git && \
+#     cd python && \
+#     pip install -r requirements.txt && \
+#     pip install kubernetes && \
+#     cd .. && \
+#     rm -rf python && \
+#     apt-get remove -y git && \
+#     apt-get autoremove -y && \
+#     rm -rf /var/lib/apt/lists/*
 
-RUN pip install google-auth \
-    google-auth-oauthlib \
-    google-auth-httplib2 \
-    prometheus-api-client \
-    Flask \
-    gym \
-    stable-baselines3 \
-    tensorboard
+RUN pip install -r requirements.txt
+# RUN pip install google-auth \
+#     google-auth-oauthlib \
+#     google-auth-httplib2 \
+#     prometheus-api-client \
+#     Flask \
+#     gym \
+#     stable-baselines3 \
+#     tensorboard
 
 # Authenticate to the GKE cluster
 WORKDIR /secrets
