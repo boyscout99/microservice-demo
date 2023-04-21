@@ -8,5 +8,5 @@ spec:
   accessModes:
     - ReadWriteMany
   nfs:
-    path: /vol1 # path to the shared folder in the server
+    path: /vol1/microservice-demo/src/agent # path to the shared folder in the server
     server: 10.167.184.82

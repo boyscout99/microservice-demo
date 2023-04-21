@@ -5,10 +5,6 @@ ENV ZONE=europe-west1-b
 ENV CLUSTER_NAME=master-thesis-hpa-agent
 ENV GOOGLE_APPLICATION_CREDENTIALS=kube_api_keys.json
 
-WORKDIR /app
-# COPY scale_out_api.py .
-# COPY promQL.py .
-# COPY health_check.py .
 COPY entrypoint.sh .
 RUN chmod +x entrypoint.sh
 
@@ -26,14 +22,6 @@ RUN curl https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud
     gcloud config set component_manager/disable_update_check true && \
     gcloud config set metrics/environment github_docker_image
 
-# Install gh (temporary)
-RUN type -p curl >/dev/null || (apt update && apt install curl -y) \
-    && curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg \
-    && chmod go+r /usr/share/keyrings/githubcli-archive-keyring.gpg \
-    && echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | tee /etc/apt/sources.list.d/github-cli.list > /dev/null \
-    && apt update \
-    && apt install gh -y
-
 # install Kubernetes API client for Python
 RUN apt-get install -y git && \
     git clone --recursive https://github.com/kubernetes-client/python.git && \
@@ -42,7 +30,7 @@ RUN apt-get install -y git && \
     pip install kubernetes && \
     cd .. && \
     rm -rf python && \
-    # apt-get remove -y git && \
+    apt-get remove -y git && \
     apt-get autoremove -y && \
     rm -rf /var/lib/apt/lists/*
 
@@ -51,13 +39,13 @@ RUN pip install google-auth \
     google-auth-httplib2 \
     prometheus-api-client \
     Flask \
-    stable-baselines3 \
     gym \
+    stable-baselines3 \
     tensorboard
 
 # Authenticate to the GKE cluster
 WORKDIR /secrets
-COPY /keys/kube_api_keys.json .
+COPY /mnt/nfs-client/keys/kube_api_keys.json .
 RUN gcloud auth activate-service-account --key-file=${GOOGLE_APPLICATION_CREDENTIALS} \
     && gcloud config set project ${PROJECT_ID} \
     && gcloud config set compute/zone ${ZONE} \
@@ -68,9 +56,9 @@ EXPOSE 80
 # tensorboard
 EXPOSE 6006 
 
-WORKDIR /app
 # ENTRYPOINT [ "python3", "health_check.py" ]
-ENTRYPOINT ["/app/entrypoint.sh"]
+WORKDIR /
+ENTRYPOINT ["entrypoint.sh"]
 # CMD ["python3", "agent_learn.py"]
 
 
