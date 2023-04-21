@@ -38,7 +38,7 @@ class GymEnvironment(gym.Env):
     def step(self, action):
         # Take a step in the environment based on the given action
         # Update the pod states, calculate reward, and return the new observation, reward, done, and info
-        print("##### NEW ACTION #####")
+        print("\n##### NEW ACTION #####")
         # Update the pod states based on the action
         if action == 0:  # No change in replicas
             print("Taking action 0")
@@ -84,5 +84,14 @@ class GymEnvironment(gym.Env):
         # Retrieve observation from Prometheus API, e.g., query response time, CPU usage, memory usage, and replicas
         observation = self.prom.get_results(self.queries)
         observation = np.array(observation)
+
+        # Check for missing values in the observation
+        if np.any(np.isnan(observation)):
+            # Use the previous observation if any of the values are missing
+            print("Attention! Missing values in results, substituting values of previous observation ...")
+            observation = np.where(np.isnan(observation), self.current_observation, observation)
+
+        # Update the current observation for the next step
+        self.current_observation = observation
 
         return observation

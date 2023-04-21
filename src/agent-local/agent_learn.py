@@ -58,7 +58,7 @@ else:
     # Create the A2C model
     model = A2C("MlpPolicy", env, verbose=1, tensorboard_log=logs_dir)
 
-TIMESTEPS = 2
+TIMESTEPS = 20
 # training
 for i in range(1,10):
     model.learn(total_timesteps=TIMESTEPS, reset_num_timesteps=False, tb_log_name=MODEL)
