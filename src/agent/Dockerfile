@@ -8,7 +8,9 @@ ENV GOOGLE_APPLICATION_CREDENTIALS=kube_api_keys.json
 WORKDIR /app
 # COPY scale_out_api.py .
 # COPY promQL.py .
-COPY health_check.py .
+# COPY health_check.py .
+COPY entrypoint.sh .
+RUN chmod +x entrypoint.sh
 
 RUN apt-get update && \
     apt-get install curl -y
@@ -67,7 +69,8 @@ EXPOSE 80
 EXPOSE 6006 
 
 WORKDIR /app
-ENTRYPOINT [ "python3", "health_check.py" ]
+# ENTRYPOINT [ "python3", "health_check.py" ]
+ENTRYPOINT ["/app/entrypoint.sh"]
 # CMD ["python3", "agent_learn.py"]
 
 

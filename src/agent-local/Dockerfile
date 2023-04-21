@@ -5,7 +5,7 @@ WORKDIR /app
 # COPY scale_out_api.py .
 # COPY promQL.py .
 COPY entrypoint.sh .
-RUN chmod +x /app/entrypoint.sh
+RUN chmod +x entrypoint.sh
 
 RUN apt-get update && \
     apt-get install curl -y

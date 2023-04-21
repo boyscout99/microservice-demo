@@ -7,6 +7,7 @@ from prometheus_api_client import PrometheusConnect
 from statistics import mean
 import requests.exceptions
 import json
+import time
 
 class PrometheusClient:
 
@@ -31,6 +32,7 @@ class PrometheusClient:
 
         except requests.exceptions.RequestException as e:
             print(f"Error connecting to Prometheus: {e}")
+            time.sleep(1)
             return None
 
         except Exception as e:
@@ -61,6 +63,7 @@ class PrometheusClient:
                     else:
                         tentatives += 1
                         print(f"Missing value, repeating query. Tentative {tentatives}.")
+                        time.sleep(tentatives**2) # exponential backoff strategy
                 # if tentatives == 3:
                 #     # call for interpolation
                 #     interpolation()

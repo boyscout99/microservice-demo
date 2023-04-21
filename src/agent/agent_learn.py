@@ -1,13 +1,14 @@
 import os
 import json
-
 from stable_baselines3 import A2C
 # from stable_baselines3.common.monitor import Monitor
-
 from agent_env import GymEnvironment
 
-models_dir = "models/"
-logs_dir = "logs/"
+MODEL = "A2C"
+print(f"Using model {MODEL}.")
+
+models_dir = f"models/{MODEL}"
+logs_dir = f"logs/{MODEL}"
 
 if not os.path.exists(models_dir):
     os.makedirs(models_dir)
@@ -21,7 +22,7 @@ data = json.load(q_file)
 # Define the hyperparameters for training
 alpha = 100  # Your desired value for alpha
 # QUERIES FOR FRONTEND DEPLOYMENT
-_queries = data["gke"]
+_queries = data["minikube"]
 queries = [
     _queries["q_pod_replicas"],
     _queries["q_request_duration"],
@@ -42,13 +43,28 @@ env = GymEnvironment(alpha, queries, url, name, namespace, minReplicas, maxRepli
 env.reset()
 # Wrap the environment with Monitor to log training stats
 # env = Monitor(env, logs_dir)
-# Create the A2C model
-model = A2C("MlpPolicy", env, verbose=1, tensorboard_log=logs_dir)
 
-TIMESTEPS = 10000
+# Check for existing models and load the last saved model if available
+existing_models = [f for f in os.listdir(models_dir)]
+if existing_models:
+    # Sort models by their names to get the last saved model
+    existing_models.sort()
+    last_saved_model = existing_models[-1]
+    model_path = os.path.join(models_dir, last_saved_model)
+    print(f"Loading last saved model: {model_path}")
+    model = A2C.load(model_path, env=env, tensorboard_log=logs_dir)
+else:
+    print("No existing models found. Starting from scratch.")
+    # Create the A2C model
+    model = A2C("MlpPolicy", env, verbose=1, tensorboard_log=logs_dir)
+
+TIMESTEPS = 2
 # training
-for i in range(1,100):
-    model.learn(total_timesteps=TIMESTEPS, reset_num_timesteps=False, tb_log_name="A2C")
+for i in range(1,10):
+    model.learn(total_timesteps=TIMESTEPS, reset_num_timesteps=False, tb_log_name=MODEL)
+    print("Saving model ...")
     model.save(f"{models_dir}/{TIMESTEPS*i}")
+
+print("Training completed. Check performance on Tensorboard.")
 
 env.close()

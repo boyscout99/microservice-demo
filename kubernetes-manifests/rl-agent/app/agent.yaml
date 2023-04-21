@@ -33,21 +33,21 @@ spec:
             echo "Error: Could not reach Prometheus API"
             exit 1
           fi
-      - name: kubernetes-check
-        image: curlimages/curl:latest
-        command:
-        - /bin/sh
-        - -c
-        - |
-        echo "Checking Kubernetes API..."
-        if ! curl -sf http://prometheus.istio-system.svc.cluster.local:9090; then
-          echo "Error: Could not reach Kubernetes API"
-          exit 1
-        fi
+      # - name: kubernetes-check
+      #   image: curlimages/curl:latest
+      #   command:
+      #   - /bin/sh
+      #   - -c
+      #   - |
+      #   echo "Checking Kubernetes API..."
+      #   if ! curl -sf http://prometheus.istio-system.svc.cluster.local:9090; then
+      #     echo "Error: Could not reach Kubernetes API"
+      #     exit 1
+      #   fi
 
-        volumeMounts:
-          - name: ca-cert
-            mountPath: /secrets
+      #   volumeMounts:
+      #     - name: ca-cert
+      #       mountPath: /secrets
 
       containers:
       - name: server
@@ -78,6 +78,6 @@ spec:
         - name: file-storage
           persistentVolumeClaim:
             claimName: nfs-server-claim
-        - name: ca-cert
-            secret:
-              secretName: # create one
+        # - name: ca-cert
+        #     secret:
+        #       secretName: # create one
