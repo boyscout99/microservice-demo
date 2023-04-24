@@ -15,41 +15,12 @@ These steps are required to run the very basic agent inside the cluster.
 
 So take your cup of coffee or tea and let's begin! ☕️
 
-## Developing locally on minikube 💻 (☕️ sip #1)
+### How it works in a nutshell 🥜
+*The intended outcome at a very general level. The agent has to scale taking metrics from Prometheus, calling the K8s API to take scaling action.*
 
-##### Starting minikube and building images
-1. `minikube start`
-2. `minikube mount ${HOME}/Documents/microservice-demo:/app/microservice-demo` to mount the volume that will be used by the agent pod to run the code developed locally
-3. Open a new terminal
-4. `minikube docker-env` and `eval $(minikube -p minikube docker-env)`
-5. `cd src/agent-local`
-6. `docker build -t agent:<version> .` Remember to change the version of the image in the deployment file to deploy that image in the cluster.
-7. `cd src/loadgenerator`
-8. `docker build -t loadgenerator:<version> .`
+*Background information in a nutshell: kubernetes architecture, a bit of kubernetes authentication, reinforcement learning.*
 
-##### Use Istio for monitoring
-1. Install Istio following the [official documentation](https://istio.io/latest/docs/setup/getting-started/#download).
-2. `istioctl install --set profile=demo -y` this will allow you to use Prometheus and Grafana
-3. `kubectl label namespace rl-agent istio-injection=enabled`
-4. Verify the labelling with `kubectl get namespaces --show-labels`
-5. `cd kubernetes-manifests/`
-6. `kubectl -f apply ./istio-system` to deploy Istio components
-
-##### Deploy the Online Boutique application
-1. Go to `kubernetes-manifests/rl-agent/local`
-4. `kubectl apply -f kube-manifests-local.yaml`
-6. `kubectl apply -f loadgenerator-local.yaml`
-7. `kubectl apply -f agent-role.yaml`
-8. `kubectl apply -f agent-roleBind.yaml`
-9. `kubectl apply -f agent-local.yaml`
-10. On a new terminal, to run the load generator execute the file `workload_gen.py` from within the pod. `kubectl exec -it -n rl-agent loadgenerator-<id> -- /bin/sh`
-11. On a new terminal, to run the agent code execute `kubectl exec -it -n rl-agent agent-<id> -- /bin/sh`
-
->[!danger] REMEMBER that when creating a volume, everything you modify in the pod (including deleted files) will be reflected on the host volume!
-
->[!note] To delete all resources in the cluster in a namespace `kubectl delete all --all`.
-
----
+*Explain again a workflow of the agent including specific terms introduced above.*
 
 ## Developing on a cloud platform ☁️
 Here the agent is deployed in a cloud environment that is similar to what will happen in the real world. Mainly considering the fact that it is scalable, compared to the local development case in which everything runs in a single node in a laptop.
@@ -105,12 +76,10 @@ On the VM:
 
 This volume will be claimed by certain pods using a [Persistent Volume Claim](https://kubernetes.io/docs/concepts/storage/persistent-volumes/).
 
-### Create a GKE cluster 
-You can follow the [official documentation] to set up your standard cluster. Machine type `e2-standard-4` are sufficient with capacity to run the application and scale it.
+### Create a GKE cluster
+You can follow the [official documentation](https://cloud.google.com/kubernetes-engine/docs/how-to/creating-a-zonal-cluster) to set up your standard cluster. Machine type `e2-standard-4` are sufficient with capacity to run the application and scale it.
 
-### Time to authenticate to the cluster (☕️ sip #3)
-From within the VM run the following commands.
-
+Now it's time to authenticate into the cluster from the VM. Run the following commands:
 1. Authenticate to the platform with your Google account with `gcloud auth login`
 2. Enter the project you created with  `gcloud config set project PROJECT_ID`
 3. Log into the cluster with `gcloud container clusters get-credentials <cluster-name> --zone <zone_of_your_cluster>`
@@ -119,10 +88,11 @@ From within the VM run the following commands.
 To push Docker images in the Container Registry at `gcr.io/<your_project_name>` you will need to authenticate Docker to the Registry. 
 You can follow the [official documentation](https://cloud.google.com/artifact-registry/docs/docker/authentication) to show how to authenticate or simply run `gcloud auth configure-docker`. 
 
-To enable Kubernetes pull the container images from your private Container Registry you have to create a [Kubernetes secret](https://kubernetes.io/docs/concepts/configuration/secret/)
+To enable Kubernetes to pull the container images from your private Container Registry you have to create a JSON key file and embed it as a [Kubernetes secret](https://kubernetes.io/docs/concepts/configuration/secret/).
+[Create a Service Account](https://cloud.google.com/iam/docs/service-accounts-create) with Viewer permissions and create the key file to be stored in `/keys/` with  `gcloud iam service-accounts keys create KEY_FILE --iam-account=SA_NAME@PROJECT_ID.iam.gserviceaccount.com`.
 
-Point to the key file from a service account with Viewer permissions and name it `gcr-json-key`
-To create a secret for Kubernetes
+With Kubernetes point to the key file to create a secret and name it `gcr-json-key`
+You will need to run the following command both for the `defaul` namespace and `rl-agent` so that both namespaces will be able to pull the needed images.
 ```
 kubectl create secret docker-registry gcr-json-key \
 --docker-server=gcr.io \
@@ -131,43 +101,41 @@ kubectl create secret docker-registry gcr-json-key \
 --docker-email=gke-pull-image@master-thesis-hpa.iam.gserviceaccount.com \
 --namespace rl-agent
 ```
+Check that these secrets has been created correctly with `kubectl get secrets`.
 
-👉 Do the same also for the default namespace for loadgenerator.
+Another key file is needed, this time for the agent to authenticate to the GKE cluster from within its pod.
+You can use the default service account to create a second JSON key and save it to `/keys/`.
 
-Check that it has been created with `kubectl get secrets`
+>[!warning] Security
+>This secret will be copied directly into the image and this is a security concern. A more secure implementation would be to create a Kubernetes secret and import this secret into the pod. 
 
-Create a secret for agent to authenticate to the GKE cluster from a pod.
+### Monitoring tools installations 📊
+Monitoring will be used for two main purposes. One is to provide the agent with the necessary information about the current state of the cluster to take the necessary action. The other is to monitor the behaviour of the intelligent autoscaler and compare it with the standard HPA.
 
-create a new key file to authenticate to GKE and use Kubernetes API → use default service account
-Like this:
-create a key to connect to GKE API for that service account from IAM UI or with `gcloud iam service-accounts keys create KEY_FILE --iam-account=SA_NAME@PROJECT_ID.iam.gserviceaccount.com`
+These components are [Istio](https://istio.io/latest/about/service-mesh/#what-is-istio), an open-source service mesh framework providing monitoring and load balancing capabilities, [Prometheus](https://prometheus.io/docs/introduction/overview/#what-is-prometheus) and open-source time-series database used to store monitored data scraped from Istio, and [Grafana](https://grafana.com/oss/grafana/), an open-source project providing a monitoring dashboard connected to the database.
+Moreover, the Prometheus API will be queried by the agent to get the state of the environment. How the taken action affects the environment will be visible on a dashboard.
 
->[!warning] Security: This secret will be copied directly into the image. It could be a security concern.
+By default, Kubernetes emits only certain basic metrics but in the case of the agent, it needs to know the current number of replicas that are being deployed. To enable this metrics you have to install the [kube-state-metrics server](https://github.com/kubernetes/kube-state-metrics#kube-state-metrics-vs-metrics-server).
+The installation is very simple:
+1. Download the official repository with `git clone https://github.com/kubernetes/kube-state-metrics`
+2. Apply its manifests for the standard installation `kubectl apply -f kube-state-metrics/examples/standard/`
 
-### Monitoring installations
-Follow [this](https://chrisedrego.medium.com/kubernetes-monitoring-kube-state-metrics-df6546aea324) tutorial to install the kube-state-metrics server. 
-1. download repository `git clone https://github.com/kubernetes/kube-state-metrics`
-2. apply manifest `kubectl apply -f kube-state-metrics/examples/standard/`
-You should see a pod named like `kube-state-metrics-65bf754b96-cvp75`.
-Install `kube-state-metrics` server from [https://github.com/kubernetes/kube-state-metrics](https://github.com/kubernetes/kube-state-metrics).
+You should see a pod named similar to `kube-state-metrics-65bf754b96-cvp75` when you list all pods with `kubectl get pods -A`
+The file `prometheus.yaml` instructs Prometheus to scrape from this server, among other jobs.
 
-#### Service mesh with Istio (by this time the coffee would be cold, finish it!)
-What is Istio and how to enable it. Following the [official documentation]().
+#### Service mesh with Istio
+Next install Istio by following the [official documentation]().
 
-`istioctl install --set profile=demo -y`
-
-`kubectl label namespace rl-agent istio-injection=enabled`
+Use the demo profile `istioctl install --set profile=demo -y`
+And label both namespaces for the injection of the Envoy sidecar with `kubectl label namespace <namespace_name> istio-injection=enabled`. The Envoy sidecar is what will emit those metrics.
 
 ##### Enabling Prometheus and Grafana
-Copy the deployment files for Grafana, Prometheus, Kiali from Istio 1.17.1 in the repository, then ideally deploy an Istio folder with all required manifests inside.
+Prometheus, Kiali and Grafana are enabled with `kubectl apply -f kubernetes-manifests/istio-system`
 
-Enable istio injection in both namespaces.
-`kubectl label namespace rl-agent istio-injection=enabled`
-`kubectl label namespace default istio-injection=enabled`
+Hold on tight, you're almost there! 
+Now you can start deploying the Online Boutique application!
 
-`kubectl apply -f kubernetes-manifests/istio-system`
-
-2. cd `microservice-demo/`
+1. cd `microservice-demo/`
 3. `cd src/agent`
 4. `docker build -t agent:x.x .`
 5. `docker tag agent:x.x gcr.io/master-thesis-hpa/agent:x.x`
@@ -191,11 +159,49 @@ Always for the `default` namespace though.
 Update images. Update version in `/src/agent/agent.yaml`.
 
 ---
+## Developing locally on minikube 💻 
+
+##### Starting minikube and building images
+1. `minikube start`
+2. `minikube mount ${HOME}/Documents/microservice-demo:/app/microservice-demo` to mount the volume that will be used by the agent pod to run the code developed locally
+3. Open a new terminal
+4. `minikube docker-env` and `eval $(minikube -p minikube docker-env)`
+5. `cd src/agent-local`
+6. `docker build -t agent:<version> .` Remember to change the version of the image in the deployment file to deploy that image in the cluster.
+7. `cd src/loadgenerator`
+8. `docker build -t loadgenerator:<version> .`
+
+##### Use Istio for monitoring
+1. Install Istio following the [official documentation](https://istio.io/latest/docs/setup/getting-started/#download).
+2. `istioctl install --set profile=demo -y` this will allow you to use Prometheus and Grafana
+3. `kubectl label namespace rl-agent istio-injection=enabled`
+4. Verify the labelling with `kubectl get namespaces --show-labels`
+5. `cd kubernetes-manifests/`
+6. `kubectl -f apply ./istio-system` to deploy Istio components
+
+##### Deploy the Online Boutique application
+1. Go to `kubernetes-manifests/rl-agent/local`
+4. `kubectl apply -f kube-manifests-local.yaml`
+6. `kubectl apply -f loadgenerator-local.yaml`
+7. `kubectl apply -f agent-role.yaml`
+8. `kubectl apply -f agent-roleBind.yaml`
+9. `kubectl apply -f agent-local.yaml`
+10. On a new terminal, to run the load generator execute the file `workload_gen.py` from within the pod. `kubectl exec -it -n rl-agent loadgenerator-<id> -- /bin/sh`
+11. On a new terminal, to run the agent code execute `kubectl exec -it -n rl-agent agent-<id> -- /bin/sh`
+
+Everything should be running locally by now.😌
+The monitoring part is the same as the one developed in GKE.
+
+>[!danger] REMEMBER that when creating a volume, everything you modify in the pod (including deleted files) will be reflected on the host volume!
+
+>[!note] To delete all resources in the cluster in a namespace `kubectl delete all --all`.
+
+---
 # Resources
 Tutorials I used and other references.
 [How to a pull Docker Image from GCR in any non-GCP Kubernetes cluster](https://medium.easyread.co/today-i-learned-pull-docker-image-from-gcr-google-container-registry-in-any-non-gcp-kubernetes-5f8298f28969).
 [Google Kubernetes Engine(GKE) — Persistent Volume with Persistent Disks (NFS) on Multiple Nodes (ReadWriteMany)](https://medium.com/@athulravindran/google-kubernetes-engine-gke-persistence-volume-nfs-on-multiple-nodes-readwritemany-4b6e8d565b08).
-
+[Kubernetes Monitoring: Kube-State-Metrics](https://chrisedrego.medium.com/kubernetes-monitoring-kube-state-metrics-df6546aea324).
 
 
 ---
