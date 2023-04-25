@@ -24,6 +24,7 @@ So take your cup of coffee or tea and let's begin! ☕️
 Here, the agent is deployed in a cloud environment that is similar to a real-world scenario where scalability, availability and security are the main concerns. 
 
 > :warning: Cloud computing comes with a cost 💸🏭
+> 
 > Using GKE, you will be charged for the resources you use.
 > The main costs will occur for the following resources:
 > - [Compute Engine](https://cloud.google.com/compute/all-pricing), for a VM instance
@@ -69,7 +70,8 @@ On the VM:
 2. Create folder `keys/` to store secret keys created in the following steps.
 3. Clone this repository with `git clone`.
 
->[!warning] If the VM is restarted you need to remount the volume (the address of the NFS server may have changed)
+> :warning: If the VM is restarted you need to remount the volume (the address of the NFS server may have changed)
+>
 >`sudo mount <nfs_server_ip_address>:/vol1 /mnt/nfs-client`
 >`sudo chmod go+rw /mnt/nfs-client`
 
@@ -104,8 +106,9 @@ Check that these secrets have been created correctly with `kubectl get secrets`.
 
 Another key file is needed, this time for the agent to authenticate to the GKE cluster from within its pod. You can use the default service account to create a second JSON key and save it to `/keys/`.
 
->[!warning] Security
->This secret will be copied directly into the image and this is a security concern. A more secure implementation would be to create a Kubernetes secret and import this secret into the pod. 
+> :warning: Security
+>
+> This secret will be copied directly into the image and this is a security concern. A more secure implementation would be to create a Kubernetes secret and import this secret into the pod. 
 
 ### Monitoring tools installations 📊
 Monitoring will be used for two main purposes. One is to provide the agent with the necessary information about the current state of the cluster to take the necessary action. The other is to monitor the behaviour of the intelligent autoscaler and compare it with the standard HPA.
@@ -146,8 +149,9 @@ A replica of the application will be deployed in the `default` namespace and ano
 10. Deploy all services with `kubectl apply -f ./app`
 11. Apply the standard HPA configuration for the `frontend` service in the default namespace with `kubectl apply -f /autoscaling`
 
->[!warning] Update image version in the deployment files after every new versioning
->Both in `/kubernetes-manifests/default/loadgeneratory.yaml` and `kubernetes-manifests/rl-agent/app/loadgenerator.yaml` for the load generator and in `kubernetes-manifests/rl-agent/app/agent.yaml`.
+> :warning: Update image version in the deployment files after every new versioning
+>
+> Both in `/kubernetes-manifests/default/loadgeneratory.yaml` and `kubernetes-manifests/rl-agent/app/loadgenerator.yaml` for the load generator and in `kubernetes-manifests/rl-agent/app/agent.yaml`.
 
 #### Generating traffic load on the application with `loadgenerator`
 Update the image version in `/kubernetes-manifests/loadgenerator.yaml` with the x.x version of your build and deploy the service with `kubectl apply -f default/loadgenerator.yaml` for the `default` namespace and `kubectl apply -f rl-agent/app/loadgenerator.yaml` for the other namespace.
