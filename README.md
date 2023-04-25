@@ -23,9 +23,9 @@ So take your cup of coffee or tea and let's begin! ☕️
 ## Developing on a cloud platform ☁️
 Here, the agent is deployed in a cloud environment that is similar to a real-world scenario where scalability, availability and security are the main concerns. 
 
->[!warning] Cloud computing comes with a cost 💸🏭
->Using GKE, you will be charged for the resources you use.
->The main costs will occur for the following resources:
+> :warning: Cloud computing comes with a cost 💸🏭
+> Using GKE, you will be charged for the resources you use.
+> The main costs will occur for the following resources:
 > - [Compute Engine](https://cloud.google.com/compute/all-pricing), for a VM instance
 > - [Filestore](https://cloud.google.com/filestore/pricing), for an NFS server instance
 > - [Kubernetes Engine](https://cloud.google.com/kubernetes-engine/pricing), for nodes utilisation
