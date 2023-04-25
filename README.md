@@ -2,46 +2,45 @@
 ---
 # Deploying an intelligent autoscaler into a Kubernetes cluster
 
-The purpose of this repository is to train an agent with reinforcement learning so that it can outperform a standard [Horizontal Pod Autoscaler (HPA)](https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/) by allocating resources in a smarter way.
+The purpose of this repository is to train an agent with reinforcement learning so that it can outperform a standard [Horizontal Pod Autoscaler (HPA)](https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/) by allocating resources in a smarter way. This is done by looking at multiple metrics instead of solely relying on CPU utilisation.
 
 The microservice architecture that it is used is built upon [GoogleCloudPlatform/microservices-demo](https://github.com/GoogleCloudPlatform/microservices-demo) v0.5.2. Based on that repository, an RL agent has been developed to take scaling decisions and actually scale-out or -in the services of the Online Boutique when run in Kubernetes.
 
-*Picture of the microservice architecture.*
+![Architecture diagram](/docs/img/architecture-diagram.png)
 
-In the following, there is a guide to deploy the agent locally using [minikube](https://minikube.sigs.k8s.io/docs/start/) and a guide to deploy it in a [Google Kubernetes Engine (GKE)](https://cloud.google.com/kubernetes-engine) cluster.
-The local development environment is used mainly for testing the interaction between the agent, the [Prometheus API](https://prometheus.io/docs/prometheus/latest/querying/api/) and the [Kubernetes API](https://kubernetes.io/docs/concepts/overview/kubernetes-api/).
-While the GKE cluster is used to check the actual behaviour of the algorithm in a more realistic environment, and to compare the standard HPA with the intelligent autoscaler.
-These steps are required to run the very basic agent inside the cluster.
+In the following, there is a guide to deploy the agent in a [Google Kubernetes Engine (GKE)](https://cloud.google.com/kubernetes-engine) cluster and locally using [minikube](https://minikube.sigs.k8s.io/docs/start/).
+The local development environment is used mainly for testing the interaction between the agent, the [Prometheus API](https://prometheus.io/docs/prometheus/latest/querying/api/) and the [Kubernetes API](https://kubernetes.io/docs/concepts/overview/kubernetes-api/) before deploying it in the "production" environment in GKE. Indeed, the GKE cluster is used to check the actual behaviour of the algorithm in a more realistic environment, and compare the standard HPA with the intelligent autoscaler.
 
 So take your cup of coffee or tea and let's begin! ☕️
 
 ### How it works in a nutshell 🥜
 *The intended outcome at a very general level. The agent has to scale taking metrics from Prometheus, calling the K8s API to take scaling action.*
 
-*Background information in a nutshell: kubernetes architecture, a bit of kubernetes authentication, reinforcement learning.*
+*Background information in a nutshell: kubernetes architecture, a bit of kubernetes authentication, reinforcement learning, service mesh*
 
 *Explain again a workflow of the agent including specific terms introduced above.*
 
 ## Developing on a cloud platform ☁️
-Here the agent is deployed in a cloud environment that is similar to what will happen in the real world. Mainly considering the fact that it is scalable, compared to the local development case in which everything runs in a single node in a laptop.
+Here, the agent is deployed in a cloud environment that is similar to a real-world scenario where scalability, availability and security are the main concerns. 
 
 >[!warning] Cloud computing comes with a cost 💸🏭
 >Using GKE, you will be charged for the resources you use.
 >The main costs will occur for the following resources:
-> - [Compute Engine](https://cloud.google.com/compute/all-pricing), VM instance
-> - [Filestore](https://cloud.google.com/filestore/pricing), NFS server instance
-> - [Kubernetes Engine](https://cloud.google.com/kubernetes-engine/pricing), for the nodes
-> - [Container Registry](https://cloud.google.com/container-registry/pricing), to store container images
+> - [Compute Engine](https://cloud.google.com/compute/all-pricing), for a VM instance
+> - [Filestore](https://cloud.google.com/filestore/pricing), for an NFS server instance
+> - [Kubernetes Engine](https://cloud.google.com/kubernetes-engine/pricing), for nodes utilisation
+> - [Container Registry](https://cloud.google.com/container-registry/pricing), for container images storage
 
 *Picture of the infrastructure*.
 
 ### Setting up all components
-First things first, you have to create a project with you Google account on Google Cloud Platform as indicated [in the official documentation](https://cloud.google.com/resource-manager/docs/creating-managing-projects).
-The following components are needed to have everything working on GKE.
-Specifically, we will connect to the Kubernetes cluster with a virtual machine and manage it from there.
+First things first, you have to create a project with your Google account on Google Cloud Platform (GCP) as indicated [in the official documentation](https://cloud.google.com/resource-manager/docs/creating-managing-projects).
+
+Next, the following components are needed to have everything working on GKE.
+Specifically, we will connect to the Kubernetes cluster with a virtual machine and manage our pods and the agent from there.
 
 #### Virtual Machine (VM) as main workstation to connect to the Kubernetes cluster
-This VM will be used to use commands like `kubectl` and `git pull` the latest changes from the repository when developing.
+This VM will be used to run commands like `kubectl` to interact with the cluster and `git pull` to get the latest changes from the repository when developing.
 
 1. [Create a VM instance](https://cloud.google.com/compute/docs/instances/create-start-instance) with at least 2 vCPUs, 4GB of memory, 20GB of disk and Ubuntu as OS.
 2. SSH to the machine from your local computer or from the browser. You can use `gcloud compute ssh --zone "<your_zone>" "<vm_instance_name>" --project "<your_proect-name>"` or directly from the user interface in GCP.
@@ -49,7 +48,7 @@ This VM will be used to use commands like `kubectl` and `git pull` the latest ch
 ##### What to install in the Ubuntu VM
 - **gcloud SDK**: [follow these instructions to install the SDK](https://cloud.google.com/sdk/docs/install#deb) and then
 	1. Install the package to authenticate with GKE `sudo apt-get install google-cloud-cli-gke-gcloud-auth-plugin` 
-	2. Install the Kubernetes command line if not already present with`sudo apt-get install kubectl`
+	2. Install the Kubernetes command line if not already present with `sudo apt-get install kubectl`
 - **GitHub CLI**: [follow these instructions to install gh](https://github.com/cli/cli/blob/trunk/docs/install_linux.md), which will be necessary to authenticate to GitHub, push and pull changes to the repository. The complete command is reported below.
 ```
 type -p curl >/dev/null || (sudo apt update && sudo apt install curl -y)
@@ -62,12 +61,12 @@ curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | sudo 
 - **Docker**: [follow these instructions to install Docker](https://docs.docker.com/engine/install/ubuntu/#install-using-the-repository) and `sudo chmod 666 /var/run/docker.sock` after the installation to provide the right permissions to access Docker socket.
 
 #### Network Files System (NFS) server as shared persistent disk
-A persistent disk that can be shared across all components is necessary because virtual machines and containers are by definition ephemeral and there is no guarantee that data will be available across sessions. A NFS server will be used to share storage between the VM and pods.
+A persistent disk that can be shared across all components is necessary because virtual machines and containers are by definition ephemeral and there is no guarantee that data will be available across sessions. An NFS server will be used to share storage between the VM and pods.
 
 You can [follow these guidelines](https://cloud.google.com/filestore/docs/create-instance-console) to set up a NFS server with [Google Filestore](https://cloud.google.com/filestore/docs).
 On the VM:
 1. Change directory and go into the mounted volume `cd /mnt/<dir_name>` 
-2. Create folder `keys/` to store the secret keys.
+2. Create folder `keys/` to store secret keys created in the following steps.
 3. Clone this repository with `git clone`.
 
 >[!warning] If the VM is restarted you need to remount the volume (the address of the NFS server may have changed)
@@ -77,7 +76,7 @@ On the VM:
 This volume will be claimed by certain pods using a [Persistent Volume Claim](https://kubernetes.io/docs/concepts/storage/persistent-volumes/).
 
 ### Create a GKE cluster
-You can follow the [official documentation](https://cloud.google.com/kubernetes-engine/docs/how-to/creating-a-zonal-cluster) to set up your standard cluster. Machine type `e2-standard-4` are sufficient with capacity to run the application and scale it.
+You can follow the [official documentation](https://cloud.google.com/kubernetes-engine/docs/how-to/creating-a-zonal-cluster) to set up your standard cluster. Nodes of type `e2-standard-4` are sufficient with capacity to run the application and scale it.
 
 Now it's time to authenticate into the cluster from the VM. Run the following commands:
 1. Authenticate to the platform with your Google account with `gcloud auth login`
@@ -91,8 +90,8 @@ You can follow the [official documentation](https://cloud.google.com/artifact-re
 To enable Kubernetes to pull the container images from your private Container Registry you have to create a JSON key file and embed it as a [Kubernetes secret](https://kubernetes.io/docs/concepts/configuration/secret/).
 [Create a Service Account](https://cloud.google.com/iam/docs/service-accounts-create) with Viewer permissions and create the key file to be stored in `/keys/` with  `gcloud iam service-accounts keys create KEY_FILE --iam-account=SA_NAME@PROJECT_ID.iam.gserviceaccount.com`.
 
-With Kubernetes point to the key file to create a secret and name it `gcr-json-key`
-You will need to run the following command both for the `defaul` namespace and `rl-agent` so that both namespaces will be able to pull the needed images.
+With Kubernetes point to the key file to create a secret and name it `gcr-json-key`.
+You will need to run the following command both for the `default` namespace and `rl-agent` so that both namespaces will be able to pull the needed images.
 ```
 kubectl create secret docker-registry gcr-json-key \
 --docker-server=gcr.io \
@@ -101,10 +100,9 @@ kubectl create secret docker-registry gcr-json-key \
 --docker-email=gke-pull-image@master-thesis-hpa.iam.gserviceaccount.com \
 --namespace rl-agent
 ```
-Check that these secrets has been created correctly with `kubectl get secrets`.
+Check that these secrets have been created correctly with `kubectl get secrets`.
 
-Another key file is needed, this time for the agent to authenticate to the GKE cluster from within its pod.
-You can use the default service account to create a second JSON key and save it to `/keys/`.
+Another key file is needed, this time for the agent to authenticate to the GKE cluster from within its pod. You can use the default service account to create a second JSON key and save it to `/keys/`.
 
 >[!warning] Security
 >This secret will be copied directly into the image and this is a security concern. A more secure implementation would be to create a Kubernetes secret and import this secret into the pod. 
@@ -113,50 +111,53 @@ You can use the default service account to create a second JSON key and save it 
 Monitoring will be used for two main purposes. One is to provide the agent with the necessary information about the current state of the cluster to take the necessary action. The other is to monitor the behaviour of the intelligent autoscaler and compare it with the standard HPA.
 
 These components are [Istio](https://istio.io/latest/about/service-mesh/#what-is-istio), an open-source service mesh framework providing monitoring and load balancing capabilities, [Prometheus](https://prometheus.io/docs/introduction/overview/#what-is-prometheus) and open-source time-series database used to store monitored data scraped from Istio, and [Grafana](https://grafana.com/oss/grafana/), an open-source project providing a monitoring dashboard connected to the database.
-Moreover, the Prometheus API will be queried by the agent to get the state of the environment. How the taken action affects the environment will be visible on a dashboard.
+Moreover, the Prometheus API will be queried by the agent to get the state of the environment. How the taken action affects the environment will be visible on a Grafana dashboard.
 
-By default, Kubernetes emits only certain basic metrics but in the case of the agent, it needs to know the current number of replicas that are being deployed. To enable this metrics you have to install the [kube-state-metrics server](https://github.com/kubernetes/kube-state-metrics#kube-state-metrics-vs-metrics-server).
+By default, Kubernetes emits only certain basic metrics but the agent needs to know the current number of replicas that are being deployed. To enable this metrics you have to install the [kube-state-metrics server](https://github.com/kubernetes/kube-state-metrics#kube-state-metrics-vs-metrics-server).
 The installation is very simple:
 1. Download the official repository with `git clone https://github.com/kubernetes/kube-state-metrics`
 2. Apply its manifests for the standard installation `kubectl apply -f kube-state-metrics/examples/standard/`
 
-You should see a pod named similar to `kube-state-metrics-65bf754b96-cvp75` when you list all pods with `kubectl get pods -A`
+You should now see a pod named similar to `kube-state-metrics-65bf754b96-cvp75` when you list all pods with `kubectl get pods -A`
 The file `prometheus.yaml` instructs Prometheus to scrape from this server, among other jobs.
 
-#### Service mesh with Istio
-Next install Istio by following the [official documentation]().
+#### Service mesh with Istio ⛵️
+Next install Istio 1.17.1 by following the [official documentation](https://istio.io/latest/docs/setup/getting-started/#download).
+`curl -L https://istio.io/downloadIstio | ISTIO_VERSION=1.17.1 TARGET_ARCH=x86_64 sh -`
 
-Use the demo profile `istioctl install --set profile=demo -y`
-And label both namespaces for the injection of the Envoy sidecar with `kubectl label namespace <namespace_name> istio-injection=enabled`. The Envoy sidecar is what will emit those metrics.
+Use the demo profile `istioctl install --set profile=demo -y`  and label both namespaces for the injection of the [Envoy sidecar](https://istio.io/latest/docs/ops/deployment/architecture/#envoy) with `kubectl label namespace <namespace_name> istio-injection=enabled`. The sidecar is the component that will emit those metrics scraped by Prometheus.
 
 ##### Enabling Prometheus and Grafana
-Prometheus, Kiali and Grafana are enabled with `kubectl apply -f kubernetes-manifests/istio-system`
+Prometheus, Kiali and Grafana are enabled with `kubectl apply -f microservice-demo/kubernetes-manifests/istio-system`.
 
-Hold on tight, you're almost there! 
-Now you can start deploying the Online Boutique application!
+### Deploy the Online Boutique 🎊
+Everything is ready now to deploy the Online Boutique application with all its services!
+A replica of the application will be deployed in the `default` namespace and another in the `rl-agent` namespace. The agent will only be present in the latter.
 
-1. cd `microservice-demo/`
-3. `cd src/agent`
-4. `docker build -t agent:x.x .`
-5. `docker tag agent:x.x gcr.io/master-thesis-hpa/agent:x.x`
-6. `docker push gcr.io/master-thesis-hpa/agent:x.x`
-7. `skaffold run --default-repo gcr.io/master-thesis-hpa`
-8. `cd kubernetes-manifests/rl-agent`
-9. apply the role `agent-role.yaml` and `agent-roleBind.yaml`
-10. `kubectl apply -f ./app`
-11. start the HPA for frontend in default namespace
-12. start the load in both namespaces and the agent
+1. Change directory to the repository folder `cd microservice-demo/`
+2. . Build the Docker image for the agent `cd src/agent`
+3. `docker build -t agent:x.x .` where x.x is the version of the image
+4. Tag the image with the path on your Container Registry like `docker tag agent:x.x gcr.io/master-thesis-hpa/agent:x.x`
+5. Now push the image to the Registry with `docker push gcr.io/master-thesis-hpa/agent:x.x`
+6. Do the same with the loadgenerator `cd src/loadgenerator`, `docker build`, `docker tag` and `docker push`.
+7. Deploy the replica of the application in the `default` namespace with `skaffold run --default-repo gcr.io/master-thesis-hpa`
+8. Now deploy the application in the `rl-agent` namespace. Go to `cd kubernetes-manifests/rl-agent`
+9. Apply the roles that allow the agent to change the number of replicas with `kubectl apply -f agent-role.yaml` and `agent-roleBind.yaml`
+10. Deploy all services with `kubectl apply -f ./app`
+11. Apply the standard HPA configuration for the `frontend` service in the default namespace with `kubectl apply -f /autoscaling`
 
-#### Using the loadgenerator
-Update images. Update version in `/kubernetes-manifests/loadgenerator.yaml` and re-deploy it.
->[!warning] Update image version both in `/kubernetes-manifests/default/app` and `kubernetes-manifests/rl-agent/app`
+>[!warning] Update image version in the deployment files after every new versioning
+>Both in `/kubernetes-manifests/default/loadgeneratory.yaml` and `kubernetes-manifests/rl-agent/app/loadgenerator.yaml` for the load generator and in `kubernetes-manifests/rl-agent/app/agent.yaml`.
 
-#### Using the HPA
-In the folder `/autoscaler` developing different versions of the HPA as YAML files.
-Always for the `default` namespace though.
+#### Generating traffic load on the application with `loadgenerator`
+Update the image version in `/kubernetes-manifests/loadgenerator.yaml` with the x.x version of your build and deploy the service with `kubectl apply -f default/loadgenerator.yaml` for the `default` namespace and `kubectl apply -f rl-agent/app/loadgenerator.yaml` for the other namespace.
 
-#### Developing the RL agent
-Update images. Update version in `/src/agent/agent.yaml`.
+Once deployed, both generators will simulate a load of requests to `frontend` coming from a varying number of users. These users will look for products, add the to the cart and buy them. User behaviour is randomised across all possible interactions with the website.
+
+### Developing the RL agent 💡
+The agent can be deployed with `kubectl apply -f rl-agent/app/agent.yaml`.
+Deploying this pod will automatically start the learning phase of the algorithms, which will log and checkpoint models at `microservice-demo/src/agent/`.
+You can execute commands inside the pod with `kubectl exec -it -n rl-agent agent-<id> -- /bin/sh`.
 
 ---
 ## Developing locally on minikube 💻 
@@ -189,12 +190,14 @@ Update images. Update version in `/src/agent/agent.yaml`.
 10. On a new terminal, to run the load generator execute the file `workload_gen.py` from within the pod. `kubectl exec -it -n rl-agent loadgenerator-<id> -- /bin/sh`
 11. On a new terminal, to run the agent code execute `kubectl exec -it -n rl-agent agent-<id> -- /bin/sh`
 
-Everything should be running locally by now.😌
+Everything should be running locally by now. 😌
 The monitoring part is the same as the one developed in GKE.
 
->[!danger] REMEMBER that when creating a volume, everything you modify in the pod (including deleted files) will be reflected on the host volume!
+>[!note] Note about volumes
+>When creating a volume, everything you modify in the pod (including deleted files) will be reflected on the host machine where the volume is created!
 
->[!note] To delete all resources in the cluster in a namespace `kubectl delete all --all`.
+>[!tip] Deleting all resources
+>To delete all resources in the cluster in a namespace `kubectl delete all --all`.
 
 ---
 # Resources
@@ -202,6 +205,7 @@ Tutorials I used and other references.
 [How to a pull Docker Image from GCR in any non-GCP Kubernetes cluster](https://medium.easyread.co/today-i-learned-pull-docker-image-from-gcr-google-container-registry-in-any-non-gcp-kubernetes-5f8298f28969).
 [Google Kubernetes Engine(GKE) — Persistent Volume with Persistent Disks (NFS) on Multiple Nodes (ReadWriteMany)](https://medium.com/@athulravindran/google-kubernetes-engine-gke-persistence-volume-nfs-on-multiple-nodes-readwritemany-4b6e8d565b08).
 [Kubernetes Monitoring: Kube-State-Metrics](https://chrisedrego.medium.com/kubernetes-monitoring-kube-state-metrics-df6546aea324).
+
 
 
 ---
