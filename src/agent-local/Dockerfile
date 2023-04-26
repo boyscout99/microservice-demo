@@ -3,8 +3,8 @@ FROM python:3.9-slim-buster
 # COPY scale_out_api.py .
 # COPY promQL.py .
 COPY requirements.txt .
-COPY entrypoint.sh .
-RUN chmod +x entrypoint.sh
+# COPY entrypoint.sh .
+# RUN chmod +x entrypoint.sh
 
 RUN apt-get update && \
     apt-get install curl -y
@@ -32,9 +32,10 @@ RUN pip install -r requirements.txt
 EXPOSE 6006
 EXPOSE 80
 
-# CMD [ "python3", "health_check.py" ]
+COPY health_check.py .
+CMD ["python3", "health_check.py"]
 # CMD ["python3", "agent_learn.py"]
-ENTRYPOINT ["./entrypoint.sh"]
+# ENTRYPOINT ["./entrypoint.sh"]
 
 
 

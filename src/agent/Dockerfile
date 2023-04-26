@@ -56,10 +56,11 @@ EXPOSE 80
 EXPOSE 6006 
 
 WORKDIR /
-COPY entrypoint.sh .
-RUN chmod +x entrypoint.sh
-# ENTRYPOINT [ "python3", "health_check.py" ]
-ENTRYPOINT ["./entrypoint.sh"]
+# COPY entrypoint.sh .
+# RUN chmod +x entrypoint.sh
+COPY health_check.py .
+CMD ["python3", "health_check.py"]
+# ENTRYPOINT ["./entrypoint.sh"]
 # CMD ["python3", "/app/agent_learn.py", "&", "python3", "/app/health_check.py"]
 
 

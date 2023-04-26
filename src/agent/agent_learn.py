@@ -21,6 +21,12 @@ if not os.path.exists(models_dir):
 if not os.path.exists(logs_dir):
     os.makedirs(logs_dir)
 
+# Get the absolute path of the script directory
+script_dir = os.path.dirname(os.path.abspath(__file__))
+
+# Construct the absolute file path for queries.json
+queries_json_path = os.path.join(script_dir, "queries.json")
+
 q_file = open("queries.json", "r")
 data = json.load(q_file)
 

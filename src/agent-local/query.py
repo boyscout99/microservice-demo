@@ -2,7 +2,6 @@
 This class is used to call the Prometheus API and query for the state
 of the system.
 '''
-
 from prometheus_api_client import PrometheusConnect
 from statistics import mean
 import requests.exceptions

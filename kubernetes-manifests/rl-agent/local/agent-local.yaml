@@ -40,7 +40,7 @@ spec:
       containers:
       - name: server
         # image: gcr.io/master-thesis-hpa/agent:0.4.1
-        image: agent:0.4.3
+        image: agent:0.4.4
         imagePullPolicy: Never
         volumeMounts:
           - name: kubeconfig-volume # be able to access the configuration of the cluster
@@ -48,6 +48,11 @@ spec:
         volumeMounts:
           - name: app
             mountPath: /app
+        command:
+        - /bin/sh
+        - -c
+        - |
+          python3 /app/agent_learn.py
         readinessProbe:
             httpGet:
               path: /healthz
