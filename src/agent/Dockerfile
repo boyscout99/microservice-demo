@@ -5,10 +5,6 @@ ENV ZONE=europe-west1-b
 ENV CLUSTER_NAME=master-thesis-hpa-agent
 ENV GOOGLE_APPLICATION_CREDENTIALS=kube_api_keys.json
 
-COPY entrypoint.sh .
-COPY requirements.txt .
-RUN chmod +x entrypoint.sh
-
 RUN apt-get update && \
     apt-get install curl -y
 
@@ -35,6 +31,7 @@ RUN curl https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud
 #     apt-get autoremove -y && \
 #     rm -rf /var/lib/apt/lists/*
 
+COPY requirements.txt .
 RUN pip install -r requirements.txt
 # RUN pip install google-auth \
 #     google-auth-oauthlib \
@@ -58,9 +55,11 @@ EXPOSE 80
 # tensorboard
 EXPOSE 6006 
 
-# ENTRYPOINT [ "python3", "health_check.py" ]
 WORKDIR /
-ENTRYPOINT ["entrypoint.sh"]
+COPY entrypoint.sh .
+RUN chmod +x entrypoint.sh
+# ENTRYPOINT [ "python3", "health_check.py" ]
+ENTRYPOINT ["./entrypoint.sh"]
 # CMD ["python3", "agent_learn.py"]
 
 
