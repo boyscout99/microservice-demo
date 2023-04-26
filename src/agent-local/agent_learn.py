@@ -25,6 +25,15 @@ if not os.path.exists(pod_logs_dir):
 timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
 pod_log_file = os.path.join(pod_logs_dir, f"{MODEL}_learn_{timestamp}.log")
 logging.basicConfig(filename=pod_log_file, level=logging.DEBUG)  # Initialize logging
+ 
+# Define a logger
+logger = logging.getLogger(__name__)
+
+# Add a StreamHandler to logger to print logs to console
+console_handler = logging.StreamHandler()
+logger.addHandler(console_handler)
+
+### SET UP THE ENVIRONMENT ###
 
 # Get the absolute path of the script directory
 script_dir = os.path.dirname(os.path.abspath(__file__))
@@ -32,7 +41,7 @@ script_dir = os.path.dirname(os.path.abspath(__file__))
 # Construct the absolute file path for queries.json
 queries_json_path = os.path.join(script_dir, "queries.json")
 
-q_file = open("queries.json", "r")
+q_file = open(queries_json_path, "r")
 data = json.load(q_file)
 
 # Define the hyperparameters for training

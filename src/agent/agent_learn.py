@@ -9,17 +9,31 @@ from datetime import datetime
 MODEL = "A2C"
 print(f"Using model {MODEL}.")
 
-timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
-logging.basicConfig(filename=f"{MODEL}_learn_{timestamp}.log", level=logging.DEBUG)  # Initialize logging
-
 models_dir = f"models/{MODEL}"
-logs_dir = f"logs/{MODEL}"
+tf_logs_dir = f"tf_logs/{MODEL}"
+pod_logs_dir = f"pod_logs/{MODEL}"
 
 if not os.path.exists(models_dir):
     os.makedirs(models_dir)
 
-if not os.path.exists(logs_dir):
-    os.makedirs(logs_dir)
+if not os.path.exists(tf_logs_dir):
+    os.makedirs(tf_logs_dir)
+
+if not os.path.exists(pod_logs_dir):
+    os.makedirs(pod_logs_dir)
+
+timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
+pod_log_file = os.path.join(pod_logs_dir, f"{MODEL}_learn_{timestamp}.log")
+logging.basicConfig(filename=pod_log_file, level=logging.DEBUG)  # Initialize logging
+ 
+# Define a logger
+logger = logging.getLogger(__name__)
+
+# Add a StreamHandler to logger to print logs to console
+console_handler = logging.StreamHandler()
+logger.addHandler(console_handler)
+
+### SET UP THE ENVIRONMENT ###
 
 # Get the absolute path of the script directory
 script_dir = os.path.dirname(os.path.abspath(__file__))
@@ -27,7 +41,7 @@ script_dir = os.path.dirname(os.path.abspath(__file__))
 # Construct the absolute file path for queries.json
 queries_json_path = os.path.join(script_dir, "queries.json")
 
-q_file = open("queries.json", "r")
+q_file = open(queries_json_path, "r")
 data = json.load(q_file)
 
 # Define the hyperparameters for training
@@ -64,12 +78,12 @@ if existing_models:
     model_path = os.path.join(models_dir, last_saved_model)
     print(f"Loading last saved model: {model_path}")
     logging.info(f"Loading last saved model: {model_path}")
-    model = A2C.load(model_path, env=env, tensorboard_log=logs_dir)
+    model = A2C.load(model_path, env=env, tensorboard_log=tf_logs_dir)
 else:
     print("No existing models found. Starting from scratch.")
     logging.info("No existing models found. Starting from scratch.")
     # Create the A2C model
-    model = A2C("MlpPolicy", env, verbose=1, tensorboard_log=logs_dir)
+    model = A2C("MlpPolicy", env, verbose=1, tensorboard_log=tf_logs_dir)
 
 TIMESTEPS = 20
 # training

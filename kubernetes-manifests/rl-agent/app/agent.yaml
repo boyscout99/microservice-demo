@@ -39,6 +39,11 @@ spec:
         volumeMounts:
           - name: file-storage
             mountPath: /app
+        command:
+        - /bin/sh
+        - -c
+        - |
+          python3 /app/agent_learn.py
         readinessProbe:
             httpGet:
               path: /healthz
