@@ -1,7 +1,5 @@
 FROM python:3.9-slim-buster
 
-WORKDIR /app
-
 # COPY scale_out_api.py .
 # COPY promQL.py .
 COPY requirements.txt .
@@ -36,8 +34,7 @@ EXPOSE 80
 
 # CMD [ "python3", "health_check.py" ]
 # CMD ["python3", "agent_learn.py"]
-# ENTRYPOINT ["/app/entrypoint.sh"]
-CMD ["python3", "agent_learn.py", "&&", "python3", "health_check.py"]
+ENTRYPOINT ["./entrypoint.sh"]
 
 
 

@@ -16,7 +16,7 @@ if not os.path.exists(models_dir):
 if not os.path.exists(logs_dir):
     os.makedirs(logs_dir)
 
-q_file = open("queries.json", "r")
+q_file = open("/app/queries.json", "r")
 data = json.load(q_file)
 
 # Define the hyperparameters for training

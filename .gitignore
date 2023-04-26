@@ -21,3 +21,4 @@ release/wi-kubernetes-manifests.yaml
 src/agent/keys/
 src/agent-local/logs
 src/agent-local/models
+src/agent-local/agent_learn.log
