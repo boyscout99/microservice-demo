@@ -1,11 +1,16 @@
 import os
 import json
+import logging
 from stable_baselines3 import A2C
 # from stable_baselines3.common.monitor import Monitor
 from agent_env import GymEnvironment
+from datetime import datetime
 
 MODEL = "A2C"
 print(f"Using model {MODEL}.")
+
+timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
+logging.basicConfig(filename=f"{MODEL}_learn_{timestamp}.log", level=logging.DEBUG)  # Initialize logging
 
 models_dir = f"models/{MODEL}"
 logs_dir = f"logs/{MODEL}"
@@ -16,13 +21,13 @@ if not os.path.exists(models_dir):
 if not os.path.exists(logs_dir):
     os.makedirs(logs_dir)
 
-q_file = open("/app/queries.json", "r")
+q_file = open("queries.json", "r")
 data = json.load(q_file)
 
 # Define the hyperparameters for training
 alpha = 100  # Your desired value for alpha
 # QUERIES FOR FRONTEND DEPLOYMENT
-_queries = data["minikube"]
+_queries = data["gke"]
 queries = [
     _queries["q_pod_replicas"],
     _queries["q_request_duration"],
@@ -52,9 +57,11 @@ if existing_models:
     last_saved_model = existing_models[-1]
     model_path = os.path.join(models_dir, last_saved_model)
     print(f"Loading last saved model: {model_path}")
+    logging.info(f"Loading last saved model: {model_path}")
     model = A2C.load(model_path, env=env, tensorboard_log=logs_dir)
 else:
     print("No existing models found. Starting from scratch.")
+    logging.info("No existing models found. Starting from scratch.")
     # Create the A2C model
     model = A2C("MlpPolicy", env, verbose=1, tensorboard_log=logs_dir)
 
@@ -62,9 +69,11 @@ TIMESTEPS = 20
 # training
 for i in range(1,10):
     model.learn(total_timesteps=TIMESTEPS, reset_num_timesteps=False, tb_log_name=MODEL)
+    logging.info(f"Training iteration {i}, total_timesteps={TIMESTEPS*i}, saving model ...")
     print("Saving model ...")
     model.save(f"{models_dir}/{TIMESTEPS*i}")
 
 print("Training completed. Check performance on Tensorboard.")
+logging.info("Training completed. Check performance on Tensorboard.")
 
 env.close()

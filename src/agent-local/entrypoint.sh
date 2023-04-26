@@ -4,4 +4,4 @@
 python3 /app/health_check.py &
 
 # Run agent_learn.py and redirect its output to a log file
-python3 /app/agent_learn.py > /app/agent_learn.log 2>&1
+python3 /app/agent_learn.py # > /app/agent_learn.log 2>&1
