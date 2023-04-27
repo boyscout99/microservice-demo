@@ -1,102 +1,138 @@
 import os
+import sys
 import json
 import logging
 from stable_baselines3 import A2C
-# from stable_baselines3.common.monitor import Monitor
 from agent_env import GymEnvironment
 from datetime import datetime
+from Logger import LoggerWriter
 
 MODEL = "A2C"
 print(f"Using model {MODEL}.")
-
-# Get the absolute path of the script directory
 script_dir = os.path.dirname(os.path.abspath(__file__))
 
-models_dir = os.path.join(script_dir, f"models/{MODEL}")
-tf_logs_dir = os.path.join(script_dir, f"tf_logs/{MODEL}")
-pod_logs_dir = os.path.join(script_dir, f"pod_logs/{MODEL}")
+def create_directories():
+    # Get the absolute path of the script directory
+    models_dir = os.path.join(script_dir, f"models/{MODEL}")
+    tf_logs_dir = os.path.join(script_dir, f"tf_logs/{MODEL}")
+    pod_logs_dir = os.path.join(script_dir, f"pod_logs/{MODEL}")
 
-if not os.path.exists(models_dir):
-    os.makedirs(models_dir)
+    if not os.path.exists(models_dir):
+        os.makedirs(models_dir)
 
-if not os.path.exists(tf_logs_dir):
-    os.makedirs(tf_logs_dir)
+    if not os.path.exists(tf_logs_dir):
+        os.makedirs(tf_logs_dir)
 
-if not os.path.exists(pod_logs_dir):
-    os.makedirs(pod_logs_dir)
+    if not os.path.exists(pod_logs_dir):
+        os.makedirs(pod_logs_dir)
 
-timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
-pod_log_file = os.path.join(pod_logs_dir, f"{MODEL}_learn_{timestamp}.log")
-logging.basicConfig(filename=pod_log_file, level=logging.DEBUG)  # Initialize logging
- 
-# Define a logger
-logger = logging.getLogger(__name__)
+    dirs = [models_dir, tf_logs_dir, pod_logs_dir]
 
-# Add a StreamHandler to logger to print logs to console
-console_handler = logging.StreamHandler()
-logger.addHandler(console_handler)
+    return dirs
+
+def enable_logging(pod_logs_dir):
+    timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
+    pod_log_file = os.path.join(pod_logs_dir, f"{MODEL}_learn_{timestamp}.log")
+    # logging.basicConfig(filename=pod_log_file, level=logging.DEBUG)  # Initialize logging
+    logging.basicConfig(
+        level=logging.DEBUG,
+        format="%(asctime)s [%(levelname)s] %(message)s",
+        filename=pod_log_file
+    )
+    
+    # Define a logger
+    logger = logging.getLogger(__name__)
+
+    # Redirect console output to logger
+    sys.stdout = LoggerWriter(logger.info)
+    sys.stderr = LoggerWriter(logger.error)
+
+    return logger
 
 ### SET UP THE ENVIRONMENT ###
+def setup_environment(alpha, cluster, url, name, namespace, minReplicas, maxReplicas):
 
-# Get the absolute path of the script directory
-script_dir = os.path.dirname(os.path.abspath(__file__))
+    # Construct the absolute file path for queries.json
+    queries_json_path = os.path.join(script_dir, "queries.json")
 
-# Construct the absolute file path for queries.json
-queries_json_path = os.path.join(script_dir, "queries.json")
+    q_file = open(queries_json_path, "r")
+    data = json.load(q_file)
 
-q_file = open(queries_json_path, "r")
-data = json.load(q_file)
+    # Define the hyperparameters for training
+    # alpha = 100  # Your desired value for alpha
+    # QUERIES FOR FRONTEND DEPLOYMENT
+    _queries = data[cluster]
+    queries = [
+        _queries["q_pod_replicas"],
+        _queries["q_request_duration"],
+        _queries["q_cpu_usage"],
+        _queries["q_memory_usage"],
+    ]
+    q_file.close()
 
-# Define the hyperparameters for training
-alpha = 100  # Your desired value for alpha
-# QUERIES FOR FRONTEND DEPLOYMENT
-_queries = data["minikube"]
-queries = [
-    _queries["q_pod_replicas"],
-    _queries["q_request_duration"],
-    _queries["q_cpu_usage"],
-    _queries["q_memory_usage"],
-]
-q_file.close()
+    # url = 'http://prometheus.istio-system.svc.cluster.local:9090'  # URL for Prometheus API
+    # name = "frontend" # deployment name
+    # namespace = "rl-agent" # namespace
+    # minReplicas = 1
+    # maxReplicas = 30
 
-url = 'http://prometheus.istio-system.svc.cluster.local:9090'  # URL for Prometheus API
-name = "frontend" # deployment name
-namespace = "rl-agent" # namespace
-minReplicas = 1
-maxReplicas = 30
+    # Create an instance of GymEnvironment
+    env = GymEnvironment(alpha, queries, url, name, namespace, minReplicas, maxReplicas)
+    # set default state
+    env.reset()
 
-# Create an instance of GymEnvironment
-env = GymEnvironment(alpha, queries, url, name, namespace, minReplicas, maxReplicas)
-# set default state
-env.reset()
-# Wrap the environment with Monitor to log training stats
-# env = Monitor(env, logs_dir)
+    return env
 
-# Check for existing models and load the last saved model if available
-existing_models = [f for f in os.listdir(models_dir)]
-if existing_models:
-    # Sort models by their names to get the last saved model
-    existing_models.sort()
-    last_saved_model = existing_models[-1]
-    model_path = os.path.join(models_dir, last_saved_model)
-    print(f"Loading last saved model: {model_path}")
-    logging.info(f"Loading last saved model: {model_path}")
-    model = A2C.load(model_path, env=env, tensorboard_log=tf_logs_dir)
-else:
-    print("No existing models found. Starting from scratch.")
-    logging.info("No existing models found. Starting from scratch.")
-    # Create the A2C model
-    model = A2C("MlpPolicy", env, verbose=1, tensorboard_log=tf_logs_dir)
+def load_model(env, models_dir, tf_logs_dir):
+    # Check for existing models and load the last saved model if available
+    existing_models = [f for f in os.listdir(models_dir)]
+    if existing_models:
+        # Sort models by their names to get the last saved model
+        existing_models.sort()
+        last_saved_model = existing_models[-1]
+        model_path = os.path.join(models_dir, last_saved_model)
+        print(f"Loading last saved model: {model_path}")
+        logging.info(f"Loading last saved model: {model_path}")
+        model = A2C.load(model_path, env=env, tensorboard_log=tf_logs_dir)
+    else:
+        print("No existing models found. Starting from scratch.")
+        logging.info("No existing models found. Starting from scratch.")
+        # Create the A2C model
+        model = A2C("MlpPolicy", env, verbose=1, tensorboard_log=tf_logs_dir)
 
-TIMESTEPS = 20
-# training
-for i in range(1,10):
-    model.learn(total_timesteps=TIMESTEPS, reset_num_timesteps=False, tb_log_name=MODEL)
-    logging.info(f"Training iteration {i}, total_timesteps={TIMESTEPS*i}, saving model ...")
-    print("Saving model ...")
-    model.save(f"{models_dir}/{TIMESTEPS*i}")
+    return model
 
-print("Training completed. Check performance on Tensorboard.")
-logging.info("Training completed. Check performance on Tensorboard.")
+def train_model(model, models_dir):
+    TIMESTEPS = 20
+    # training
+    for i in range(1,10):
+        model.learn(total_timesteps=TIMESTEPS, reset_num_timesteps=False, tb_log_name=MODEL)
+        logging.info(f"Training iteration {i}, total_timesteps={TIMESTEPS*i}, saving model ...")
+        print("Saving model ...")
+        model.save(f"{models_dir}/{TIMESTEPS*i}")
 
-env.close()
+    print("Training completed. Check performance on Tensorboard.")
+    logging.info("Training completed. Check performance on Tensorboard.")
+
+    return
+
+if __name__ == "__main__":
+
+    alpha = 100
+    cluster = "minikube"
+    url = 'http://prometheus.istio-system.svc.cluster.local:9090'  # URL for Prometheus API
+    name = "frontend" # deployment name
+    namespace = "rl-agent" # namespace
+    minReplicas = 1
+    maxReplicas = 30
+
+    dirs = create_directories()
+    models_dir = dirs[0]
+    tf_logs_dir = dirs[1]
+    pod_logs_dir = dirs[2]
+    logger = enable_logging(pod_logs_dir)
+    env = setup_environment(alpha, cluster, url, name, namespace, minReplicas, maxReplicas)
+    model = load_model(env, models_dir, tf_logs_dir)
+    train_model(model, models_dir)
+
+    env.close()
