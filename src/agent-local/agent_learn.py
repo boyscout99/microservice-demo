@@ -2,9 +2,11 @@ import os
 import sys
 import json
 import logging
+# import tensorflow as tf
 from stable_baselines3 import A2C
 from agent_env import GymEnvironment
 from datetime import datetime
+from datetime import timedelta
 from Logger import LoggerWriter
 
 MODEL = "A2C"
@@ -31,7 +33,9 @@ def create_directories():
     return dirs
 
 def enable_logging(pod_logs_dir):
-    timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
+    t = datetime.now()
+    t = t + timedelta(hours=2)
+    timestamp = t.strftime("%Y%m%d%H%M%S")
     pod_log_file = os.path.join(pod_logs_dir, f"{MODEL}_learn_{timestamp}.log")
     # logging.basicConfig(filename=pod_log_file, level=logging.DEBUG)  # Initialize logging
     logging.basicConfig(
@@ -99,6 +103,10 @@ def load_model(env, models_dir, tf_logs_dir):
         logging.info("No existing models found. Starting from scratch.")
         # Create the A2C model
         model = A2C("MlpPolicy", env, verbose=1, tensorboard_log=tf_logs_dir)
+
+    # Add the file writer for TensorBoard logging
+    # file_writer = tf.summary.FileWriter(tf_logs_dir, model.policy.graph)
+    # model.policy.set_tf_writer(file_writer)
 
     return model
 
