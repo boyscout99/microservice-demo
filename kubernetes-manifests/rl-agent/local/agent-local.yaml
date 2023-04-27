@@ -48,11 +48,13 @@ spec:
         volumeMounts:
           - name: app
             mountPath: /app
-        command:
-        - /bin/sh
-        - -c
-        - |
-          python3 /app/agent_learn.py
+        # command: ["python3", "/app/health_check.py", "&&", "python3", "/app/agent_learn.py"]
+        command: ["/bin/sh"]
+        args: ["-c", "python3 /app/health_check.py & python3 /app/agent_learn.py"]
+        # - /bin/sh
+        # - -c
+        # - |
+        #   python3 /app/agent_learn.py
         readinessProbe:
             httpGet:
               path: /healthz

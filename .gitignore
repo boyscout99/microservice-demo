@@ -19,6 +19,9 @@ pkg/
 *.tfvars
 release/wi-kubernetes-manifests.yaml
 src/agent/keys/
+src/agent-local/keys
 src/agent-local/logs
 src/agent-local/models
-src/agent-local/agent_learn.log
+src/agent-local/tf_logs
+src/agent-local/pod_logs
+src/agent-local/__pycache__

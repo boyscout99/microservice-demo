@@ -9,9 +9,12 @@ from datetime import datetime
 MODEL = "A2C"
 print(f"Using model {MODEL}.")
 
-models_dir = f"models/{MODEL}"
-tf_logs_dir = f"tf_logs/{MODEL}"
-pod_logs_dir = f"pod_logs/{MODEL}"
+# Get the absolute path of the script directory
+script_dir = os.path.dirname(os.path.abspath(__file__))
+
+models_dir = os.path.join(script_dir, f"models/{MODEL}")
+tf_logs_dir = os.path.join(script_dir, f"tf_logs/{MODEL}")
+pod_logs_dir = os.path.join(script_dir, f"pod_logs/{MODEL}")
 
 if not os.path.exists(models_dir):
     os.makedirs(models_dir)

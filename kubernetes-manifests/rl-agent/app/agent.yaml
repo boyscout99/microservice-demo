@@ -43,7 +43,7 @@ spec:
         - /bin/sh
         - -c
         - |
-          python3 /app/agent_learn.py
+          python3 /app/health_check.py & python3 /app/agent_learn.py
         readinessProbe:
             httpGet:
               path: /healthz
