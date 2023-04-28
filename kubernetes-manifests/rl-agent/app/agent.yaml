@@ -35,15 +35,20 @@ spec:
           fi
       containers:
       - name: server
-        image: gcr.io/master-thesis-hpa/agent:0.4.1
+        image: gcr.io/master-thesis-hpa/agent:0.4.2
         volumeMounts:
           - name: file-storage
             mountPath: /app
+        # command:
+        # - /bin/sh
+        # - -c
+        # - |
+        #   python3 /app/health_check.py & python3 /app/agent_learn.py
         command:
         - /bin/sh
         - -c
         - |
-          python3 /app/health_check.py & python3 /app/agent_learn.py
+          python3 /app/health_check.py
         readinessProbe:
             httpGet:
               path: /healthz

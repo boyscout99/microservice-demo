@@ -2,14 +2,14 @@ import os
 import sys
 import json
 import logging
-# import tensorflow as tf
-from stable_baselines3 import A2C
+import tensorflow as tf
+from stable_baselines3 import PPO
 from agent_env import GymEnvironment
 from datetime import datetime
 from datetime import timedelta
 from Logger import LoggerWriter
 
-MODEL = "A2C"
+MODEL = "PPO"
 print(f"Using model {MODEL}.")
 script_dir = os.path.dirname(os.path.abspath(__file__))
 
@@ -91,18 +91,18 @@ def load_model(env, models_dir, tf_logs_dir):
         model_path = os.path.join(models_dir, last_saved_model)
         print(f"Loading last saved model: {model_path}")
         logging.info(f"Loading last saved model: {model_path}")
-        model = A2C.load(model_path, env=env, tensorboard_log=tf_logs_dir)
+        model = PPO.load(model_path, env=env, tensorboard_log=tf_logs_dir)
         # model = A2C.load(model_path, env=env)
     else:
         print("No existing models found. Starting from scratch.")
         logging.info("No existing models found. Starting from scratch.")
         # Create the A2C model
-        model = A2C("MlpPolicy", env, verbose=1, tensorboard_log=tf_logs_dir)
+        model = PPO("MlpPolicy", env, verbose=1, tensorboard_log=tf_logs_dir)
         # model = A2C("MlpPolicy", env, verbose=1)
 
     # Add the file writer for TensorBoard logging
-    # file_writer = tf.summary.FileWriter(tf_logs_dir, model.policy.graph)
-    # model.policy.set_tf_writer(file_writer)
+    file_writer = tf.summary.create_file_writer(tf_logs_dir, model.policy.graph)
+    model.policy.set_tf_writer(file_writer)
 
     return model
 
