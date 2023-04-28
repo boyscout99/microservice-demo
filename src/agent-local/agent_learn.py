@@ -35,12 +35,12 @@ def create_directories():
 def enable_logging(pod_logs_dir):
     t = datetime.now()
     t = t + timedelta(hours=2)
-    timestamp = t.strftime("%Y%m%d%H%M%S")
+    timestamp = t.strftime("%Y_%m_%d_%H%M%S")
     pod_log_file = os.path.join(pod_logs_dir, f"{MODEL}_learn_{timestamp}.log")
     # logging.basicConfig(filename=pod_log_file, level=logging.DEBUG)  # Initialize logging
     logging.basicConfig(
         level=logging.DEBUG,
-        format="%(asctime)s [%(levelname)s] %(message)s",
+        format=f"{timestamp} [%(levelname)s] %(message)s",
         filename=pod_log_file
     )
     
@@ -74,12 +74,6 @@ def setup_environment(alpha, cluster, url, name, namespace, minReplicas, maxRepl
     ]
     q_file.close()
 
-    # url = 'http://prometheus.istio-system.svc.cluster.local:9090'  # URL for Prometheus API
-    # name = "frontend" # deployment name
-    # namespace = "rl-agent" # namespace
-    # minReplicas = 1
-    # maxReplicas = 30
-
     # Create an instance of GymEnvironment
     env = GymEnvironment(alpha, queries, url, name, namespace, minReplicas, maxReplicas)
     # set default state
@@ -98,11 +92,13 @@ def load_model(env, models_dir, tf_logs_dir):
         print(f"Loading last saved model: {model_path}")
         logging.info(f"Loading last saved model: {model_path}")
         model = A2C.load(model_path, env=env, tensorboard_log=tf_logs_dir)
+        # model = A2C.load(model_path, env=env)
     else:
         print("No existing models found. Starting from scratch.")
         logging.info("No existing models found. Starting from scratch.")
         # Create the A2C model
         model = A2C("MlpPolicy", env, verbose=1, tensorboard_log=tf_logs_dir)
+        # model = A2C("MlpPolicy", env, verbose=1)
 
     # Add the file writer for TensorBoard logging
     # file_writer = tf.summary.FileWriter(tf_logs_dir, model.policy.graph)
@@ -111,10 +107,11 @@ def load_model(env, models_dir, tf_logs_dir):
     return model
 
 def train_model(model, models_dir):
-    TIMESTEPS = 20
+    TIMESTEPS = 2
     # training
     for i in range(1,10):
         model.learn(total_timesteps=TIMESTEPS, reset_num_timesteps=False, tb_log_name=MODEL)
+        # model.learn(total_timesteps=TIMESTEPS, reset_num_timesteps=False)
         logging.info(f"Training iteration {i}, total_timesteps={TIMESTEPS*i}, saving model ...")
         print("Saving model ...")
         model.save(f"{models_dir}/{TIMESTEPS*i}")

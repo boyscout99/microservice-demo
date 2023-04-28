@@ -35,12 +35,12 @@ def create_directories():
 def enable_logging(pod_logs_dir):
     t = datetime.now()
     t = t + timedelta(hours=2)
-    timestamp = t.strftime("%Y%m%d%H%M%S")
+    timestamp = t.strftime("%Y_%m_%d_%H%M%S")
     pod_log_file = os.path.join(pod_logs_dir, f"{MODEL}_learn_{timestamp}.log")
     # logging.basicConfig(filename=pod_log_file, level=logging.DEBUG)  # Initialize logging
     logging.basicConfig(
         level=logging.DEBUG,
-        format="%(asctime)s [%(levelname)s] %(message)s",
+        format=f"{timestamp} [%(levelname)s] %(message)s",
         filename=pod_log_file
     )
     
