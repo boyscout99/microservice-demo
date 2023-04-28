@@ -103,7 +103,7 @@ def load_model(env, models_dir, tf_logs_dir):
     return model
 
 def train_model(model, models_dir):
-    TIMESTEPS = 20
+    TIMESTEPS = 2
     # training
     for i in range(1,10):
         model.learn(total_timesteps=TIMESTEPS, reset_num_timesteps=False, tb_log_name=MODEL)
