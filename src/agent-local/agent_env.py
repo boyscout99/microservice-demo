@@ -67,7 +67,6 @@ class GymEnvironment(gym.Env):
 
         # Update the previous response time for the next step
         # self.previous_response_time = new_observation[1]
-
         # Set done to False as the environment is not terminated in this example
         done = False
 

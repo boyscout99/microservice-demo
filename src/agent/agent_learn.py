@@ -39,7 +39,7 @@ def enable_logging(pod_logs_dir):
     pod_log_file = os.path.join(pod_logs_dir, f"{MODEL}_learn_{timestamp}.log")
     # logging.basicConfig(filename=pod_log_file, level=logging.DEBUG)  # Initialize logging
     logging.basicConfig(
-        level=logging.DEBUG,
+        level=logging.INFO,
         format=f"{timestamp} [%(levelname)s] %(message)s",
         filename=pod_log_file
     )

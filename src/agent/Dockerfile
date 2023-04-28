@@ -55,7 +55,7 @@ EXPOSE 80
 # tensorboard
 EXPOSE 6006 
 
-# WORKDIR /
+WORKDIR /
 # COPY entrypoint.sh .
 # RUN chmod +x entrypoint.sh
 # COPY health_check.py .

@@ -2,14 +2,14 @@ import os
 import sys
 import json
 import logging
-import tensorflow as tf
-from stable_baselines3 import PPO
+# import tensorflow as tf
+from stable_baselines3 import A2C
 from agent_env import GymEnvironment
 from datetime import datetime
 from datetime import timedelta
 from Logger import LoggerWriter
 
-MODEL = "PPO"
+MODEL = "A2C"
 print(f"Using model {MODEL}.")
 script_dir = os.path.dirname(os.path.abspath(__file__))
 
@@ -91,18 +91,18 @@ def load_model(env, models_dir, tf_logs_dir):
         model_path = os.path.join(models_dir, last_saved_model)
         print(f"Loading last saved model: {model_path}")
         logging.info(f"Loading last saved model: {model_path}")
-        model = PPO.load(model_path, env=env, tensorboard_log=tf_logs_dir)
+        model = A2C.load(model_path, env=env, tensorboard_log=tf_logs_dir)
         # model = A2C.load(model_path, env=env)
     else:
         print("No existing models found. Starting from scratch.")
         logging.info("No existing models found. Starting from scratch.")
         # Create the A2C model
-        model = PPO("MlpPolicy", env, verbose=1, tensorboard_log=tf_logs_dir)
+        model = A2C("MlpPolicy", env, verbose=1, tensorboard_log=tf_logs_dir)
         # model = A2C("MlpPolicy", env, verbose=1)
 
     # Add the file writer for TensorBoard logging
-    file_writer = tf.summary.create_file_writer(tf_logs_dir, model.policy.graph)
-    model.policy.set_tf_writer(file_writer)
+    # file_writer = tf.summary.create_file_writer(tf_logs_dir, model.policy.graph)
+    # model.policy.set_tf_writer(file_writer)
 
     return model
 
@@ -110,6 +110,7 @@ def train_model(model, models_dir):
     TIMESTEPS = 2
     # training
     for i in range(1,10):
+        print("Learning. Iteration: ", TIMESTEPS*i)
         model.learn(total_timesteps=TIMESTEPS, reset_num_timesteps=False, tb_log_name=MODEL)
         # model.learn(total_timesteps=TIMESTEPS, reset_num_timesteps=False)
         logging.info(f"Training iteration {i}, total_timesteps={TIMESTEPS*i}, saving model ...")
