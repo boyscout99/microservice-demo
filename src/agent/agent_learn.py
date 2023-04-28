@@ -61,9 +61,7 @@ def setup_environment(alpha, cluster, url, name, namespace, minReplicas, maxRepl
 
     q_file = open(queries_json_path, "r")
     data = json.load(q_file)
-
-    # Define the hyperparameters for training
-    # alpha = 100  # Your desired value for alpha
+    
     # QUERIES FOR FRONTEND DEPLOYMENT
     _queries = data[cluster]
     queries = [
@@ -73,12 +71,6 @@ def setup_environment(alpha, cluster, url, name, namespace, minReplicas, maxRepl
         _queries["q_memory_usage"],
     ]
     q_file.close()
-
-    # url = 'http://prometheus.istio-system.svc.cluster.local:9090'  # URL for Prometheus API
-    # name = "frontend" # deployment name
-    # namespace = "rl-agent" # namespace
-    # minReplicas = 1
-    # maxReplicas = 30
 
     # Create an instance of GymEnvironment
     env = GymEnvironment(alpha, queries, url, name, namespace, minReplicas, maxReplicas)
@@ -127,7 +119,7 @@ def train_model(model, models_dir):
 if __name__ == "__main__":
 
     alpha = 100
-    cluster = "minikube"
+    cluster = "gke"
     url = 'http://prometheus.istio-system.svc.cluster.local:9090'  # URL for Prometheus API
     name = "frontend" # deployment name
     namespace = "rl-agent" # namespace
