@@ -76,9 +76,9 @@ class GymEnvironment(gym.Env):
         # Set done to False as the environment is not terminated in this example
         self.counter += 1
         print(f"Counter: {self.counter}")
-        if self.counter == 3:
+        if self.counter == 2:
             done = True
-        elif self.counter > 0 and self.counter < 3:
+        elif self.counter > 0 and self.counter < 2:
             done = False
         else:
             # reset counter
@@ -92,7 +92,7 @@ class GymEnvironment(gym.Env):
 
         # wait one minute before taking another action
         print("Waiting 30 seconds before taking next scaling action ...")
-        time.sleep(30)
+        time.sleep(15)
 
         return new_observation, reward, done, info
 
