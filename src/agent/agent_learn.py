@@ -98,6 +98,7 @@ def load_model(env, models_dir, tf_logs_dir):
         print("No existing models found. Starting from scratch.")
         logging.info("No existing models found. Starting from scratch.")
         # Create the A2C model
+
         model = A2C("MlpPolicy", env, verbose=1, tensorboard_log=tf_logs_dir)
         # model = A2C("MlpPolicy", env, verbose=1)
 

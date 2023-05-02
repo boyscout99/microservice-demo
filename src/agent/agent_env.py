@@ -75,17 +75,18 @@ class GymEnvironment(gym.Env):
         # self.previous_response_time = new_observation[1]
         # Set done to False as the environment is not terminated in this example
         self.counter += 1
-        print(f"Counter: {self.counter}")
-        if self.counter == 3:
-            done = True
-        elif self.counter > 0 and self.counter < 3:
-            done = False
-        else:
-            # reset counter
-            self.counter = 0
-            done = False
+        done = False
+        # print(f"Counter: {self.counter}")
+        # if self.counter == 3:
+        #     done = True
+        # elif self.counter > 0 and self.counter < 3:
+        #     done = False
+        # else:
+        #     # reset counter
+        #     self.counter = 0
+        #     done = False
         
-        print(f"Done: {done}")
+        # print(f"Done: {done}")
 
         # Set info to an empty dictionary
         info = {}
