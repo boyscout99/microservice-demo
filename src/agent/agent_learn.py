@@ -140,18 +140,8 @@ if __name__ == "__main__":
     logger = enable_logging(pod_logs_dir)
     env = setup_environment(alpha, cluster, url, name, namespace, minReplicas, maxReplicas)
     model = load_model(env, models_dir, tf_logs_dir)
-    new_logger = configure(tf_logs_dir, ["stdout", "csv", "tensorboard"])
-    model.set_logger(new_logger)
-    # train_model(model, models_dir)
-    episodes = 5
-
-    for episode in range(episodes):
-        done = False
-        obs = env.reset()
-        while not done:
-            random_action = 1
-            print("action",random_action)
-            obs, reward, done, info = env.step(random_action)
-            print("reward",reward)
+    # new_logger = configure(tf_logs_dir, ["stdout", "csv", "tensorboard"])
+    # model.set_logger(new_logger)
+    train_model(model, models_dir)
 
     env.close()
