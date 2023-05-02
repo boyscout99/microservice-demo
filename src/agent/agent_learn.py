@@ -112,7 +112,7 @@ def train_model(model, models_dir):
     # training
     for i in range(1,10):
         print("Learning. Iteration: ", TIMESTEPS*i)
-        model.learn(total_timesteps=TIMESTEPS, reset_num_timesteps=False, tb_log_name=MODEL)
+        model.learn(total_timesteps=TIMESTEPS, reset_num_timesteps=False, tb_log_name=MODEL, log_interval=1)
         # model.learn(total_timesteps=TIMESTEPS, reset_num_timesteps=False)
         logging.info(f"Training iteration {i}, total_timesteps={TIMESTEPS*i}, saving model ...")
         print("Saving model ...")
