@@ -4,6 +4,7 @@ import json
 import logging
 # import tensorflow as tf
 from stable_baselines3 import A2C
+from stable_baselines3.common.logger import configure
 from agent_env import GymEnvironment
 from datetime import datetime
 from datetime import timedelta
@@ -107,7 +108,7 @@ def load_model(env, models_dir, tf_logs_dir):
     return model
 
 def train_model(model, models_dir):
-    TIMESTEPS = 2
+    TIMESTEPS = 10
     # training
     for i in range(1,10):
         print("Learning. Iteration: ", TIMESTEPS*i)
@@ -139,6 +140,8 @@ if __name__ == "__main__":
     logger = enable_logging(pod_logs_dir)
     env = setup_environment(alpha, cluster, url, name, namespace, minReplicas, maxReplicas)
     model = load_model(env, models_dir, tf_logs_dir)
+    new_logger = configure(tf_logs_dir, ["stdout", "csv", "tensorboard"])
+    model.set_logger(new_logger)
     train_model(model, models_dir)
 
     env.close()

@@ -8,7 +8,13 @@ import numpy as np
 import time
 
 class GymEnvironment(gym.Env):
+
     def __init__(self, alpha, queries, url, name, namespace, minReplicas, maxReplicas):
+        super(GymEnvironment, self).__init__()
+
+        # debug test 
+        self.counter = 0
+        
         self.alpha = alpha
 
         self.queries = queries
@@ -68,7 +74,18 @@ class GymEnvironment(gym.Env):
         # Update the previous response time for the next step
         # self.previous_response_time = new_observation[1]
         # Set done to False as the environment is not terminated in this example
-        done = False
+        self.counter += 1
+        print(f"Counter: {self.counter}")
+        if self.counter == 3:
+            done = True
+        elif self.counter > 0 and self.counter < 3:
+            done = False
+        else:
+            # reset counter
+            self.counter = 0
+            done = False
+        
+        print(f"Done: {done}")
 
         # Set info to an empty dictionary
         info = {}

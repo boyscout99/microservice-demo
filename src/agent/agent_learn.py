@@ -4,6 +4,7 @@ import json
 import logging
 # import tensorflow as tf
 from stable_baselines3 import A2C
+from stable_baselines3.common.logger import configure
 from agent_env import GymEnvironment
 from datetime import datetime
 from datetime import timedelta
@@ -61,7 +62,9 @@ def setup_environment(alpha, cluster, url, name, namespace, minReplicas, maxRepl
 
     q_file = open(queries_json_path, "r")
     data = json.load(q_file)
-    
+
+    # Define the hyperparameters for training
+    # alpha = 100  # Your desired value for alpha
     # QUERIES FOR FRONTEND DEPLOYMENT
     _queries = data[cluster]
     queries = [
@@ -90,23 +93,27 @@ def load_model(env, models_dir, tf_logs_dir):
         print(f"Loading last saved model: {model_path}")
         logging.info(f"Loading last saved model: {model_path}")
         model = A2C.load(model_path, env=env, tensorboard_log=tf_logs_dir)
+        # model = A2C.load(model_path, env=env)
     else:
         print("No existing models found. Starting from scratch.")
         logging.info("No existing models found. Starting from scratch.")
         # Create the A2C model
         model = A2C("MlpPolicy", env, verbose=1, tensorboard_log=tf_logs_dir)
+        # model = A2C("MlpPolicy", env, verbose=1)
 
     # Add the file writer for TensorBoard logging
-    # file_writer = tf.summary.FileWriter(tf_logs_dir, model.policy.graph)
+    # file_writer = tf.summary.create_file_writer(tf_logs_dir, model.policy.graph)
     # model.policy.set_tf_writer(file_writer)
 
     return model
 
 def train_model(model, models_dir):
-    TIMESTEPS = 2
+    TIMESTEPS = 10
     # training
     for i in range(1,10):
+        print("Learning. Iteration: ", TIMESTEPS*i)
         model.learn(total_timesteps=TIMESTEPS, reset_num_timesteps=False, tb_log_name=MODEL)
+        # model.learn(total_timesteps=TIMESTEPS, reset_num_timesteps=False)
         logging.info(f"Training iteration {i}, total_timesteps={TIMESTEPS*i}, saving model ...")
         print("Saving model ...")
         model.save(f"{models_dir}/{TIMESTEPS*i}")
@@ -133,6 +140,8 @@ if __name__ == "__main__":
     logger = enable_logging(pod_logs_dir)
     env = setup_environment(alpha, cluster, url, name, namespace, minReplicas, maxReplicas)
     model = load_model(env, models_dir, tf_logs_dir)
+    new_logger = configure(tf_logs_dir, ["stdout", "csv", "tensorboard"])
+    model.set_logger(new_logger)
     train_model(model, models_dir)
 
     env.close()
