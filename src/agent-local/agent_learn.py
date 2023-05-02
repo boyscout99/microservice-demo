@@ -112,7 +112,7 @@ def train_model(model, models_dir):
     # training
     for i in range(1,10):
         print("Learning. Iteration: ", TIMESTEPS*i)
-        model.learn(total_timesteps=TIMESTEPS, reset_num_timesteps=False, tb_log_name=MODEL)
+        model.learn(total_timesteps=TIMESTEPS, reset_num_timesteps=False, tb_log_name=MODEL, log_interval=1)
         # model.learn(total_timesteps=TIMESTEPS, reset_num_timesteps=False)
         logging.info(f"Training iteration {i}, total_timesteps={TIMESTEPS*i}, saving model ...")
         print("Saving model ...")
@@ -142,16 +142,4 @@ if __name__ == "__main__":
     model = load_model(env, models_dir, tf_logs_dir)
     new_logger = configure(tf_logs_dir, ["stdout", "csv", "tensorboard"])
     model.set_logger(new_logger)
-    # train_model(model, models_dir)
-    episodes = 10
-
-    for episode in range(episodes):
-        done = False
-        obs = env.reset()
-        while not done:
-            random_action = 1
-            print("action",random_action)
-            obs, reward, done, info = env.step(random_action)
-            print("reward",reward)
-
-    env.close()
+    train_model(model, models_dir)
