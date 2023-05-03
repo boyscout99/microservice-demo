@@ -35,7 +35,7 @@ spec:
           fi
       containers:
       - name: server
-        image: gcr.io/master-thesis-hpa/agent:0.4.2
+        image: gcr.io/master-thesis-hpa/agent:0.5
         volumeMounts:
           - name: file-storage
             mountPath: /app
