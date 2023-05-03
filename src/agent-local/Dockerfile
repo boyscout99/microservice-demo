@@ -1,15 +1,14 @@
-#FROM python:3.9-slim-buster
-FROM python:3.9
+FROM python:3.9-slim-buster
+#FROM python:3.9
 
 # COPY scale_out_api.py .
 # COPY promQL.py .
 # COPY requirements.txt .
-COPY new_requirements.txt .
+COPY requirements.txt .
 # COPY entrypoint.sh .
 # RUN chmod +x entrypoint.sh
 
-RUN apt-get update && \
-    apt-get install curl -y
+RUN apt-get update
 
 # RUN apt-get install -y git && \
 #     git clone --recursive https://github.com/kubernetes-client/python.git && \
@@ -29,7 +28,7 @@ RUN apt-get update && \
 #     stable-baselines3 \
 #     tensorboard
 
-RUN pip install -r new_requirements.txt
+RUN pip install -r requirements.txt
 
 EXPOSE 6006
 EXPOSE 80

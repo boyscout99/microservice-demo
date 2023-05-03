@@ -11,9 +11,6 @@ class GymEnvironment(gym.Env):
 
     def __init__(self, alpha, queries, url, name, namespace, minReplicas, maxReplicas):
         super(GymEnvironment, self).__init__()
-
-        # debug test 
-        self.counter = 0
         
         self.alpha = alpha
 
@@ -34,7 +31,8 @@ class GymEnvironment(gym.Env):
         # Reset the environment, e.g., initialize the pod states and retrieve initial observation
         # TODO do I need to reset the workload pattern?
         self.scale.reset_replicas() # Initialize current number of replicas as 1
-        time.sleep(15)
+        print("Waiting 30 seconds to stabilise after reset ...")
+        time.sleep(30)
 
         self.current_observation = self._get_observation()  # Retrieve initial observation from Prometheus API
         self.current_replicas = self.current_observation[0]
@@ -74,18 +72,7 @@ class GymEnvironment(gym.Env):
         # Update the previous response time for the next step
         # self.previous_response_time = new_observation[1]
         # Set done to False as the environment is not terminated in this example
-        self.counter += 1
-        print(f"Counter: {self.counter}")
-        if self.counter == 2:
-            done = True
-        elif self.counter > 0 and self.counter < 2:
-            done = False
-        else:
-            # reset counter
-            self.counter = 0
-            done = False
-        
-        print(f"Done: {done}")
+        done = False
 
         # Set info to an empty dictionary
         info = {}
