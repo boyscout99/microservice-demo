@@ -3,14 +3,11 @@ import sys
 import json
 import logging
 import importlib
-#from stable_baselines3 import A2C
 from agent_env import GymEnvironment
 from datetime import datetime
 from datetime import timedelta
 from Logger import LoggerWriter
 
-# MODEL = "A2C"
-# print(f"Using model {MODEL}.")
 MODULE = "stable_baselines3"
 MODEL = "A2C"
 print(f"Using model {MODEL}.")
@@ -18,10 +15,11 @@ print(f"Using model {MODEL}.")
 module = importlib.import_module(MODULE) # import stable_baselines3
 model_attr = getattr(module, MODEL) # e.g. from stable_baselines3 import A2C
 
+# Get the absolute path of the script directory
 script_dir = os.path.dirname(os.path.abspath(__file__))
 
 def create_directories():
-    # Get the absolute path of the script directory
+    # create the necessary directories
     models_dir = os.path.join(script_dir, f"models/{MODEL}")
     tf_logs_dir = os.path.join(script_dir, f"tf_logs/{MODEL}")
     pod_logs_dir = os.path.join(script_dir, f"pod_logs/{MODEL}")
@@ -68,6 +66,9 @@ def setup_environment(alpha, cluster, url, name, namespace, minReplicas, maxRepl
 
     q_file = open(queries_json_path, "r")
     data = json.load(q_file)
+
+    # Define the hyperparameters for training
+    # alpha = 100  # Your desired value for alpha
     # QUERIES FOR FRONTEND DEPLOYMENT
     _queries = data[cluster]
     queries = [
@@ -95,19 +96,17 @@ def load_model(env, models_dir, tf_logs_dir):
         model_path = os.path.join(models_dir, last_saved_model)
         print(f"Loading last saved model: {model_path}")
         logging.info(f"Loading last saved model: {model_path}")
-        # model = A2C.load(model_path, env=env, tensorboard_log=tf_logs_dir)
         model = model_attr.load(model_path, env=env, tensorboard_log=tf_logs_dir)
     else:
         print("No existing models found. Starting from scratch.")
         logging.info("No existing models found. Starting from scratch.")
         # Create the A2C model
-        # model = A2C("MlpPolicy", env, verbose=1, tensorboard_log=tf_logs_dir)
         model = model_attr("MlpPolicy", env, verbose=1, tensorboard_log=tf_logs_dir)
 
     return model
 
 def train_model(model, models_dir):
-    TIMESTEPS = 10
+    TIMESTEPS = 3
     # training
     for i in range(1,10):
         print("Learning. Iteration: ", TIMESTEPS*i)
@@ -124,8 +123,8 @@ def train_model(model, models_dir):
 
 if __name__ == "__main__":
 
-    alpha = 100
-    cluster = "gke"
+    alpha = 2
+    cluster = "minikube"
     url = 'http://prometheus.istio-system.svc.cluster.local:9090'  # URL for Prometheus API
     name = "frontend" # deployment name
     namespace = "rl-agent" # namespace
