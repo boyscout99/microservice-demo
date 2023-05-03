@@ -5,7 +5,8 @@ ENV ZONE=europe-west1-b
 ENV CLUSTER_NAME=master-thesis-hpa-agent
 ENV GOOGLE_APPLICATION_CREDENTIALS=kube_api_keys.json
 
-RUN apt-get update
+RUN apt-get update && \
+    apt-get install curl -y
 
 # Download and install Google Cloud SDK
 RUN curl https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-367.0.0-linux-x86_64.tar.gz -o /tmp/google-cloud-sdk.tar.gz && \
