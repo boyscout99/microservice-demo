@@ -440,7 +440,7 @@ spec:
       component: "server"
       app: prometheus
       release: prometheus
-  replicas: 2
+  replicas: 1
   template:
     metadata:
       labels:
@@ -449,7 +449,6 @@ spec:
         release: prometheus
         chart: prometheus-15.9.0
         heritage: Helm
-        
         sidecar.istio.io/inject: "false"
     spec:
       enableServiceLinks: true
@@ -500,8 +499,15 @@ spec:
             timeoutSeconds: 10
             failureThreshold: 3
             successThreshold: 1
+          # resources:
+          #   {}
           resources:
-            {}
+            requests:
+              cpu: 1000m
+              memory: 2048Mi
+            limits:
+              cpu: 1500m
+              memory: 3072Mi
           volumeMounts:
             - name: config-volume
               mountPath: /etc/config
