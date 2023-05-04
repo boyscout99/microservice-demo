@@ -2,21 +2,31 @@ import os
 import sys
 import json
 import logging
-from stable_baselines3 import A2C
+import importlib
 from agent_env import GymEnvironment
 from datetime import datetime
 from datetime import timedelta
 from Logger import LoggerWriter
+from ArgParser import StringProcessor
 
-MODEL = "A2C"
-print(f"Using model {MODEL}.")
+MODULE = "stable_baselines3"
+
+# Read arguments
+processor = StringProcessor()
+NAMESPACE, CLUSTER, MODEL, REWARD_FUNCTION = processor.parse_args() # read namespace and model
+print(f"namespace {NAMESPACE}, cluster {CLUSTER}, model {MODEL}, reward function {REWARD_FUNCTION}.")
+
+module = importlib.import_module(MODULE) # import stable_baselines3
+model_attr = getattr(module, MODEL) # e.g. from stable_baselines3 import A2C
+
+# Get the absolute path of the script directory
 script_dir = os.path.dirname(os.path.abspath(__file__))
 
 def create_directories():
-    # Get the absolute path of the script directory
-    models_dir = os.path.join(script_dir, f"models/{MODEL}")
-    tf_logs_dir = os.path.join(script_dir, f"tf_logs/{MODEL}")
-    pod_logs_dir = os.path.join(script_dir, f"pod_logs/{MODEL}")
+    # create the necessary directories
+    models_dir = os.path.join(script_dir, f"models/{NAMESPACE}/{MODEL}")
+    tf_logs_dir = os.path.join(script_dir, f"tf_logs/{NAMESPACE}/{MODEL}")
+    pod_logs_dir = os.path.join(script_dir, f"pod_logs/{NAMESPACE}/{MODEL}")
 
     if not os.path.exists(models_dir):
         os.makedirs(models_dir)
@@ -53,18 +63,22 @@ def enable_logging(pod_logs_dir):
     return logger
 
 ### SET UP THE ENVIRONMENT ###
-def setup_environment(alpha, cluster, url, name, namespace, minReplicas, maxReplicas):
+def setup_environment(alpha, 
+                      cluster, 
+                      url, 
+                      name, 
+                      namespace, 
+                      minReplicas, 
+                      maxReplicas,
+                      rew_fun):
 
     # Construct the absolute file path for queries.json
     queries_json_path = os.path.join(script_dir, "queries.json")
 
     q_file = open(queries_json_path, "r")
     data = json.load(q_file)
-
-    # Define the hyperparameters for training
-    # alpha = 100  # Your desired value for alpha
     # QUERIES FOR FRONTEND DEPLOYMENT
-    _queries = data[cluster]
+    _queries = data[cluster][namespace]
     queries = [
         _queries["q_pod_replicas"],
         _queries["q_request_duration"],
@@ -74,7 +88,14 @@ def setup_environment(alpha, cluster, url, name, namespace, minReplicas, maxRepl
     q_file.close()
 
     # Create an instance of GymEnvironment
-    env = GymEnvironment(alpha, queries, url, name, namespace, minReplicas, maxReplicas)
+    env = GymEnvironment(alpha, 
+                         queries, 
+                         url, 
+                         name, 
+                         namespace, 
+                         minReplicas, 
+                         maxReplicas, 
+                         rew_fun)
     # set default state
     env.reset()
 
@@ -90,17 +111,17 @@ def load_model(env, models_dir, tf_logs_dir):
         model_path = os.path.join(models_dir, last_saved_model)
         print(f"Loading last saved model: {model_path}")
         logging.info(f"Loading last saved model: {model_path}")
-        model = A2C.load(model_path, env=env, tensorboard_log=tf_logs_dir)
+        model = model_attr.load(model_path, env=env, tensorboard_log=tf_logs_dir)
     else:
         print("No existing models found. Starting from scratch.")
         logging.info("No existing models found. Starting from scratch.")
-        # Create the A2C model
-        model = A2C("MlpPolicy", env, verbose=1, tensorboard_log=tf_logs_dir)
+        # Create the model
+        model = model_attr("MlpPolicy", env, verbose=1, tensorboard_log=tf_logs_dir)
 
     return model
 
 def train_model(model, models_dir):
-    TIMESTEPS = 3
+    TIMESTEPS = 100
     # training
     for i in range(1,10):
         print("Learning. Iteration: ", TIMESTEPS*i)
@@ -117,20 +138,33 @@ def train_model(model, models_dir):
 
 if __name__ == "__main__":
 
-    alpha = 100
-    cluster = "minikube"
+    # cluster = "minikube"
+    cluster = CLUSTER
     url = 'http://prometheus.istio-system.svc.cluster.local:9090'  # URL for Prometheus API
     name = "frontend" # deployment name
-    namespace = "rl-agent" # namespace
+    #  namespace = "rl-agent" # namespace
+    namespace = NAMESPACE
     minReplicas = 1
     maxReplicas = 30
+    rew_fun = REWARD_FUNCTION
+    # define alpha based on the selected reward function
+    if rew_fun == "indicator": alpha = 100
+    elif rew_fun == "quadratic": alpha = 2
+    else: print("Could not set alpha.")
 
     dirs = create_directories()
     models_dir = dirs[0]
     tf_logs_dir = dirs[1]
     pod_logs_dir = dirs[2]
     logger = enable_logging(pod_logs_dir)
-    env = setup_environment(alpha, cluster, url, name, namespace, minReplicas, maxReplicas)
+    env = setup_environment(alpha, 
+                            cluster, 
+                            url, 
+                            name, 
+                            namespace, 
+                            minReplicas, 
+                            maxReplicas, 
+                            rew_fun)
     model = load_model(env, models_dir, tf_logs_dir)
     train_model(model, models_dir)
 

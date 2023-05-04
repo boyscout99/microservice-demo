@@ -3,7 +3,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: agent
-  namespace: rl-agent
+  # namespace: rl-agent
 spec:
   selector:
     matchLabels:
@@ -48,14 +48,21 @@ spec:
         volumeMounts:
           - name: app
             mountPath: /app
-        # command: ["python3", "/app/health_check.py", "&&", "python3", "/app/agent_learn.py"]
-        command: ["/bin/sh"]
-        # args: ["-c", "python3 /app/health_check.py & python3 /app/agent_learn.py"]
-        args: ["-c", "python3 /app/health_check.py"]
-        # - /bin/sh
-        # - -c
-        # - |
-        #   python3 /app/agent_learn.py
+        command:
+        - /bin/sh
+        - -c
+        - |
+          python3 /app/health_check.py & \
+          python3 /app/agent_learn.py \
+          --namespace $POD_NAMESPACE \
+          --cluster minikube \
+          --rew_fun indicator \
+          --model A2C
+        env:
+        - name: POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
         readinessProbe:
             httpGet:
               path: /healthz
