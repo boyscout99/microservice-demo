@@ -1,0 +1,115 @@
+# Deploy the RL agent with a Python script manually changing replicas
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: agent-role
+  
+rules:
+- apiGroups: ["*"]
+  resources: ["*"]
+  verbs: ["*"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: agent-role-binding
+  
+subjects:
+- kind: ServiceAccount
+  name: default
+  
+roleRef:
+  kind: Role
+  name: agent-role
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+ name: nfs-server-claim
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 50Gi
+  storageClassName: ""
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: agent
+spec:
+  selector:
+    matchLabels:
+      app: agent
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: agent
+      annotations:
+        sidecar.istio.io/rewriteAppHTTPProbers: "true"
+    spec:
+      serviceAccountName: default
+      terminationGracePeriodSeconds: 5
+      restartPolicy: Always
+      imagePullSecrets:
+      - name: gcr-json-key
+      initContainers:
+      - name: prometheus-check
+        image: curlimages/curl:latest
+        command:
+        - /bin/sh
+        - -c
+        - |
+          echo "Checking Prometheus API..."
+          if ! curl -sf http://prometheus.istio-system.svc.cluster.local:9090; then
+            echo "Error: Could not reach Prometheus API"
+            exit 1
+          fi
+      containers:
+      - name: server
+        image: gcr.io/master-thesis-hpa/agent:0.5
+        volumeMounts:
+          - name: file-storage
+            mountPath: /app
+        command:
+        - /bin/sh
+        - -c
+        - |
+          python3 /app/health_check.py & \
+          python3 /app/agent_learn.py \
+          --namespace $POD_NAMESPACE \
+          --cluster gke \
+          --rew_fun quadratic \
+          --model A2C
+        env:
+        - name: POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        readinessProbe:
+            httpGet:
+              path: /healthz
+              port: 80
+            initialDelaySeconds: 5
+            periodSeconds: 10
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 80
+          initialDelaySeconds: 30
+          periodSeconds: 30
+        resources:
+          requests:
+            cpu: 1000m
+            memory: 1024Mi
+          limits:
+            cpu: 1500m
+            memory: 2048Mi
+      volumes:
+        - name: file-storage
+          persistentVolumeClaim:
+            claimName: nfs-server-claim
