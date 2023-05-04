@@ -9,7 +9,16 @@ import time
 
 class GymEnvironment(gym.Env):
 
-    def __init__(self, alpha, queries, url, name, namespace, minReplicas, maxReplicas):
+    def __init__(self, 
+                 alpha, 
+                 queries, 
+                 url, 
+                 name, 
+                 namespace, 
+                 minReplicas, 
+                 maxReplicas,
+                 rew_fun):
+        
         super(GymEnvironment, self).__init__()
         
         self.alpha = alpha
@@ -22,6 +31,7 @@ class GymEnvironment(gym.Env):
         self.namespace = namespace
         self.minReplicas = minReplicas
         self.maxReplicas = maxReplicas
+        self.rew_fun = rew_fun
         self.scale = KubernetesEnvironment(self.name, self.namespace, self.minReplicas, self.maxReplicas)
 
         self.action_space = spaces.Discrete(3)  # Action space with 3 discrete actions: 1, 0, -1
@@ -63,11 +73,23 @@ class GymEnvironment(gym.Env):
         new_observation = self._get_observation()
 
         # Calculate reward based on the new observation and previous response time
-        # reward = -(self.alpha * int(new_observation[1] > self.previous_response_time) + self.current_replicas)
-        # TODO modify so that time for productcatalogservice is below 100 ms
         SLA_RESP_TIME = 100 # 100 ms
-        reward = -(self.alpha * int(new_observation[1] > SLA_RESP_TIME) + self.current_replicas)
-        print("Reward: ", reward)
+        if self.rew_fun == "indicator":
+            reward = -(self.alpha * int(new_observation[1] > SLA_RESP_TIME) + self.current_replicas)
+        elif self.rew_fun == "quadratic":
+            # Quadratic reward function on exceeded time constraint
+            delta_t = new_observation[1]-SLA_RESP_TIME
+            if delta_t > 0:
+                # SLA violated, penalise a lot time
+                # e.g. delta_t = 5ms, replicas = 30, reward = +5
+                # e.g. delta_t = 50ms, replicas = 8, reward = -2492
+                reward = -delta_t**2 - self.current_replicas
+            else:
+                # SLA satisfided, try to optimise number of replicas
+                reward = delta_t - self.alpha*self.current_replicas
+            print("Reward: ", reward)
+        else:
+            print("ERROR: your reward function selection is not valid.")
 
         # Update the previous response time for the next step
         # self.previous_response_time = new_observation[1]
@@ -91,7 +113,7 @@ class GymEnvironment(gym.Env):
         # Check for missing values in the observation
         if np.any(np.isnan(observation)):
             # Use the previous observation if any of the values are missing
-            print("Attention! Missing values in results, substituting values of previous observation ...")
+            print("Attention! Missing values in results[], substituting values of previous observation ...")
             observation = np.where(np.isnan(observation), self.current_observation, observation)
 
         # Update the current observation for the next step
