@@ -24,10 +24,10 @@ roleRef:
 apiVersion: v1
 kind: PersistentVolume
 metadata:
-  name: nfs-server
+  name: nfs-server-e1-a2c
 spec:
   claimRef:
-    name: nfs-server
+    name: nfs-server-e1-a2c
     namespace: rl-agent-e1-a2c
   capacity:
     storage: 1T
@@ -48,7 +48,7 @@ spec:
     requests:
       storage: 50Gi
   storageClassName: ""
-  volumeName: nfs-server
+  volumeName: nfs-server-e1-a2c
 ---
 apiVersion: apps/v1
 kind: Deployment
