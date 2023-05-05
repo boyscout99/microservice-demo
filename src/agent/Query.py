@@ -8,6 +8,7 @@ from statistics import mean
 import requests.exceptions
 import json
 import time
+import sys
 
 class PrometheusClient:
 
@@ -37,7 +38,7 @@ class PrometheusClient:
 
         except Exception as e:
             print(f"Unexpected error occurred: {e}")
-            return None
+            sys.exit(1)
 
     def get_results(self, queries):
         '''
@@ -62,7 +63,7 @@ class PrometheusClient:
                         found = 1
                     else:
                         tentatives += 1
-                        print(f"Missing value, repeating query. Tentative {tentatives}.")
+                        print(f"Missing value, repeating query. Tentative {tentatives}. Waiting {tentatives**2*30} seconds ...")
                         time.sleep(tentatives**2*30) # exponential backoff strategy up to 9 minutes
                 # if tentatives == 3:
                 #     # call for interpolation
