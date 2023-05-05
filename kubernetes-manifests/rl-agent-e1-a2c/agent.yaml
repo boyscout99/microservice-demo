@@ -27,7 +27,7 @@ metadata:
   name: nfs-server-e1-a2c
 spec:
   claimRef:
-    name: nfs-server-e1-a2c
+    name: nfs-server-claim
     namespace: rl-agent-e1-a2c
   capacity:
     storage: 1T
