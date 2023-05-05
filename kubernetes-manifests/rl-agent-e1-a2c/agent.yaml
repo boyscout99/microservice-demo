@@ -22,9 +22,25 @@ roleRef:
   apiGroup: rbac.authorization.k8s.io
 ---
 apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: nfs-server-e1-a2c
+spec:
+  claimRef:
+    name: nfs-server-e1-a2c
+    namespace: rl-agent-e1-a2c
+  capacity:
+    storage: 1T
+  accessModes:
+    - ReadWriteMany
+  nfs:
+    path: /vol1/microservice-demo/src/agent # path to the shared folder in the server
+    server: 10.167.184.82
+---
+apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: nfs-server-claim-2
+  name: nfs-server-claim
 spec:
   accessModes:
     - ReadWriteMany
@@ -109,4 +125,4 @@ spec:
       volumes:
         - name: file-storage
           persistentVolumeClaim:
-            claimName: nfs-server-claim-2
+            claimName: nfs-server-claim
