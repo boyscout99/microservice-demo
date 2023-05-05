@@ -503,10 +503,7 @@ spec:
           #   {}
           resources:
             requests:
-              cpu: 1000m
-              memory: 2048Mi
-            limits:
-              cpu: 1500m
+              cpu: 2000m
               memory: 3072Mi
           volumeMounts:
             - name: config-volume
