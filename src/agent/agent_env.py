@@ -6,6 +6,7 @@ from Query import PrometheusClient
 
 import numpy as np
 import time
+import sys
 
 class GymEnvironment(gym.Env):
 
@@ -87,9 +88,11 @@ class GymEnvironment(gym.Env):
             else:
                 # SLA satisfided, try to optimise number of replicas
                 reward = delta_t - self.alpha*self.current_replicas
-            print("Reward: ", reward)
         else:
             print("ERROR: your reward function selection is not valid.")
+            sys.exit(1)
+        
+        print("Reward: ", reward)
 
         # Update the previous response time for the next step
         # self.previous_response_time = new_observation[1]
