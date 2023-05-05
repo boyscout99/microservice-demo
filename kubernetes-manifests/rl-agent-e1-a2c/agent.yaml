@@ -109,4 +109,4 @@ spec:
       volumes:
         - name: file-storage
           persistentVolumeClaim:
-            claimName: nfs-server-claim
+            claimName: nfs-server-claim-2
