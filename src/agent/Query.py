@@ -63,7 +63,7 @@ class PrometheusClient:
                     else:
                         tentatives += 1
                         print(f"Missing value, repeating query. Tentative {tentatives}.")
-                        time.sleep(tentatives**2) # exponential backoff strategy
+                        time.sleep(tentatives**2*30) # exponential backoff strategy up to 9 minutes
                 # if tentatives == 3:
                 #     # call for interpolation
                 #     interpolation()

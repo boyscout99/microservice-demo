@@ -80,7 +80,7 @@ class GymEnvironment(gym.Env):
             # Quadratic reward function on exceeded time constraint
             delta_t = new_observation[1]-SLA_RESP_TIME
             if delta_t > 0:
-                # SLA violated, penalise a lot time
+                # SLA violated, penalise a lot time exceeded
                 # e.g. delta_t = 5ms, replicas = 30, reward = +5
                 # e.g. delta_t = 50ms, replicas = 8, reward = -2492
                 reward = -delta_t**2 - self.current_replicas
