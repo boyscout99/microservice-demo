@@ -24,7 +24,7 @@ roleRef:
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
- name: nfs-server-claim
+  name: nfs-server-claim
 spec:
   accessModes:
     - ReadWriteMany
