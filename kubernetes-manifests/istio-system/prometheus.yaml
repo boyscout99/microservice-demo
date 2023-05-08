@@ -504,7 +504,7 @@ spec:
           resources:
             requests:
               cpu: 2000m
-              memory: 3072Mi
+              memory: 4Gi
           volumeMounts:
             - name: config-volume
               mountPath: /etc/config
