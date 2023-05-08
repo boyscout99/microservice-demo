@@ -33,6 +33,6 @@ COPY workload_gen.py .
 # enable gevent support in debugger
 ENV GEVENT_SUPPORT=True
 
-# ENTRYPOINT locust --host="http://${FRONTEND_ADDR}" --headless -u 1 2>&1
+ENTRYPOINT locust --host="http://${FRONTEND_ADDR}" --headless -u 1 2>&1
 # ENTRYPOINT [ "python3", "workload_gen.py"]
 # CMD [ "python3", "workload_gen.py"]
