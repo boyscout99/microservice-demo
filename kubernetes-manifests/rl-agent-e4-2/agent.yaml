@@ -97,7 +97,7 @@ spec:
           python3 /app/agent_learn.py \
           --namespace $POD_NAMESPACE \
           --cluster gke \
-          --rew_fun quadratic \
+          --rew_fun indicator \
           --model DQN
         env:
         - name: POD_NAMESPACE
@@ -118,7 +118,7 @@ spec:
           periodSeconds: 30
         resources:
           requests:
-            cpu: 1000m
+            cpu: 500m
             memory: 1024Mi
           limits:
             cpu: 1500m
