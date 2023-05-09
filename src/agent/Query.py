@@ -28,7 +28,7 @@ class PrometheusClient:
             result = self.prom.custom_query(query = query)
             # take the mean of the values (TODO temporary)
             value = mean([float(q["value"][1]) for q in result])
-            # print("Query result: ", value)
+            print("Query result: ", value)
             return value
 
         except requests.exceptions.RequestException as e:
