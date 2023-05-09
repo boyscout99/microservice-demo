@@ -8,6 +8,7 @@ from datetime import datetime
 from datetime import timedelta
 from Logger import LoggerWriter
 from ArgParser import StringProcessor
+from stable_baselines.bench import Monitor
 
 MODULE = "stable_baselines3"
 
@@ -165,6 +166,7 @@ if __name__ == "__main__":
                             minReplicas, 
                             maxReplicas, 
                             rew_fun)
+    env = Monitor(env, tf_logs_dir)
     model = load_model(env, models_dir, tf_logs_dir)
     train_model(model, models_dir)
 

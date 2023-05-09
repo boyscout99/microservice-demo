@@ -98,7 +98,7 @@ spec:
           --namespace $POD_NAMESPACE \
           --cluster gke \
           --rew_fun quadratic \
-          --model DQN
+          --model A2C
         env:
         - name: POD_NAMESPACE
           valueFrom:
