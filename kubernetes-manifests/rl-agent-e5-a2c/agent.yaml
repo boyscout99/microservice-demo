@@ -24,11 +24,11 @@ roleRef:
 apiVersion: v1
 kind: PersistentVolume
 metadata:
-  name: nfs-server-e4-2
+  name: nfs-server-e5-a2c
 spec:
   claimRef:
     name: nfs-server-claim
-    namespace: rl-agent-e4-2
+    namespace: rl-agent-e5-a2c
   capacity:
     storage: 1T
   accessModes:
@@ -48,7 +48,7 @@ spec:
     requests:
       storage: 50Gi
   storageClassName: ""
-  volumeName: nfs-server-e4-2
+  volumeName: nfs-server-e5-a2c
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -95,10 +95,11 @@ spec:
         - |
           python3 /app/health_check.py & \
           python3 /app/agent_learn.py \
+          --deployment paymentservice
           --namespace $POD_NAMESPACE \
           --cluster gke \
-          --rew_fun quadratic \
-          --model DQN
+          --rew_fun indicator \
+          --model A2C
         env:
         - name: POD_NAMESPACE
           valueFrom:
@@ -118,7 +119,7 @@ spec:
           periodSeconds: 30
         resources:
           requests:
-            cpu: 500m
+            cpu: 1000m
             memory: 1024Mi
           limits:
             cpu: 1500m

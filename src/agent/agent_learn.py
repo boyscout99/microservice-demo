@@ -14,8 +14,8 @@ MODULE = "stable_baselines3"
 
 # Read arguments
 processor = StringProcessor()
-NAMESPACE, CLUSTER, MODEL, REWARD_FUNCTION = processor.parse_args() # read namespace and model
-print(f"namespace {NAMESPACE}, cluster {CLUSTER}, model {MODEL}, reward function {REWARD_FUNCTION}.")
+DEPLOYMENT, NAMESPACE, CLUSTER, MODEL, REWARD_FUNCTION = processor.parse_args() # read namespace and model
+print(f"deployment {DEPLOYMENT}, namespace {NAMESPACE}, cluster {CLUSTER}, model {MODEL}, reward function {REWARD_FUNCTION}.")
 
 module = importlib.import_module(MODULE) # import stable_baselines3
 model_attr = getattr(module, MODEL) # e.g. from stable_baselines3 import A2C
@@ -79,7 +79,7 @@ def setup_environment(alpha,
     q_file = open(queries_json_path, "r")
     data = json.load(q_file)
     # QUERIES FOR FRONTEND DEPLOYMENT
-    _queries = data[cluster][namespace]
+    _queries = data[cluster][name][namespace]
     queries = [
         _queries["q_pod_replicas"],
         _queries["q_request_duration"],
@@ -142,7 +142,8 @@ if __name__ == "__main__":
     # cluster = "minikube"
     cluster = CLUSTER
     url = 'http://prometheus.istio-system.svc.cluster.local:9090'  # URL for Prometheus API
-    name = "frontend" # deployment name
+    # name = "frontend" # deployment name
+    name = DEPLOYMENT
     #  namespace = "rl-agent" # namespace
     namespace = NAMESPACE
     minReplicas = 1
