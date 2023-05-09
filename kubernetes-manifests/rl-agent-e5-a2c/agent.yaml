@@ -95,7 +95,7 @@ spec:
         - |
           python3 /app/health_check.py & \
           python3 /app/agent_learn.py \
-          --deployment paymentservice
+          --deployment paymentservice \
           --namespace $POD_NAMESPACE \
           --cluster gke \
           --rew_fun indicator \
@@ -119,7 +119,7 @@ spec:
           periodSeconds: 30
         resources:
           requests:
-            cpu: 1000m
+            cpu: 500m
             memory: 1024Mi
           limits:
             cpu: 1500m
