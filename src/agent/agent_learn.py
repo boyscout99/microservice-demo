@@ -85,6 +85,7 @@ def setup_environment(alpha,
         _queries["q_request_duration"],
         _queries["q_cpu_usage"],
         _queries["q_memory_usage"],
+        _queries["q_rps"]
     ]
     q_file.close()
 
