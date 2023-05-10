@@ -27,6 +27,7 @@ class PrometheusClient:
         try:
             result = self.prom.custom_query(query = query)
             # take the mean of the values (TODO temporary)
+            print(result)
             value = mean([float(q["value"][1]) for q in result])
             print("Query result: ", value)
             return value

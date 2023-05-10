@@ -44,7 +44,7 @@
         },
         "paymentservice":{
             "rl-agent-e5-a2c":{
-                    "q_request_duration": "avg(sum by (pod) (rate(istio_request_duration_milliseconds_sum{namespace=\"rl-agent-e5-a2c\", response_code=\"200\", pod=~\"paymentservice-.*\"}[2m]))) / avg(sum by (pod) (rate(istio_request_duration_milliseconds_count{namespace=\"testing\", response_code=\"200\", pod=~\"paymentservice-.*\"}[2m])))",
+                    "q_request_duration": "avg(sum by (pod) (rate(istio_request_duration_milliseconds_sum{namespace=\"rl-agent-e5-a2c\", response_code=\"200\", pod=~\"paymentservice-.*\"}[2m]))) / avg(sum by (pod) (rate(istio_request_duration_milliseconds_count{namespace=\"rl-agent-e5-a2c\", response_code=\"200\", pod=~\"paymentservice-.*\"}[2m])))",
                     "q_cpu_usage": "avg(rate(container_cpu_usage_seconds_total{namespace=\"rl-agent-e5-a2c\", pod=~\"paymentservice-.*\"}[5m]))/0.1*100",
                     "q_memory_usage": "avg(rate(container_memory_usage_bytes{namespace=\"rl-agent-e5-a2c\", pod=~\"paymentservice-.*\", image=\"gcr.io/master-thesis-hpa/paymentservice:0cff6aa\"}[2m]))/64000000",
                     "q_pod_replicas": "count(kube_pod_info{pod=~\"paymentservice-.*\", namespace=\"rl-agent-e5-a2c\"})",
