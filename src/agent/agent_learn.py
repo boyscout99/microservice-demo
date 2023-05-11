@@ -17,8 +17,8 @@ timestamp = t.strftime("%Y_%m_%d_%H%M%S")
 
 # Read arguments
 processor = StringProcessor()
-DEPLOYMENT, NAMESPACE, CLUSTER, MODEL, REWARD_FUNCTION = processor.parse_args() # read namespace and model
-print(f"deployment {DEPLOYMENT}, namespace {NAMESPACE}, cluster {CLUSTER}, model {MODEL}, reward function {REWARD_FUNCTION}.")
+DEPLOYMENT, NAMESPACE, CLUSTER, MODEL, REWARD_FUNCTION, LEARNING_RATE = processor.parse_args() # read namespace and model
+print(f"deployment {DEPLOYMENT}, namespace {NAMESPACE}, cluster {CLUSTER}, model {MODEL}, reward function {REWARD_FUNCTION}, learning rate {LEARNING_RATE}.")
 
 module = importlib.import_module(MODULE) # import stable_baselines3
 model_attr = getattr(module, MODEL) # e.g. from stable_baselines3 import A2C
@@ -118,7 +118,7 @@ def load_model(env, models_dir, tf_logs_dir):
         print("No existing models found. Starting from scratch.")
         logging.info("No existing models found. Starting from scratch.")
         # Create the model
-        model = model_attr("MlpPolicy", env, learning_rate=0.01, verbose=1, tensorboard_log=tf_logs_dir)
+        model = model_attr("MlpPolicy", env, learning_rate=LEARNING_RATE, verbose=1, tensorboard_log=tf_logs_dir)
 
     return model
 

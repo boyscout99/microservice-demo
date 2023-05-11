@@ -7,6 +7,7 @@ class StringProcessor:
         self.cluster = None
         self.model = None
         self.rew_fun = None
+        self.learn_rate = None
     
     def parse_args(self):
         # Parse arguments
@@ -21,6 +22,8 @@ class StringProcessor:
                             help="The SB3 model: e.g. A2C or PPO")
         parser.add_argument("--rew_fun", type=str, required=True,
                             help="The reward function: e.g. indicator or quadratic")
+        parser.add_argument("--learn_rate", type=str, required=True,
+                            help="The learning rate: e.g. 0.0007 default or 0.01")
         try:
             args = parser.parse_args()
             self.deployment = args.deployment
@@ -28,7 +31,8 @@ class StringProcessor:
             self.cluster = args.cluster
             self.model = args.model
             self.rew_fun = args.rew_fun
+            self.learn_rate = args.learn_rate
         except Exception as e:
             print(f"Unexpected error occurred: {e}\nCheck arguments.")
 
-        return self.deployment, self.namespace, self.cluster, self.model, self.rew_fun
+        return self.deployment, self.namespace, self.cluster, self.model, self.rew_fun, self.learn_rate
