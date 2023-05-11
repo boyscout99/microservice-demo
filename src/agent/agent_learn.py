@@ -11,6 +11,9 @@ from ArgParser import StringProcessor
 from stable_baselines3.common.monitor import Monitor
 
 MODULE = "stable_baselines3"
+t = datetime.now()
+t = t + timedelta(hours=2) # UTC+2
+timestamp = t.strftime("%Y_%m_%d_%H%M%S")
 
 # Read arguments
 processor = StringProcessor()
@@ -26,7 +29,7 @@ script_dir = os.path.dirname(os.path.abspath(__file__))
 def create_directories():
     # create the necessary directories
     models_dir = os.path.join(script_dir, f"models/{NAMESPACE}/{MODEL}")
-    tf_logs_dir = os.path.join(script_dir, f"tf_logs/{NAMESPACE}/{MODEL}")
+    tf_logs_dir = os.path.join(script_dir, f"tf_logs/{NAMESPACE}/{MODEL}/{timestamp}")
     pod_logs_dir = os.path.join(script_dir, f"pod_logs/{NAMESPACE}/{MODEL}")
 
     if not os.path.exists(models_dir):
@@ -43,9 +46,6 @@ def create_directories():
     return dirs
 
 def enable_logging(pod_logs_dir):
-    t = datetime.now()
-    t = t + timedelta(hours=2)
-    timestamp = t.strftime("%Y_%m_%d_%H%M%S")
     pod_log_file = os.path.join(pod_logs_dir, f"{MODEL}_learn_{timestamp}.log")
     # logging.basicConfig(filename=pod_log_file, level=logging.DEBUG)  # Initialize logging
     logging.basicConfig(
