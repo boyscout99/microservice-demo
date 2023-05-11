@@ -38,7 +38,12 @@ spec:
       - name: gcr-json-key
       containers:
       - name: main
-        image: gcr.io/master-thesis-hpa/loadgenerator:0.2
+        image: gcr.io/master-thesis-hpa/loadgenerator:0.3
+        command:
+        - /bin/sh
+        - -c
+        - |
+          locust --host="http://${FRONTEND_ADDR}" --headless -u 1000 -r 100
         env:
         - name: FRONTEND_ADDR
           value: "frontend:80"
