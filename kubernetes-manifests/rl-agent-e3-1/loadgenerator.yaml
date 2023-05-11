@@ -43,7 +43,7 @@ spec:
         - /bin/sh
         - -c
         - |
-          python3 workload_gen.py --pattern bursty
+          python3 workload_gen.py --pattern mild
         env:
         - name: FRONTEND_ADDR
           value: "frontend:80"

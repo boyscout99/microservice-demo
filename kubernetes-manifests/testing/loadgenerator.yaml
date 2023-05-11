@@ -39,7 +39,7 @@ spec:
       containers:
       - name: main
         image: gcr.io/master-thesis-hpa/loadgenerator:0.3.1
-        commands:
+        command:
         - /bin/sh
         - -c
         - |
