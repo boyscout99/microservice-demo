@@ -118,7 +118,7 @@ def load_model(env, models_dir, tf_logs_dir):
         print("No existing models found. Starting from scratch.")
         logging.info("No existing models found. Starting from scratch.")
         # Create the model
-        model = model_attr("MlpPolicy", env, learning_rate=LEARNING_RATE, verbose=1, tensorboard_log=tf_logs_dir)
+        model = model_attr("MlpPolicy", env, learning_rate=float(LEARNING_RATE), verbose=1, tensorboard_log=tf_logs_dir)
 
     return model
 
