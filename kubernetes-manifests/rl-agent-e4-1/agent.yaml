@@ -95,6 +95,7 @@ spec:
         - |
           python3 /app/health_check.py & \
           python3 /app/agent_learn.py \
+          --deployment frontend \
           --namespace $POD_NAMESPACE \
           --cluster gke \
           --rew_fun indicator \
