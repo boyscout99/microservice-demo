@@ -1,0 +1,46 @@
+{    
+    "bursty":[
+        {
+            "users": 1500,
+            "rate": 5,
+            "wait": 600
+        },
+        {
+            "users": 750,
+            "rate": 750,
+            "wait": 300
+        },
+        {
+            "users": 150,
+            "rate": 150,
+            "wait": 300
+        },
+        {
+            "users": 1000,
+            "rate": 1000,
+            "wait": 300
+        }
+    ],
+    "mild":[
+        {
+            "users": 1500,
+            "rate": 5,
+            "wait": 600
+        },
+        {
+            "users": 750,
+            "rate": 10,
+            "wait": 300
+        },
+        {
+            "users": 150,
+            "rate": 10,
+            "wait": 300
+        },
+        {
+            "users": 1000,
+            "rate": 5,
+            "wait": 300
+        }
+    ]
+}

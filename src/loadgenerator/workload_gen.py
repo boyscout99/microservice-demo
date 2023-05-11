@@ -1,6 +1,10 @@
 import subprocess
+import json
+from ArgParser import StringProcessor
 
 host = "http://frontend:80"
+processor = StringProcessor()
+WORKLOAD_TYPE = processor.parse_args()
 
 def init():
     # Initialise the workload to 50 users
@@ -20,28 +24,12 @@ def periodic_workload():
     [16, 20] constant 150 users
     [21] abrupt increase to 1000 users
     """
-    actions = [
-        {
-        'users': 1500,
-        'rate': 5,
-        'wait': 60*10,
-        },
-        {
-        'users': 750,
-        'rate': 750,
-        'wait': 60*5
-        },
-        {
-        'users': 150,
-        'rate': 150,
-        'wait': 60*5
-        },
-        {
-        'users': 1000,
-        'rate': 1000,
-        'wait': 60*5
-        }
-    ]
+    file = open("workloads.json", "r")
+    data = json.load(file)
+    # QUERIES FOR FRONTEND DEPLOYMENT
+    actions = data[WORKLOAD_TYPE]
+    file.close()
+
     while(True):
         for action in actions:
             print("Action: ", action)
@@ -52,7 +40,6 @@ def periodic_workload():
             print("Creating %s users at a rate of %s per second.", users, rate)
             # get output of command
             subprocess.call(command)
-
 
 if __name__ == "__main__":
     init()

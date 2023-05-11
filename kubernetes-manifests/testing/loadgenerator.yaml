@@ -39,6 +39,11 @@ spec:
       containers:
       - name: main
         image: gcr.io/master-thesis-hpa/loadgenerator:0.3.1
+        commands:
+        - /bin/sh
+        - -c
+        - |
+          python3 workload_gen.py --pattern bursty
         env:
         - name: FRONTEND_ADDR
           value: "frontend:80"
