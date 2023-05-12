@@ -140,6 +140,7 @@ if __name__ == "__main__":
                             maxReplicas, 
                             rew_fun)
     env = Monitor(env, tf_logs_dir)
+    MODEL_DIR = os.path.join(script_dir, MODEL_DIR)
     model = load_selected_model(env, MODEL_DIR, tf_logs_dir)
 
     obs = env.reset()
