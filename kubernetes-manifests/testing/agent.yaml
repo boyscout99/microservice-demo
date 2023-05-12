@@ -94,7 +94,7 @@ spec:
         - -c
         - |
           python3 /app/health_check.py & \
-          python3 /app/agent_HPA.py \
+          python3 /app/agent_predict.py \
           --deployment frontend \
           --namespace $POD_NAMESPACE \
           --cluster gke \
