@@ -98,7 +98,7 @@ spec:
           --deployment frontend \
           --namespace $POD_NAMESPACE \
           --cluster gke \
-          --rew_fun indicator \
+          --rew_fun quadratic \
           --model A2C \
           --model_dir models/rl-agent-e1-ppo/A2C/400.zip
         env:
