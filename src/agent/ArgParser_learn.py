@@ -20,9 +20,9 @@ class StringProcessor:
         help="The cluster: e.g. GKE or minikube")
         parser.add_argument("--model", type=str, required=True,
                             help="The SB3 model: e.g. A2C or PPO")
-        parser.add_argument("--rew_fun", type=str, required=True,
+        parser.add_argument("--rew_fun", type=str, required=False, default="indicator",
                             help="The reward function: e.g. indicator or quadratic")
-        parser.add_argument("--learn_rate", type=str, required=True,
+        parser.add_argument("--learn_rate", type=str, required=False, default=0.0007,
                             help="The learning rate: e.g. 0.0007 default or 0.01")
         try:
             args = parser.parse_args()

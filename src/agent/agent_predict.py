@@ -7,33 +7,27 @@ from agent_env import GymEnvironment
 from datetime import datetime
 from datetime import timedelta
 from Logger import LoggerWriter
-from ArgParser_train import StringProcessor
+from ArgParser_predict import StringProcessor
 from stable_baselines3.common.monitor import Monitor
 
-MODULE = "stable_baselines3"
 t = datetime.now()
 t = t + timedelta(hours=2) # UTC+2
 timestamp = t.strftime("%Y_%m_%d_%H%M%S")
 
 # Read arguments
 processor = StringProcessor()
-DEPLOYMENT, NAMESPACE, CLUSTER, MODEL, REWARD_FUNCTION, LEARNING_RATE = processor.parse_args() # read namespace and model
-print(f"deployment {DEPLOYMENT}, namespace {NAMESPACE}, cluster {CLUSTER}, model {MODEL}, reward function {REWARD_FUNCTION}, learning rate {LEARNING_RATE}.")
-
-module = importlib.import_module(MODULE) # import stable_baselines3
-model_attr = getattr(module, MODEL) # e.g. from stable_baselines3 import A2C
+DEPLOYMENT, NAMESPACE, CLUSTER, MODEL, REWARD_FUN, MODEL_DIR = processor.parse_args() # read namespace and model
+print(f"deployment {DEPLOYMENT}, namespace {NAMESPACE}, cluster {CLUSTER}, model {MODEL}, reward function {REWARD_FUN}, model_dir {MODEL_DIR}")
 
 # Get the absolute path of the script directory
 script_dir = os.path.dirname(os.path.abspath(__file__))
+module = importlib.import_module("stable_baselines3") # import stable_baselines3
+model_attr = getattr(module, MODEL) # e.g. from stable_baselines3 import A2C
 
 def create_directories():
     # create the necessary directories
-    models_dir = os.path.join(script_dir, f"models/{NAMESPACE}/{MODEL}")
-    tf_logs_dir = os.path.join(script_dir, f"tf_logs/{NAMESPACE}/{MODEL}/{timestamp}")
+    tf_logs_dir = os.path.join(script_dir, f"tf_logs/predict/{NAMESPACE}/{MODEL}/{timestamp}")
     pod_logs_dir = os.path.join(script_dir, f"pod_logs/{NAMESPACE}/{MODEL}")
-
-    if not os.path.exists(models_dir):
-        os.makedirs(models_dir)
 
     if not os.path.exists(tf_logs_dir):
         os.makedirs(tf_logs_dir)
@@ -41,7 +35,7 @@ def create_directories():
     if not os.path.exists(pod_logs_dir):
         os.makedirs(pod_logs_dir)
 
-    dirs = [models_dir, tf_logs_dir, pod_logs_dir]
+    dirs = [tf_logs_dir, pod_logs_dir]
 
     return dirs
 
@@ -103,40 +97,18 @@ def setup_environment(alpha,
 
     return env
 
-def load_model(env, models_dir, tf_logs_dir):
-    # Check for existing models and load the last saved model if available
-    existing_models = [f for f in os.listdir(models_dir)]
-    if existing_models:
-        # Sort models by their names to get the last saved model
-        existing_models.sort()
-        last_saved_model = existing_models[-1]
-        model_path = os.path.join(models_dir, last_saved_model)
-        print(f"Loading last saved model: {model_path}")
-        logging.info(f"Loading last saved model: {model_path}")
+def load_selected_model(env, model_path, tf_logs_dir):
+    # Load the selected model
+    try:
+        print(f"Loading selected model: {model_path}")
+        logging.info(f"Loading selected model: {model_path}")
         model = model_attr.load(model_path, env=env, tensorboard_log=tf_logs_dir)
-    else:
-        print("No existing models found. Starting from scratch.")
-        logging.info("No existing models found. Starting from scratch.")
-        # Create the model
-        model = model_attr("MlpPolicy", env, learning_rate=float(LEARNING_RATE), verbose=1, tensorboard_log=tf_logs_dir)
+    except:
+        print("No existing models found. Please load a valid model.")
+        logging.info("No existing models found. Please load a valid model.")
 
     return model
 
-def train_model(model, models_dir):
-    TIMESTEPS = 100
-    # training
-    for i in range(1,10):
-        print("Learning. Iteration: ", TIMESTEPS*i)
-        model.learn(total_timesteps=TIMESTEPS, reset_num_timesteps=False, tb_log_name=MODEL, log_interval=2)
-        # model.learn(total_timesteps=TIMESTEPS, reset_num_timesteps=False)
-        logging.info(f"Training iteration {i}, total_timesteps={TIMESTEPS*i}, saving model ...")
-        print("Saving model ...")
-        model.save(f"{models_dir}/{TIMESTEPS*i}")
-
-    print("Training completed. Check performance on Tensorboard.")
-    logging.info("Training completed. Check performance on Tensorboard.")
-
-    return
 
 if __name__ == "__main__":
 
@@ -149,16 +121,15 @@ if __name__ == "__main__":
     namespace = NAMESPACE
     minReplicas = 1
     maxReplicas = 30
-    rew_fun = REWARD_FUNCTION
+    rew_fun = REWARD_FUN
     # define alpha based on the selected reward function
     if rew_fun == "indicator": alpha = 100
     elif rew_fun == "quadratic": alpha = 2
     else: print("Could not set alpha.")
 
     dirs = create_directories()
-    models_dir = dirs[0]
-    tf_logs_dir = dirs[1]
-    pod_logs_dir = dirs[2]
+    tf_logs_dir = dirs[0]
+    pod_logs_dir = dirs[1]
     logger = enable_logging(pod_logs_dir)
     env = setup_environment(alpha, 
                             cluster, 
@@ -169,7 +140,16 @@ if __name__ == "__main__":
                             maxReplicas, 
                             rew_fun)
     env = Monitor(env, tf_logs_dir)
-    model = load_model(env, models_dir, tf_logs_dir)
-    train_model(model, models_dir)
+    model = load_selected_model(env, MODEL_DIR, tf_logs_dir)
+
+    obs = env.reset()
+    # Take actions in a loop
+    while True:
+        # Get the recommended action from the model
+        action, _states = model.predict(obs)
+        # Take the recommended action in the environment
+        obs, reward, done, info = env.step(action)
+        if done:
+            break
 
     env.close()
