@@ -38,7 +38,7 @@ spec:
       - name: gcr-json-key
       containers:
       - name: main
-        image: gcr.io/master-thesis-hpa/loadgenerator:0.3.1
+        image: gcr.io/master-thesis-hpa/loadgenerator:0.4
         command:
         - /bin/sh
         - -c
