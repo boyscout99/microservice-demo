@@ -1,10 +1,12 @@
 import subprocess
+import os
 import json
 from ArgParser import StringProcessor
 
 host = "http://frontend:80"
 processor = StringProcessor()
 WORKLOAD_TYPE = processor.parse_args()
+script_dir = os.path.dirname(os.path.abspath(__file__))
 
 def init():
     # Initialise the workload to 50 users
@@ -24,7 +26,8 @@ def periodic_workload():
     [16, 20] constant 150 users
     [21] abrupt increase to 1000 users
     """
-    file = open("workloads.json", "r")
+    file_dir = os.path.join(script_dir, "workloads.json")
+    file = open(file_dir, "r")
     data = json.load(file)
     # QUERIES FOR FRONTEND DEPLOYMENT
     actions = data[WORKLOAD_TYPE]
