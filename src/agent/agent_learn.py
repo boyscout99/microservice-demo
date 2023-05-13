@@ -7,7 +7,7 @@ from agent_env import GymEnvironment
 from datetime import datetime
 from datetime import timedelta
 from Logger import LoggerWriter
-from ArgParser_train import StringProcessor
+from ArgParser_learn import StringProcessor
 from stable_baselines3.common.monitor import Monitor
 
 MODULE = "stable_baselines3"
