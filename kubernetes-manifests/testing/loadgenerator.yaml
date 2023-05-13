@@ -87,7 +87,7 @@ spec:
           limits:
             cpu: 500m
             memory: 512Mi
-        volumes:
-        - name: file-storage
-          persistentVolumeClaim:
-            claimName: nfs-server-claim-load
+      volumes:
+      - name: file-storage
+        persistentVolumeClaim:
+          claimName: nfs-server-claim-load
