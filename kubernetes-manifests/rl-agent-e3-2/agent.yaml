@@ -24,7 +24,7 @@ roleRef:
 apiVersion: v1
 kind: PersistentVolume
 metadata:
-  name: nfs-server-e3-1
+  name: nfs-server-e3-2
 spec:
   claimRef:
     name: nfs-server-claim
