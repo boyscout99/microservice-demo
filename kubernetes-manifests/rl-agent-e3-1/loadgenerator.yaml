@@ -38,12 +38,15 @@ spec:
       - name: gcr-json-key
       containers:
       - name: main
-        image: gcr.io/master-thesis-hpa/loadgenerator:0.4
+        image: gcr.io/master-thesis-hpa/loadgenerator:0.4.1
+        volumeMounts:
+          - name: file-storage
+            mountPath: /app
         command:
         - /bin/sh
         - -c
         - |
-          python3 workload_gen.py --pattern mild
+          python3 workload_gen.py --pattern steps
         env:
         - name: FRONTEND_ADDR
           value: "frontend:80"
@@ -56,3 +59,7 @@ spec:
           limits:
             cpu: 500m
             memory: 512Mi
+        volumes:
+        - name: file-storage
+          persistentVolumeClaim:
+            claimName: nfs-server-claim

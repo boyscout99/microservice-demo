@@ -42,5 +42,59 @@
             "rate": 5,
             "wait": 300
         }
+    ],
+    "steps":[
+        {
+            "users": 100,
+            "rate": 50,
+            "wait": 600
+        },
+        {
+            "users": 250,
+            "rate": 50,
+            "wait": 600
+        },
+        {
+            "users": 500,
+            "rate": 50,
+            "wait": 600
+        },
+        {
+            "users": 1000,
+            "rate": 50,
+            "wait": 600
+        },
+        {
+            "users": 1500,
+            "rate": 50,
+            "wait": 600
+        }
+    ],
+    "steps_long":[
+        {
+            "users": 100,
+            "rate": 50,
+            "wait": 1200
+        },
+        {
+            "users": 250,
+            "rate": 50,
+            "wait": 1200
+        },
+        {
+            "users": 500,
+            "rate": 50,
+            "wait": 1200
+        },
+        {
+            "users": 1000,
+            "rate": 50,
+            "wait": 1200
+        },
+        {
+            "users": 1500,
+            "rate": 50,
+            "wait": 1200
+        }
     ]
 }
