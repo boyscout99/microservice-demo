@@ -54,10 +54,12 @@ spec:
         - |
           python3 /app/health_check.py & \
           python3 /app/agent_learn.py \
+          --deployment frontend \
           --namespace $POD_NAMESPACE \
           --cluster minikube \
-          --rew_fun indicator \
-          --model A2C
+          --rew_fun quadratic \
+          --model A2C \
+          --learn_rate 0.0007
         env:
         - name: POD_NAMESPACE
           valueFrom:

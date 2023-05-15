@@ -3,12 +3,34 @@ import sys
 import json
 import logging
 import importlib
+import numpy as np
 from agent_env import GymEnvironment
 from datetime import datetime
 from datetime import timedelta
 from Logger import LoggerWriter
 from ArgParser_learn import StringProcessor
 from stable_baselines3.common.monitor import Monitor
+from stable_baselines3.common.callbacks import BaseCallback
+
+class TensorboardCallback(BaseCallback):
+    def __init__(self, verbose=1):
+        super(TensorboardCallback, self).__init__(verbose)
+        self.episode_rewards = []
+        self.ep_rew_mean = 0
+
+    def _on_rollout_start(self) -> None:
+        self.episode_rewards = []
+
+    def _on_step(self) -> bool:
+        rewards = self.training_env.get_attr("reward")
+        self.episode_rewards.extend(rewards)
+        return True
+
+    def _on_rollout_end(self) -> None:
+        self.ep_rew_mean = np.mean(self.episode_rewards)
+        self.logger.record("rollout/ep_rew_mean", self.ep_rew_mean)
+        self.episode_rewards = []
+        print("self.ep_rew_mean: ", self.ep_rew_mean)
 
 MODULE = "stable_baselines3"
 t = datetime.now()
@@ -127,7 +149,8 @@ def train_model(model, models_dir):
     # training
     for i in range(1,10):
         print("Learning. Iteration: ", TIMESTEPS*i)
-        model.learn(total_timesteps=TIMESTEPS, reset_num_timesteps=False, tb_log_name=MODEL, log_interval=2)
+        rewards_callback = TensorboardCallback()
+        model.learn(total_timesteps=TIMESTEPS, reset_num_timesteps=False, tb_log_name=MODEL, log_interval=2, callback=rewards_callback)
         # model.learn(total_timesteps=TIMESTEPS, reset_num_timesteps=False)
         logging.info(f"Training iteration {i}, total_timesteps={TIMESTEPS*i}, saving model ...")
         print("Saving model ...")

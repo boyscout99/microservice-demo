@@ -3,18 +3,44 @@ import sys
 import json
 import logging
 import importlib
+import numpy as np
 from agent_env import GymEnvironment
 from datetime import datetime
 from datetime import timedelta
 from Logger import LoggerWriter
-from ArgParser import StringProcessor
+from ArgParser_learn import StringProcessor
+from stable_baselines3.common.monitor import Monitor
+from stable_baselines3.common.callbacks import BaseCallback
+
+class TensorboardCallback(BaseCallback):
+    def __init__(self, verbose=1):
+        super(TensorboardCallback, self).__init__(verbose)
+        self.episode_rewards = []
+        self.ep_rew_mean = 0
+
+    def _on_rollout_start(self) -> None:
+        self.episode_rewards = []
+
+    def _on_step(self) -> bool:
+        rewards = self.training_env.get_attr("reward")
+        self.episode_rewards.extend(rewards)
+        return True
+
+    def _on_rollout_end(self) -> None:
+        self.ep_rew_mean = np.mean(self.episode_rewards)
+        self.logger.record("rollout/ep_rew_mean", self.ep_rew_mean)
+        self.episode_rewards = []
+        print("self.ep_rew_mean: ", self.ep_rew_mean)
 
 MODULE = "stable_baselines3"
+t = datetime.now()
+t = t + timedelta(hours=2) # UTC+2
+timestamp = t.strftime("%Y_%m_%d_%H%M%S")
 
 # Read arguments
 processor = StringProcessor()
-NAMESPACE, CLUSTER, MODEL, REWARD_FUNCTION = processor.parse_args() # read namespace and model
-print(f"namespace {NAMESPACE}, cluster {CLUSTER}, model {MODEL}, reward function {REWARD_FUNCTION}.")
+DEPLOYMENT, NAMESPACE, CLUSTER, MODEL, REWARD_FUNCTION, LEARNING_RATE = processor.parse_args() # read namespace and model
+print(f"deployment {DEPLOYMENT}, namespace {NAMESPACE}, cluster {CLUSTER}, model {MODEL}, reward function {REWARD_FUNCTION}, learning rate {LEARNING_RATE}.")
 
 module = importlib.import_module(MODULE) # import stable_baselines3
 model_attr = getattr(module, MODEL) # e.g. from stable_baselines3 import A2C
@@ -25,7 +51,7 @@ script_dir = os.path.dirname(os.path.abspath(__file__))
 def create_directories():
     # create the necessary directories
     models_dir = os.path.join(script_dir, f"models/{NAMESPACE}/{MODEL}")
-    tf_logs_dir = os.path.join(script_dir, f"tf_logs/{NAMESPACE}/{MODEL}")
+    tf_logs_dir = os.path.join(script_dir, f"tf_logs/{NAMESPACE}/{MODEL}/{timestamp}")
     pod_logs_dir = os.path.join(script_dir, f"pod_logs/{NAMESPACE}/{MODEL}")
 
     if not os.path.exists(models_dir):
@@ -42,9 +68,6 @@ def create_directories():
     return dirs
 
 def enable_logging(pod_logs_dir):
-    t = datetime.now()
-    t = t + timedelta(hours=2)
-    timestamp = t.strftime("%Y_%m_%d_%H%M%S")
     pod_log_file = os.path.join(pod_logs_dir, f"{MODEL}_learn_{timestamp}.log")
     # logging.basicConfig(filename=pod_log_file, level=logging.DEBUG)  # Initialize logging
     logging.basicConfig(
@@ -78,12 +101,13 @@ def setup_environment(alpha,
     q_file = open(queries_json_path, "r")
     data = json.load(q_file)
     # QUERIES FOR FRONTEND DEPLOYMENT
-    _queries = data[cluster][namespace]
+    _queries = data[cluster][name][namespace]
     queries = [
         _queries["q_pod_replicas"],
         _queries["q_request_duration"],
         _queries["q_cpu_usage"],
         _queries["q_memory_usage"],
+        _queries["q_rps"]
     ]
     q_file.close()
 
@@ -116,7 +140,7 @@ def load_model(env, models_dir, tf_logs_dir):
         print("No existing models found. Starting from scratch.")
         logging.info("No existing models found. Starting from scratch.")
         # Create the model
-        model = model_attr("MlpPolicy", env, verbose=1, tensorboard_log=tf_logs_dir)
+        model = model_attr("MlpPolicy", env, learning_rate=float(LEARNING_RATE), verbose=1, tensorboard_log=tf_logs_dir)
 
     return model
 
@@ -125,7 +149,8 @@ def train_model(model, models_dir):
     # training
     for i in range(1,10):
         print("Learning. Iteration: ", TIMESTEPS*i)
-        model.learn(total_timesteps=TIMESTEPS, reset_num_timesteps=False, tb_log_name=MODEL, log_interval=1)
+        rewards_callback = TensorboardCallback()
+        model.learn(total_timesteps=TIMESTEPS, reset_num_timesteps=False, tb_log_name=MODEL, log_interval=2, callback=rewards_callback)
         # model.learn(total_timesteps=TIMESTEPS, reset_num_timesteps=False)
         logging.info(f"Training iteration {i}, total_timesteps={TIMESTEPS*i}, saving model ...")
         print("Saving model ...")
@@ -141,7 +166,8 @@ if __name__ == "__main__":
     # cluster = "minikube"
     cluster = CLUSTER
     url = 'http://prometheus.istio-system.svc.cluster.local:9090'  # URL for Prometheus API
-    name = "frontend" # deployment name
+    # name = "frontend" # deployment name
+    name = DEPLOYMENT
     #  namespace = "rl-agent" # namespace
     namespace = NAMESPACE
     minReplicas = 1
@@ -165,6 +191,7 @@ if __name__ == "__main__":
                             minReplicas, 
                             maxReplicas, 
                             rew_fun)
+    env = Monitor(env, tf_logs_dir)
     model = load_model(env, models_dir, tf_logs_dir)
     train_model(model, models_dir)
 

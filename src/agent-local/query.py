@@ -2,11 +2,13 @@
 This class is used to call the Prometheus API and query for the state
 of the system.
 '''
+
 from prometheus_api_client import PrometheusConnect
 from statistics import mean
 import requests.exceptions
 import json
 import time
+import sys
 
 class PrometheusClient:
 
@@ -25,8 +27,9 @@ class PrometheusClient:
         try:
             result = self.prom.custom_query(query = query)
             # take the mean of the values (TODO temporary)
+            print(result)
             value = mean([float(q["value"][1]) for q in result])
-            # print("Query result: ", value)
+            print("Query result: ", value)
             return value
 
         except requests.exceptions.RequestException as e:
@@ -36,7 +39,7 @@ class PrometheusClient:
 
         except Exception as e:
             print(f"Unexpected error occurred: {e}")
-            return None
+            sys.exit(1)
 
     def get_results(self, queries):
         '''
@@ -61,8 +64,8 @@ class PrometheusClient:
                         found = 1
                     else:
                         tentatives += 1
-                        print(f"Missing value, repeating query. Tentative {tentatives}.")
-                        time.sleep(tentatives**2) # exponential backoff strategy
+                        print(f"Missing value, repeating query. Tentative {tentatives}. Waiting {tentatives**2*30} seconds ...")
+                        time.sleep(tentatives**2*30) # exponential backoff strategy up to 9 minutes
                 # if tentatives == 3:
                 #     # call for interpolation
                 #     interpolation()

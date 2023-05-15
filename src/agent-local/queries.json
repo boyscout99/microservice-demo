@@ -1,42 +1,79 @@
 {
     "minikube":{
-        "rl-agent":{
-            "q_request_duration": "max(rate(istio_request_duration_milliseconds_count{pod=~\"frontend-.*\", request_protocol=\"grpc\", response_code=\"200\", namespace=\"rl-agent\"}[1m]))",
-            "q_cpu_usage": "rate(container_cpu_usage_seconds_total{pod=~\"frontend-.*\", namespace=\"rl-agent\", container=\"server\"}[1m])/0.1*100",
-            "q_memory_usage": "rate(container_memory_usage_bytes{pod=~\"frontend-.*\", namespace=\"rl-agent\", container=\"server\"}[1m])/64000000",
-            "q_pod_replicas": "count(kube_pod_info{pod=~\"frontend-.*\", namespace=\"rl-agent\"})"
+        "frontend":{
+            "rl-agent":{
+                "q_request_duration": "max(rate(istio_request_duration_milliseconds_count{pod=~\"frontend-.*\", request_protocol=\"grpc\", response_code=\"200\", namespace=\"rl-agent\"}[1m]))",
+                "q_cpu_usage": "rate(container_cpu_usage_seconds_total{pod=~\"frontend-.*\", namespace=\"rl-agent\"}[1m])/0.1*100",
+                "q_memory_usage": "rate(container_memory_usage_bytes{pod=~\"frontend-.*\", namespace=\"rl-agent\"}[1m])/64000000",
+                "q_pod_replicas": "count(kube_pod_info{pod=~\"frontend-.*\", namespace=\"rl-agent\"})",
+                "q_rps": "sum by (pod) (rate(istio_requests_total{namespace=\"rl-agent\", destination_workload=\"frontend\", pod=~\"frontend-.*\"}[1m]))"
+            }
         }
     },
     "gke":{
-        "rl-agent":{
-            "q_request_duration": "max(rate(istio_request_duration_milliseconds_count{pod=~\"frontend-.*\", request_protocol=\"grpc\", response_code=\"200\", namespace=\"rl-agent\"}[1m]))",
-            "q_cpu_usage": "rate(container_cpu_usage_seconds_total{pod=~\"frontend-.*\", namespace=\"rl-agent\", container=\"server\"}[1m])/0.1*100",
-            "q_memory_usage": "rate(container_memory_usage_bytes{pod=~\"frontend-.*\", namespace=\"rl-agent\", container=\"server\"}[1m])/64000000",
-            "q_pod_replicas": "count(kube_pod_info{pod=~\"frontend-.*\", namespace=\"rl-agent\"})"
+        "frontend":{
+            "rl-agent":{
+                "q_request_duration": "max(rate(istio_request_duration_milliseconds_count{pod=~\"frontend-.*\", request_protocol=\"grpc\", response_code=\"200\", namespace=\"rl-agent\"}[1m]))",
+                "q_cpu_usage": "rate(container_cpu_usage_seconds_total{pod=~\"frontend-.*\", namespace=\"rl-agent\", container=\"server\"}[1m])/0.1*100",
+                "q_memory_usage": "rate(container_memory_usage_bytes{pod=~\"frontend-.*\", namespace=\"rl-agent\", container=\"server\"}[1m])/64000000",
+                "q_pod_replicas": "count(kube_pod_info{pod=~\"frontend-.*\", namespace=\"rl-agent\"})"
+            },
+            "rl-agent-e1-a2c":{
+                "q_request_duration": "max(rate(istio_request_duration_milliseconds_count{pod=~\"frontend-.*\", request_protocol=\"grpc\", response_code=\"200\", namespace=\"rl-agent-e1-a2c\"}[1m]))",
+                "q_cpu_usage": "rate(container_cpu_usage_seconds_total{pod=~\"frontend-.*\", namespace=\"rl-agent-e1-a2c\", container=\"server\"}[1m])/0.1*100",
+                "q_memory_usage": "rate(container_memory_usage_bytes{pod=~\"frontend-.*\", namespace=\"rl-agent-e1-a2c\", container=\"server\"}[1m])/64000000",
+                "q_pod_replicas": "count(kube_pod_info{pod=~\"frontend-.*\", namespace=\"rl-agent-e1-a2c\"})"
+            },
+            "rl-agent-e1-ppo":{
+                "q_request_duration": "max(rate(istio_request_duration_milliseconds_count{pod=~\"frontend-.*\", request_protocol=\"grpc\", response_code=\"200\", namespace=\"rl-agent-e1-ppo\"}[1m]))",
+                "q_cpu_usage": "rate(container_cpu_usage_seconds_total{pod=~\"frontend-.*\", namespace=\"rl-agent-e1-ppo\", container=\"server\"}[1m])/0.1*100",
+                "q_memory_usage": "rate(container_memory_usage_bytes{pod=~\"frontend-.*\", namespace=\"rl-agent-e1-ppo\", container=\"server\"}[1m])/64000000",
+                "q_pod_replicas": "count(kube_pod_info{pod=~\"frontend-.*\", namespace=\"rl-agent-e1-ppo\"})",
+                "q_rps": "sum by (pod) (rate(istio_requests_total{namespace=\"rl-agent-e1-ppo\", destination_workload=\"frontend\", pod=~\"frontend-.*\"}[1m]))"
+            },
+            "rl-agent-e4-1":{
+                "q_request_duration": "avg(sum by (pod) (rate(istio_request_duration_milliseconds_sum{namespace=\"rl-agent-e4-1\", response_code=\"200\", pod=~\"frontend-.*\"}[2m]))) / avg(sum by (pod) (rate(istio_request_duration_milliseconds_count{namespace=\"rl-agent-e4-1\", response_code=\"200\", pod=~\"frontend-.*\"}[2m])))",
+                "q_cpu_usage": "avg(rate(container_cpu_usage_seconds_total{namespace=\"rl-agent-e4-1\", pod=~\"frontend-.*\"}[5m]))/0.2*100",
+                "q_memory_usage": "avg(rate(container_memory_usage_bytes{namespace=\"rl-agent-e4-1\", pod=~\"frontend-.*\", image=\"gcr.io/master-thesis-hpa/frontend:0cff6aa\"}[2m]))/64000000",
+                "q_pod_replicas": "count(kube_pod_info{pod=~\"frontend-.*\", namespace=\"rl-agent-e4-1\"})",
+                "q_rps": "sum by (pod) (rate(istio_requests_total{namespace=\"rl-agent-e4-1\", destination_workload=\"frontend\", pod=~\"frontend-.*\"}[1m]))"
+            },
+            "rl-agent-e4-2":{
+                "q_request_duration": "max(rate(istio_request_duration_milliseconds_count{pod=~\"frontend-.*\", request_protocol=\"grpc\", response_code=\"200\", namespace=\"rl-agent-e4-2\"}[1m]))",
+                "q_cpu_usage": "rate(container_cpu_usage_seconds_total{pod=~\"frontend-.*\", namespace=\"rl-agent-e4-2\", container=\"server\"}[1m])/0.1*100",
+                "q_memory_usage": "rate(container_memory_usage_bytes{pod=~\"frontend-.*\", namespace=\"rl-agent-e4-2\", container=\"server\"}[1m])/64000000",
+                "q_pod_replicas": "count(kube_pod_info{pod=~\"frontend-.*\", namespace=\"rl-agent-e4-2\"})"
+            },
+            "rl-agent-e3-1":{
+                "q_request_duration": "avg(sum by (pod) (rate(istio_request_duration_milliseconds_sum{namespace=\"rl-agent-e3-1\", response_code=\"200\", pod=~\"frontend-.*\"}[2m]))) / avg(sum by (pod) (rate(istio_request_duration_milliseconds_count{namespace=\"rl-agent-e3-1\", response_code=\"200\", pod=~\"frontend-.*\"}[2m])))",
+                "q_cpu_usage": "avg(rate(container_cpu_usage_seconds_total{namespace=\"rl-agent-e3-1\", pod=~\"frontend-.*\"}[5m]))/0.2*100",
+                "q_memory_usage": "avg(rate(container_memory_usage_bytes{namespace=\"rl-agent-e3-1\", pod=~\"frontend-.*\", image=\"gcr.io/master-thesis-hpa/frontend:0cff6aa\"}[2m]))/64000000",
+                "q_pod_replicas": "count(kube_pod_info{pod=~\"frontend-.*\", namespace=\"rl-agent-e3-1\"})",
+                "q_rps": "sum by (pod) (rate(istio_requests_total{namespace=\"rl-agent-e3-1\", destination_workload=\"frontend\", pod=~\"frontend-.*\"}[1m]))"
+            },
+            "rl-agent-e3-2":{
+                "q_request_duration": "avg(sum by (pod) (rate(istio_request_duration_milliseconds_sum{namespace=\"rl-agent-e3-2\", response_code=\"200\", pod=~\"frontend-.*\"}[2m]))) / avg(sum by (pod) (rate(istio_request_duration_milliseconds_count{namespace=\"rl-agent-e3-2\", response_code=\"200\", pod=~\"frontend-.*\"}[2m])))",
+                "q_cpu_usage": "avg(rate(container_cpu_usage_seconds_total{namespace=\"rl-agent-e3-2\", pod=~\"frontend-.*\"}[5m]))/0.2*100",
+                "q_memory_usage": "avg(rate(container_memory_usage_bytes{namespace=\"rl-agent-e3-2\", pod=~\"frontend-.*\", image=\"gcr.io/master-thesis-hpa/frontend:0cff6aa\"}[2m]))/64000000",
+                "q_pod_replicas": "count(kube_pod_info{pod=~\"frontend-.*\", namespace=\"rl-agent-e3-2\"})",
+                "q_rps": "sum by (pod) (rate(istio_requests_total{namespace=\"rl-agent-e3-2\", destination_workload=\"frontend\", pod=~\"frontend-.*\"}[1m]))"
+            },
+            "testing":{
+                "q_request_duration": "avg(sum by (pod) (rate(istio_request_duration_milliseconds_sum{namespace=\"testing\", response_code=\"200\", pod=~\"frontend-.*\"}[2m]))) / avg(sum by (pod) (rate(istio_request_duration_milliseconds_count{namespace=\"testing\", response_code=\"200\", pod=~\"frontend-.*\"}[2m])))",
+                "q_cpu_usage": "avg(rate(container_cpu_usage_seconds_total{namespace=\"testing\", pod=~\"frontend-.*\"}[5m]))/0.2*100",
+                "q_memory_usage": "avg(rate(container_memory_usage_bytes{namespace=\"testing\", pod=~\"frontend-.*\", image=\"gcr.io/master-thesis-hpa/frontend:0cff6aa\"}[2m]))/64000000",
+                "q_pod_replicas": "count(kube_pod_info{pod=~\"frontend-.*\", namespace=\"testing\"})",
+                "q_rps": "sum by (pod) (rate(istio_requests_total{namespace=\"testing\", destination_workload=\"frontend\", pod=~\"frontend-.*\"}[1m]))"
+            }
         },
-        "rl-agent-e1-a2c":{
-            "q_request_duration": "max(rate(istio_request_duration_milliseconds_count{pod=~\"frontend-.*\", request_protocol=\"grpc\", response_code=\"200\", namespace=\"rl-agent-e1-a2c\"}[1m]))",
-            "q_cpu_usage": "rate(container_cpu_usage_seconds_total{pod=~\"frontend-.*\", namespace=\"rl-agent-e1-a2c\", container=\"server\"}[1m])/0.1*100",
-            "q_memory_usage": "rate(container_memory_usage_bytes{pod=~\"frontend-.*\", namespace=\"rl-agent-e1-a2c\", container=\"server\"}[1m])/64000000",
-            "q_pod_replicas": "count(kube_pod_info{pod=~\"frontend-.*\", namespace=\"rl-agent-e1-a2c\"})"
-        },
-        "rl-agent-e1-ppo":{
-            "q_request_duration": "max(rate(istio_request_duration_milliseconds_count{pod=~\"frontend-.*\", request_protocol=\"grpc\", response_code=\"200\", namespace=\"rl-agent-e1-ppo\"}[1m]))",
-            "q_cpu_usage": "rate(container_cpu_usage_seconds_total{pod=~\"frontend-.*\", namespace=\"rl-agent-e1-ppo\", container=\"server\"}[1m])/0.1*100",
-            "q_memory_usage": "rate(container_memory_usage_bytes{pod=~\"frontend-.*\", namespace=\"rl-agent-e1-ppo\", container=\"server\"}[1m])/64000000",
-            "q_pod_replicas": "count(kube_pod_info{pod=~\"frontend-.*\", namespace=\"rl-agent-e1-ppo\"})"
-        },
-        "rl-agent-e4-1":{
-            "q_request_duration": "max(rate(istio_request_duration_milliseconds_count{pod=~\"frontend-.*\", request_protocol=\"grpc\", response_code=\"200\", namespace=\"rl-agent-e4-1\"}[1m]))",
-            "q_cpu_usage": "rate(container_cpu_usage_seconds_total{pod=~\"frontend-.*\", namespace=\"rl-agent-e4-1\", container=\"server\"}[1m])/0.1*100",
-            "q_memory_usage": "rate(container_memory_usage_bytes{pod=~\"frontend-.*\", namespace=\"rl-agent-e4-1\", container=\"server\"}[1m])/64000000",
-            "q_pod_replicas": "count(kube_pod_info{pod=~\"frontend-.*\", namespace=\"rl-agent-e4-1\"})"
-        },
-        "rl-agent-e4-2":{
-            "q_request_duration": "max(rate(istio_request_duration_milliseconds_count{pod=~\"frontend-.*\", request_protocol=\"grpc\", response_code=\"200\", namespace=\"rl-agent-e4-2\"}[1m]))",
-            "q_cpu_usage": "rate(container_cpu_usage_seconds_total{pod=~\"frontend-.*\", namespace=\"rl-agent-e4-2\", container=\"server\"}[1m])/0.1*100",
-            "q_memory_usage": "rate(container_memory_usage_bytes{pod=~\"frontend-.*\", namespace=\"rl-agent-e4-2\", container=\"server\"}[1m])/64000000",
-            "q_pod_replicas": "count(kube_pod_info{pod=~\"frontend-.*\", namespace=\"rl-agent-e4-2\"})"
+        "paymentservice":{
+            "rl-agent-e5-a2c":{
+                    "q_request_duration": "avg(sum by (pod) (rate(istio_request_duration_milliseconds_sum{namespace=\"rl-agent-e5-a2c\", response_code=\"200\", pod=~\"paymentservice-.*\"}[2m]))) / avg(sum by (pod) (rate(istio_request_duration_milliseconds_count{namespace=\"rl-agent-e5-a2c\", response_code=\"200\", pod=~\"paymentservice-.*\"}[2m])))",
+                    "q_cpu_usage": "avg(rate(container_cpu_usage_seconds_total{namespace=\"rl-agent-e5-a2c\", pod=~\"paymentservice-.*\"}[5m]))/0.1*100",
+                    "q_memory_usage": "avg(rate(container_memory_usage_bytes{namespace=\"rl-agent-e5-a2c\", pod=~\"paymentservice-.*\", image=\"gcr.io/master-thesis-hpa/paymentservice:0cff6aa\"}[2m]))/64000000",
+                    "q_pod_replicas": "count(kube_pod_info{pod=~\"paymentservice-.*\", namespace=\"rl-agent-e5-a2c\"})",
+                    "q_rps": "sum by (pod) (rate(istio_requests_total{namespace=\"rl-agent-e5-a2c\", destination_workload=\"paymentservice\", pod=~\"paymentservice-.*\"}[1m]))"
+            }
         }
     } 
 }

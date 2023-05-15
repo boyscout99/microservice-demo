@@ -6,6 +6,7 @@ from Query import PrometheusClient
 
 import numpy as np
 import time
+import sys
 
 class GymEnvironment(gym.Env):
 
@@ -34,8 +35,9 @@ class GymEnvironment(gym.Env):
         self.rew_fun = rew_fun
         self.scale = KubernetesEnvironment(self.name, self.namespace, self.minReplicas, self.maxReplicas)
 
+        self.reward = 0
         self.action_space = spaces.Discrete(3)  # Action space with 3 discrete actions: 1, 0, -1
-        self.observation_space = spaces.Box(low=0, high=np.inf, shape=(4,), dtype=np.float64)  # Observation space with 4 continuous elements: response time, CPU usage, memory usage, replicas
+        self.observation_space = spaces.Box(low=0, high=np.inf, shape=(5,), dtype=np.float64)  # Observation space with 4 continuous elements: response time, CPU usage, memory usage, replicas
 
     def reset(self):
         # Reset the environment, e.g., initialize the pod states and retrieve initial observation
@@ -75,21 +77,23 @@ class GymEnvironment(gym.Env):
         # Calculate reward based on the new observation and previous response time
         SLA_RESP_TIME = 100 # 100 ms
         if self.rew_fun == "indicator":
-            reward = -(self.alpha * int(new_observation[1] > SLA_RESP_TIME) + self.current_replicas)
+            self.reward = -(self.alpha * int(new_observation[1] > SLA_RESP_TIME) + self.current_replicas)
         elif self.rew_fun == "quadratic":
             # Quadratic reward function on exceeded time constraint
             delta_t = new_observation[1]-SLA_RESP_TIME
             if delta_t > 0:
-                # SLA violated, penalise a lot time
+                # SLA violated, penalise a lot time exceeded
                 # e.g. delta_t = 5ms, replicas = 30, reward = +5
                 # e.g. delta_t = 50ms, replicas = 8, reward = -2492
-                reward = -delta_t**2 - self.current_replicas
+                self.reward = -delta_t**2 - self.current_replicas
             else:
                 # SLA satisfided, try to optimise number of replicas
-                reward = delta_t - self.alpha*self.current_replicas
-            print("Reward: ", reward)
+                self.reward = delta_t - self.alpha*self.current_replicas
         else:
             print("ERROR: your reward function selection is not valid.")
+            sys.exit(1)
+        
+        print("Reward: ", self.reward)
 
         # Update the previous response time for the next step
         # self.previous_response_time = new_observation[1]
@@ -103,7 +107,7 @@ class GymEnvironment(gym.Env):
         print("Waiting 30 seconds before taking next scaling action ...")
         time.sleep(30)
 
-        return new_observation, reward, done, info
+        return new_observation, self.reward, done, info
 
     def _get_observation(self):
         # Retrieve observation from Prometheus API, e.g., query response time, CPU usage, memory usage, and replicas
