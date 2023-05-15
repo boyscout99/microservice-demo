@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: PersistentVolume
 metadata:
-  name: nfs-server-testing-load
+  name: nfs-server-default-load
 spec:
   claimRef:
     name: nfs-server-claim-load
@@ -25,7 +25,7 @@ spec:
     requests:
       storage: 1Gi
   storageClassName: ""
-  volumeName: nfs-server-testing-load
+  volumeName: nfs-server-default-load
 ---
 apiVersion: apps/v1
 kind: Deployment
