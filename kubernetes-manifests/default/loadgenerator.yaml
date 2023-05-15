@@ -1,16 +1,32 @@
-# Copyright 2018 Google LLC
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#      http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: nfs-server-testing-load
+spec:
+  claimRef:
+    name: nfs-server-claim-load
+    # namespace: testing
+  capacity:
+    storage: 1T
+  accessModes:
+    - ReadWriteMany
+  nfs:
+    path: /vol1/microservice-demo/src/loadgenerator # path to the shared folder in the server
+    server: 10.167.184.82
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: nfs-server-claim-load
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 1Gi
+  storageClassName: ""
+  volumeName: nfs-server-testing-load
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -30,11 +46,6 @@ spec:
       serviceAccountName: default
       terminationGracePeriodSeconds: 5
       restartPolicy: Always
-      # securityContext:
-      #   fsGroup: 1000
-      #   runAsGroup: 1000
-      #   runAsNonRoot: true
-      #   runAsUser: 1000
       initContainers:
       - command:
         - /bin/sh
@@ -47,13 +58,6 @@ spec:
               exit 1
           fi
         name: frontend-check
-        # securityContext:
-        #   allowPrivilegeEscalation: false
-        #   capabilities:
-        #     drop:
-        #       - ALL
-        #   privileged: false
-        #   readOnlyRootFilesystem: true
         image: busybox:latest
         env:
         - name: FRONTEND_ADDR
@@ -62,15 +66,15 @@ spec:
       - name: gcr-json-key
       containers:
       - name: main
-        # securityContext:
-        #   allowPrivilegeEscalation: false
-        #   capabilities:
-        #     drop:
-        #       - ALL
-        #   privileged: false
-        #   readOnlyRootFilesystem: true
-        image: gcr.io/master-thesis-hpa/loadgenerator:0.2
-        # imagePullPolicy: Always
+        image: gcr.io/master-thesis-hpa/loadgenerator:0.4.1
+        volumeMounts:
+          - name: file-storage
+            mountPath: /app
+        command:
+        - /bin/sh
+        - -c
+        - |
+          python3 /app/workload_gen.py --pattern steps
         env:
         - name: FRONTEND_ADDR
           value: "frontend:80"
@@ -83,3 +87,7 @@ spec:
           limits:
             cpu: 500m
             memory: 512Mi
+      volumes:
+      - name: file-storage
+        persistentVolumeClaim:
+          claimName: nfs-server-claim-load
