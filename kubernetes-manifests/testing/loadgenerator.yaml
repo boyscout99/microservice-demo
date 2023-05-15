@@ -5,7 +5,7 @@ metadata:
 spec:
   claimRef:
     name: nfs-server-claim-load
-    namespace: testing
+    # namespace: testing
   capacity:
     storage: 1T
   accessModes:
