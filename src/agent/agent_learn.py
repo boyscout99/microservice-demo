@@ -176,6 +176,7 @@ if __name__ == "__main__":
     # define alpha based on the selected reward function
     if rew_fun == "indicator": alpha = 100
     elif rew_fun == "quadratic": alpha = 2
+    elif rew_fun == "quad_cpu_thr": alpha = 2
     else: print("Could not set alpha.")
 
     dirs = create_directories()
