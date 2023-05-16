@@ -89,6 +89,19 @@ class GymEnvironment(gym.Env):
             else:
                 # SLA satisfided, try to optimise number of replicas
                 self.reward = delta_t - self.alpha*self.current_replicas
+        elif self.rew_fun == "quad_cpu_thr":
+            # Quadratic reward function on exceeded time constraint
+            delta_t = new_observation[1]-SLA_RESP_TIME
+            # penalise CPU throttling
+            gamma = (new_observation[2]>100)*(100 - new_observation[2])
+            if delta_t > 0:
+                # SLA violated, penalise a lot time exceeded
+                # e.g. delta_t = 5ms, replicas = 30, reward = +5
+                # e.g. delta_t = 50ms, replicas = 8, reward = -2492
+                self.reward = -delta_t**2 + self.current_replicas - gamma
+            else:
+                # SLA satisfided, try to optimise number of replicas
+                self.reward = delta_t - self.alpha*self.current_replicas - gamma
         else:
             print("ERROR: your reward function selection is not valid.")
             sys.exit(1)
