@@ -98,7 +98,7 @@ spec:
           --deployment frontend \
           --namespace $POD_NAMESPACE \
           --cluster gke \
-          --rew_fun quad_ cpu_th\
+          --rew_fun quad_cpu_th \
           --model A2C \
           --learn_rate 0.0007
         env:
