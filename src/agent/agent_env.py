@@ -104,8 +104,8 @@ class GymEnvironment(gym.Env):
         info = {}
 
         # wait one minute before taking another action
-        print("Waiting 30 seconds before taking next scaling action ...")
-        time.sleep(30)
+        # print("Waiting 30 seconds before taking next scaling action ...")
+        # time.sleep(30)
 
         return new_observation, self.reward, done, info
 
