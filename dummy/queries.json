@@ -1,0 +1,20 @@
+{
+    "local":{
+        "frontend":{
+            "rl-agent":{
+                "q_request_duration": 240,
+                "q_cpu_usage": 300,
+                "q_memory_usage": 10,
+                "q_pod_replicas": 1,
+                "q_rps": 75
+            },
+            "rl-agent-2":{
+                "q_cpu_usage": 300,
+                "q_memory_usage": 10,
+                "q_pod_replicas": 1,
+                "q_rps": 75
+            }
+        }
+    }
+}
+  

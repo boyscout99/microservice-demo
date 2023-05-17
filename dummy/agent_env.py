@@ -1,8 +1,8 @@
 import gym
 from gym import spaces
 
-from Scale import KubernetesEnvironment
-from Query import PrometheusClient
+# from Scale import KubernetesEnvironment
+# from Query import PrometheusClient
 
 import numpy as np
 import time
@@ -26,29 +26,32 @@ class GymEnvironment(gym.Env):
 
         self.queries = queries
         self.url = url
-        self.prom = PrometheusClient(self.url)
+        # self.prom = PrometheusClient(self.url)
 
         self.name = name
         self.namespace = namespace
         self.minReplicas = minReplicas
         self.maxReplicas = maxReplicas
         self.rew_fun = rew_fun
-        self.scale = KubernetesEnvironment(self.name, self.namespace, self.minReplicas, self.maxReplicas)
+        # self.scale = KubernetesEnvironment(self.name, self.namespace, self.minReplicas, self.maxReplicas)
 
         self.reward = 0
         self.action_space = spaces.Discrete(3)  # Action space with 3 discrete actions: 1, 0, -1
-        self.observation_space = spaces.Box(low=0, high=np.inf, shape=(5,), dtype=np.float64)  # Observation space with 4 continuous elements: response time, CPU usage, memory usage, replicas
+        # self.observation_space = spaces.Box(low=0, high=np.inf, shape=(5,), dtype=np.float64)  # Observation space with 4 continuous elements: response time, CPU usage, memory usage, replicas
+        self.observation_space = spaces.Box(low=0, high=np.inf, shape=(4,), dtype=np.float64)  # Observation space with 4 continuous elements: response time, CPU usage, memory usage, replicas
 
     def reset(self):
         # Reset the environment, e.g., initialize the pod states and retrieve initial observation
         # TODO do I need to reset the workload pattern?
-        self.scale.reset_replicas() # Initialize current number of replicas as 1
-        print("Waiting 30 seconds to stabilise after reset ...")
-        time.sleep(30)
+        # self.scale.reset_replicas() # Initialize current number of replicas as 1
+        # set replicas to 1:
+        self.queries["q_pod_replicas"] = 1
+        print("Waiting 1 seconds to stabilise after reset ...")
+        time.sleep(1)
 
         self.current_observation = self._get_observation()  # Retrieve initial observation from Prometheus API
         self.current_replicas = self.current_observation[0]
-        self.previous_response_time = self.current_observation[1]  # Initialize previous response time
+        # self.previous_response_time = self.current_observation[1]  # Initialize previous response time
         return self.current_observation
 
     def step(self, action):
@@ -61,17 +64,38 @@ class GymEnvironment(gym.Env):
             pass
         elif action == 1:  # Increase replicas
             print("Taking action +1")
-            self.scale.update_replicas(1)
-            self.current_replicas += 1
+            # self.scale.update_replicas(1)
+            self.queries["q_pod_replicas"] += 1
+            if self.queries["q_pod_replicas"] > 30:
+                print(f"Cannot have more than maxReplicas. Setting to {self.maxReplicas}.")
+                self.queries["q_pod_replicas"] = 30
+
+            # Consequences of the action on the environment
+            # reduce CPU utilisation
+            self.queries["q_cpu_usage"] = self.queries["q_cpu_usage"] - 50*self.queries["q_pod_replicas"]
+            # reduce memory utilisation
+            self.queries["q_memory_usage"] = self.queries["q_memory_usage"] - 0.5*self.queries["q_memory_usage"]*self.queries["q_pod_replicas"]
+            # reduce service latency
+            # self.queries["q_request_duration"] = 240 - 40*self.queries["q_pod_replicas"]
+
         elif action == 2:  # Decrease replicas
             print("Taking action -1")
-            self.scale.update_replicas(-1)
-            self.current_replicas -= 1
+            # self.scale.update_replicas(-1)
+            self.queries["q_pod_replicas"] -= 1
+            if self.queries["q_pod_replicas"] < 1:
+                print(f"Cannot have less than minReplicas. Setting to {self.minReplicas}.")
+                self.queries["q_pod_replicas"] = 1
 
-        # Get the new observation from Prometheus API
-        # TODO wait 15 seconds to stabilise?
-        print("Waiting 30 seconds to stabilise ...")
-        time.sleep(30)
+            # Consequences of the action on the environment
+            # increase CPU utilisation
+            self.queries["q_cpu_usage"] = self.queries["q_cpu_usage"] + 0.5*self.queries["q_cpu_usage"]*self.queries["q_pod_replicas"]
+            # increase memory utilisation
+            self.queries["q_memory_usage"] = self.queries["q_memory_usage"] + 0.5*self.queries["q_memory_usage"]*self.queries["q_pod_replicas"]
+            # increase service latency
+            # self.queries["q_request_duration"] = 240 + 40*self.queries["q_pod_replicas"]
+        
+        self.current_replicas = self.queries["q_pod_replicas"]
+        # get new observation
         new_observation = self._get_observation()
 
         # Calculate reward based on the new observation and previous response time
@@ -103,20 +127,31 @@ class GymEnvironment(gym.Env):
             else:
                 # SLA satisfided, try to optimise number of replicas
                 self.reward = delta_t - self.alpha*self.current_replicas + gamma
-        elif self.rew_fun == "quad_new":
+        elif self.rew_fun == "linear_1":
             # Quadratic reward function on exceeded time constraint
             delta_t = new_observation[1]-SLA_RESP_TIME
             if delta_t > 0:
                 # SLA violated, penalise a lot time exceeded
                 self.reward = -100 + self.current_replicas
+                print(f"self.reward = -100 +  {self.current_replicas} = {self.reward}")
             else:
                 # SLA satisfided, try to optimise number of replicas
-                self.reward = self.current_replicas
+                self.reward = 100
+                print(f"self.reward = {self.reward}")
+        elif self.rew_fun == "linear_2":
+            # Quadratic reward function on exceeded time constraint
+            delta_t = new_observation[1]-SLA_RESP_TIME
+            if delta_t > 0:
+                # SLA violated, penalise a lot time exceeded
+                self.reward = -100 + self.current_replicas
+                print(f"self.reward = -100 +  {self.current_replicas} = {self.reward}")
+            else:
+                # SLA satisfided, try to optimise number of replicas
+                self.reward = 100 - 3*self.current_replicas
+                print(f"self.reward = {self.reward}")
         else:
             print("ERROR: your reward function selection is not valid.")
             sys.exit(1)
-        
-        print("Reward: ", self.reward)
 
         # Update the previous response time for the next step
         # self.previous_response_time = new_observation[1]
@@ -134,16 +169,17 @@ class GymEnvironment(gym.Env):
 
     def _get_observation(self):
         # Retrieve observation from Prometheus API, e.g., query response time, CPU usage, memory usage, and replicas
-        observation = self.prom.get_results(self.queries)
+        # observation = self.prom.get_results(self.queries)
+        observation = [
+            self.queries["q_pod_replicas"],
+            # self.queries["q_request_duration"],
+            self.queries["q_cpu_usage"],
+            self.queries["q_memory_usage"],
+            self.queries["q_rps"]
+        ]
         observation = np.array(observation)
-
-        # Check for missing values in the observation
-        if np.any(np.isnan(observation)):
-            # Use the previous observation if any of the values are missing
-            print("Attention! Missing values in results[], substituting values of previous observation ...")
-            observation = np.where(np.isnan(observation), self.current_observation, observation)
-
         # Update the current observation for the next step
         self.current_observation = observation
+        print(f"self.current_observation: {self.current_observation}")
 
         return observation
