@@ -99,11 +99,6 @@
     ],
     "stable":[
         {
-            "users": 100,
-            "rate": 50,
-            "wait": 3600
-        },
-        {
             "users": 250,
             "rate": 50,
             "wait": 3600
