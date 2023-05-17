@@ -147,7 +147,7 @@ def load_model(env, models_dir, tf_logs_dir):
 def train_model(model, models_dir):
     TIMESTEPS = 100
     # training
-    for i in range(1,30):
+    for i in range(1,10):
         print("Learning. Iteration: ", TIMESTEPS*i)
         rewards_callback = TensorboardCallback()
         model.learn(total_timesteps=TIMESTEPS, reset_num_timesteps=False, tb_log_name=MODEL, log_interval=2, callback=rewards_callback)

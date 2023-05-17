@@ -1,3 +1,31 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: nfs-server-e1-a2c-load
+spec:
+  claimRef:
+    name: nfs-server-claim-load
+    namespace: rl-agent-e1-a2c
+  capacity:
+    storage: 1T
+  accessModes:
+    - ReadWriteMany
+  nfs:
+    path: /vol1/microservice-demo/src/loadgenerator # path to the shared folder in the server
+    server: 10.167.184.82
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: nfs-server-claim-load
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 1Gi
+  storageClassName: ""
+  volumeName: nfs-server-e1-a2c-load
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -38,7 +66,15 @@ spec:
       - name: gcr-json-key
       containers:
       - name: main
-        image: gcr.io/master-thesis-hpa/loadgenerator:0.2
+        image: gcr.io/master-thesis-hpa/loadgenerator:0.4.1
+        volumeMounts:
+          - name: file-storage
+            mountPath: /app
+        command:
+        - /bin/sh
+        - -c
+        - |
+          python3 /app/workload_gen.py --pattern stable
         env:
         - name: FRONTEND_ADDR
           value: "frontend:80"
@@ -51,3 +87,7 @@ spec:
           limits:
             cpu: 500m
             memory: 512Mi
+      volumes:
+      - name: file-storage
+        persistentVolumeClaim:
+          claimName: nfs-server-claim-load
