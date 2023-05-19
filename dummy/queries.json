@@ -2,17 +2,17 @@
     "local":{
         "frontend":{
             "rl-agent":{
-                "q_request_duration": 240,
-                "q_cpu_usage": 300,
-                "q_memory_usage": 10,
+                "q_request_duration": 45,
+                "q_cpu_usage": 150,
+                "q_memory_usage": 0.6,
                 "q_pod_replicas": 1,
-                "q_rps": 75
+                "q_rps": 650
             },
             "rl-agent-2":{
                 "q_cpu_usage": 300,
-                "q_memory_usage": 10,
+                "q_memory_usage": 0.6,
                 "q_pod_replicas": 1,
-                "q_rps": 75
+                "q_rps": 650
             }
         }
     }

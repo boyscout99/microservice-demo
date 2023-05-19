@@ -37,8 +37,8 @@ class GymEnvironment(gym.Env):
 
         self.reward = 0
         self.action_space = spaces.Discrete(3)  # Action space with 3 discrete actions: 1, 0, -1
-        # self.observation_space = spaces.Box(low=0, high=np.inf, shape=(5,), dtype=np.float64)  # Observation space with 4 continuous elements: response time, CPU usage, memory usage, replicas
-        self.observation_space = spaces.Box(low=0, high=np.inf, shape=(4,), dtype=np.float64)  # Observation space with 4 continuous elements: response time, CPU usage, memory usage, replicas
+        self.observation_space = spaces.Box(low=0, high=np.inf, shape=(5,), dtype=np.float64)  # Observation space with 4 continuous elements: response time, CPU usage, memory usage, replicas
+        # self.observation_space = spaces.Box(low=0, high=np.inf, shape=(4,), dtype=np.float64)  # Observation space with 4 continuous elements: response time, CPU usage, memory usage, replicas
 
     def reset(self):
         # Reset the environment, e.g., initialize the pod states and retrieve initial observation
@@ -57,6 +57,12 @@ class GymEnvironment(gym.Env):
     def step(self, action):
         # Take a step in the environment based on the given action
         # Update the pod states, calculate reward, and return the new observation, reward, done, and info
+        rep = self.queries["q_pod_replicas"]
+        cpu = self.queries["q_cpu_usage"]
+        mem = self.queries["q_memory_usage"]
+        t = self.queries["q_request_duration"]
+        rps = self.queries["q_rps"]
+
         print("\n##### NEW ACTION #####")
         # Update the pod states based on the action
         if action == 0:  # No change in replicas
@@ -65,41 +71,89 @@ class GymEnvironment(gym.Env):
         elif action == 1:  # Increase replicas
             print("Taking action +1")
             # self.scale.update_replicas(1)
-            self.queries["q_pod_replicas"] += 1
-            if self.queries["q_pod_replicas"] > 30:
+            rep += 1
+            if rep > 30:
                 print(f"Cannot have more than maxReplicas. Setting to {self.maxReplicas}.")
-                self.queries["q_pod_replicas"] = 30
-
-            # Consequences of the action on the environment
-            # reduce CPU utilisation
-            self.queries["q_cpu_usage"] = self.queries["q_cpu_usage"] - 50*self.queries["q_pod_replicas"]
-            # reduce memory utilisation
-            self.queries["q_memory_usage"] = self.queries["q_memory_usage"] - 0.5*self.queries["q_memory_usage"]*self.queries["q_pod_replicas"]
-            # reduce service latency
-            # self.queries["q_request_duration"] = 240 - 40*self.queries["q_pod_replicas"]
+                rep = 30
+            # Consequences of action on environment
+            if rep == 1:
+                # decrease CPU utilisation
+                cpu = 150
+                # decrease memory utilisation
+                mem = 0.6
+                # decrease service latency
+                t = 45 
+                # decrease RPS
+                rps = 650
+            elif rep == 2:
+                # decrease CPU utilisation
+                cpu = cpu - cpu*0.16
+                # decrease memory utilisation
+                mem = mem - mem*0.16
+                # decrease service latency
+                t = t - t*0.35
+                # decrease RPS
+                rps = rps - rps*0.46
+            else:
+                # decrease CPU utilisation
+                cpu = cpu - cpu*0.16*(1.05**rep)
+                # decrease memory utilisation
+                mem = mem - mem*0.16*(1.05**rep)
+                # decrease service latency
+                t = t - t*0.35*(0.85**rep)
+                # decrease rps
+                rps = rps - rps*0.46*(0.9**rep)
+            print(f"rep: {rep}, rps: {rps}, cpu: {cpu}, mem: {mem}, t: {t}")
 
         elif action == 2:  # Decrease replicas
             print("Taking action -1")
             # self.scale.update_replicas(-1)
-            self.queries["q_pod_replicas"] -= 1
-            if self.queries["q_pod_replicas"] < 1:
+            rep -= 1
+            if rep < 1:
                 print(f"Cannot have less than minReplicas. Setting to {self.minReplicas}.")
-                self.queries["q_pod_replicas"] = 1
-
+                rep = 1
             # Consequences of the action on the environment
-            # increase CPU utilisation
-            self.queries["q_cpu_usage"] = self.queries["q_cpu_usage"] + 0.5*self.queries["q_cpu_usage"]*self.queries["q_pod_replicas"]
-            # increase memory utilisation
-            self.queries["q_memory_usage"] = self.queries["q_memory_usage"] + 0.5*self.queries["q_memory_usage"]*self.queries["q_pod_replicas"]
-            # increase service latency
-            # self.queries["q_request_duration"] = 240 + 40*self.queries["q_pod_replicas"]
-        
-        self.current_replicas = self.queries["q_pod_replicas"]
+            if rep == 1:
+                # increase CPU utilisation
+                cpu = 150
+                # increase memory utilisation
+                mem = 0.6
+                # increase service latency
+                t = 45 
+                # increase RPS
+                rps = 650
+            elif rep == 2:
+                # increase CPU utilisation
+                cpu = cpu + cpu*0.3/(1-0.3)
+                # increase memory utilisation
+                mem = mem + mem*0.2/(1-0.2)
+                # increase service latency
+                t = t + t*0.14/(1-0.14)
+                # increase RPS
+                rps = rps + rps*0.28/(1-0.28)
+            else:
+                # increase CPU utilisation
+                cpu = cpu + cpu*(0.16*(1.052**rep)/(1-0.16*1.052**rep))
+                # increase memory utilisation
+                mem = mem + mem*(0.16*(1.053**rep)/(1-0.16*1.053**rep))
+                # increase service latency
+                t = t + t*(0.35*(0.85**rep)/(1-0.35*0.85**rep))
+                # increase rps
+                rps = rps + rps*(0.46*(0.8915**rep)/(1-0.46*(0.8915**rep)))
+            print(f"rep: {rep}, rps: {rps}, cpu: {cpu}, mem: {mem}, t: {t}")
+
+        self.current_replicas = rep
+        # reassign values
+        self.queries["q_pod_replicas"] = rep
+        self.queries["q_cpu_usage"] = cpu
+        self.queries["q_memory_usage"] = mem
+        self.queries["q_request_duration"] = t
+        self.queries["q_rps"] = rps
         # get new observation
         new_observation = self._get_observation()
 
-        # Calculate reward based on the new observation and previous response time
-        SLA_RESP_TIME = 100 # 100 ms
+        # Calculate reward based on the new observation
+        SLA_RESP_TIME = 18 # 100 ms
         if self.rew_fun == "indicator":
             self.reward = -(self.alpha * int(new_observation[1] > SLA_RESP_TIME) + self.current_replicas)
         elif self.rew_fun == "quadratic":
@@ -153,8 +207,6 @@ class GymEnvironment(gym.Env):
             print("ERROR: your reward function selection is not valid.")
             sys.exit(1)
 
-        # Update the previous response time for the next step
-        # self.previous_response_time = new_observation[1]
         # Set done to False as the environment is not terminated in this example
         done = False
 
@@ -172,7 +224,7 @@ class GymEnvironment(gym.Env):
         # observation = self.prom.get_results(self.queries)
         observation = [
             self.queries["q_pod_replicas"],
-            # self.queries["q_request_duration"],
+            self.queries["q_request_duration"],
             self.queries["q_cpu_usage"],
             self.queries["q_memory_usage"],
             self.queries["q_rps"]
