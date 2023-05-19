@@ -1,7 +1,9 @@
 # Consequences of the action on the environment
-if __name__ == "__main__":
+import json
 
-    print(f"### Increasing replicas ###")
+def create_values():
+    data = []
+
     for rep in range(0, 30):
         rep +=1
         if rep == 1:
@@ -33,35 +35,24 @@ if __name__ == "__main__":
             rps = rps - rps*0.46*(0.9**rep)
         print(f"rep: {rep}, rps: {rps}, cpu: {cpu}, mem: {mem}, t: {t}")
 
-    print("### Decreasing replicas ###")
-    for rep in range(30,1,-1):
-        rep -= 1
-        # Consequences of the action on the environment
-        if rep == 1:
-            # increase CPU utilisation
-            cpu = 150
-            # increase memory utilisation
-            mem = 0.6
-            # increase service latency
-            t = 45 
-            # increase RPS
-            rps = 650
-        elif rep == 2:
-            # increase CPU utilisation
-            cpu = cpu + cpu*0.3/(1-0.3)
-            # increase memory utilisation
-            mem = mem + mem*0.2/(1-0.2)
-            # increase service latency
-            t = t + t*0.14/(1-0.14)
-            # increase RPS
-            rps = rps + rps*0.28/(1-0.28)
-        else:
-            # increase CPU utilisation
-            cpu = cpu + cpu*(0.16*(1.052**rep)/(1-0.16*1.052**rep))
-            # increase memory utilisation
-            mem = mem + mem*(0.16*(1.053**rep)/(1-0.16*1.053**rep))
-            # increase service latency
-            t = t + t*(0.35*(0.85**rep)/(1-0.35*0.85**rep))
-            # increase rps
-            rps = rps + rps*(0.46*(0.8915**rep)/(1-0.46*(0.8915**rep)))
-        print(f"rep: {rep}, rps: {rps}, cpu: {cpu}, mem: {mem}, t: {t}")
+        # Store the values in a dictionary
+        values = {
+            "rps": rps,
+            "cpu": cpu,
+            "mem": mem,
+            "t": t
+        }
+        
+        # Append the dictionary to the data list
+        data.append(values)
+
+    return data
+
+if __name__ == "__main__":
+    # Save the data to a JSON file
+    data = create_values()
+    with open("data.json", "w") as file:
+        json.dump(data, file, indent=4)
+
+    print(f"data:\n{data}")
+    print(data[29]["rps"])

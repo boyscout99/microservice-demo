@@ -17,13 +17,35 @@ class TensorboardCallback(BaseCallback):
         super(TensorboardCallback, self).__init__(verbose)
         self.episode_rewards = []
         self.ep_rew_mean = 0
+        self.replicas = 0
+        self.t = 0
+        self.cpu = 0
+        self.mem = 0
+        self.rps = 0
 
     def _on_rollout_start(self) -> None:
         self.episode_rewards = []
+        self.replicas = 0
+        self.t = 0
+        self.cpu = 0
+        self.mem = 0
+        self.rps = 0
+
 
     def _on_step(self) -> bool:
         rewards = self.training_env.get_attr("reward")
         self.episode_rewards.extend(rewards)
+        obs = self.training_env.get_attr("current_observation")
+        self.replicas = obs[0][0]
+        self.t = obs[0][1]
+        self.rps = obs[0][2]
+        self.cpu = obs[0][3]
+        self.mem = obs[0][4]
+        self.logger.record("rollout/replicas", self.replicas)
+        self.logger.record("rollout/t", self.t)
+        self.logger.record("rollout/rps", self.rps)
+        self.logger.record("rollout/cpu", self.cpu)
+        self.logger.record("rollout/mem", self.mem)
         return True
 
     def _on_rollout_end(self) -> None:
@@ -93,16 +115,16 @@ def setup_environment(alpha,
                       namespace, 
                       minReplicas, 
                       maxReplicas,
-                      rew_fun):
+                      rew_fun,
+                      data):
 
     # Construct the absolute file path for queries.json
     queries_json_path = os.path.join(script_dir, "queries.json")
-
     q_file = open(queries_json_path, "r")
-    data = json.load(q_file)
+    q = json.load(q_file)
     # QUERIES FOR FRONTEND DEPLOYMENT
     # _queries = data[cluster][name][namespace]
-    queries = data[cluster][name][namespace]
+    queries = q[cluster][name][namespace]
     # queries = [
     #     _queries["q_pod_replicas"],
     #     _queries["q_request_duration"],
@@ -120,7 +142,8 @@ def setup_environment(alpha,
                          namespace, 
                          minReplicas, 
                          maxReplicas, 
-                         rew_fun)
+                         rew_fun,
+                         data)
     # set default state
     env.reset()
 
@@ -146,7 +169,7 @@ def load_model(env, models_dir, tf_logs_dir):
     return model
 
 def train_model(model, models_dir):
-    TIMESTEPS = 1000
+    TIMESTEPS = 50000
     # training
     # for i in range(1,10):
     #     print("Learning. Iteration: ", TIMESTEPS*i)
@@ -185,6 +208,16 @@ if __name__ == "__main__":
     tf_logs_dir = dirs[1]
     pod_logs_dir = dirs[2]
     logger = enable_logging(pod_logs_dir)
+
+    # copy data
+    data_json_path = os.path.join(script_dir, "data.json")
+    # read made up data
+    d_file = open(data_json_path, "r")
+    d = json.load(d_file)
+    data = d
+    print(f"data:\n{data}")
+    d_file.close()
+
     env = setup_environment(alpha, 
                             cluster, 
                             url, 
@@ -192,7 +225,8 @@ if __name__ == "__main__":
                             namespace, 
                             minReplicas, 
                             maxReplicas, 
-                            rew_fun)
+                            rew_fun,
+                            data)
     env = Monitor(env, tf_logs_dir)
     model = load_model(env, models_dir, tf_logs_dir)
     train_model(model, models_dir)
