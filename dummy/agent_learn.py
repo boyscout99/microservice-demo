@@ -17,6 +17,7 @@ class TensorboardCallback(BaseCallback):
         super(TensorboardCallback, self).__init__(verbose)
         self.episode_rewards = []
         self.ep_rew_mean = 0
+        self.ep_rew_sum = 0
         self.replicas = 0
         self.t = 0
         self.cpu = 0
@@ -35,6 +36,8 @@ class TensorboardCallback(BaseCallback):
     def _on_step(self) -> bool:
         rewards = self.training_env.get_attr("reward")
         self.episode_rewards.extend(rewards)
+        tot_reward = self.training_env.get_attr("reward_sum")
+        self.ep_rew_sum = tot_reward[0]
         obs = self.training_env.get_attr("current_observation")
         self.replicas = obs[0][0]
         self.t = obs[0][1]
@@ -50,9 +53,15 @@ class TensorboardCallback(BaseCallback):
 
     def _on_rollout_end(self) -> None:
         self.ep_rew_mean = np.mean(self.episode_rewards)
+        # print(f"episode_rewards dimension: ", len(self.episode_rewards))
         self.logger.record("rollout/ep_rew_mean", self.ep_rew_mean)
-        self.episode_rewards = []
+        self.logger.record("rollout/ep_rew_sum", self.ep_rew_sum)
         print("self.ep_rew_mean: ", self.ep_rew_mean)
+        print("self.ep_rew_sum: ", self.ep_rew_sum)
+
+        self.ep_rew_sum = 0
+        self.episode_rewards = []
+
 
 MODULE = "stable_baselines3"
 t = datetime.now()
@@ -169,16 +178,18 @@ def load_model(env, models_dir, tf_logs_dir):
     return model
 
 def train_model(model, models_dir):
-    TIMESTEPS = 50000
+    TIMESTEPS = 100000
     # training
-    # for i in range(1,10):
-    #     print("Learning. Iteration: ", TIMESTEPS*i)
-    rewards_callback = TensorboardCallback()
-    model.learn(total_timesteps=TIMESTEPS, reset_num_timesteps=False, tb_log_name=MODEL, log_interval=2, callback=rewards_callback)
+    for i in range(1,10):
+        print("Learning. Iteration: ", TIMESTEPS*i)
+        rewards_callback = TensorboardCallback()
+        # model.learn(total_timesteps=TIMESTEPS, reset_num_timesteps=False, tb_log_name=MODEL, log_interval=2, callback=rewards_callback)
+        model.learn(total_timesteps=TIMESTEPS, tb_log_name=MODEL, log_interval=2, callback=rewards_callback)
         # model.learn(total_timesteps=TIMESTEPS, reset_num_timesteps=False)
         # logging.info(f"Training iteration {i}, total_timesteps={TIMESTEPS*i}, saving model ...")
         # print("Saving model ...")
         # model.save(f"{models_dir}/{TIMESTEPS*i}")
+        # env.reset()
 
     print("Training completed. Check performance on Tensorboard.")
     logging.info("Training completed. Check performance on Tensorboard.")

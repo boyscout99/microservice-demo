@@ -38,6 +38,7 @@ class GymEnvironment(gym.Env):
         # self.scale = KubernetesEnvironment(self.name, self.namespace, self.minReplicas, self.maxReplicas)
 
         self.reward = 0
+        self.reward_sum = 0
         self.action_space = spaces.Discrete(3)  # Action space with 3 discrete actions: 1, 0, -1
         self.observation_space = spaces.Box(low=0, high=np.inf, shape=(5,), dtype=np.float64)  # Observation space with 4 continuous elements: response time, CPU usage, memory usage, replicas
         # self.observation_space = spaces.Box(low=0, high=np.inf, shape=(4,), dtype=np.float64)  # Observation space with 4 continuous elements: response time, CPU usage, memory usage, replicas
@@ -50,9 +51,9 @@ class GymEnvironment(gym.Env):
         self.queries["q_pod_replicas"] = 1
         print("Waiting 1 seconds to stabilise after reset ...")
         time.sleep(1)
-
         self.current_observation = self._get_observation()  # Retrieve initial observation from Prometheus API
         self.current_replicas = self.current_observation[0]
+        self.reward_sum = 0
         # self.previous_response_time = self.current_observation[1]  # Initialize previous response time
         return self.current_observation
 
@@ -190,8 +191,11 @@ class GymEnvironment(gym.Env):
         # Set done to False as the environment is not terminated in this example
         done = False
 
+        self.reward_sum += self.reward
         # Set info to an empty dictionary
-        info = {}
+        info = {
+            "total_reward": self.reward_sum
+        }
 
         # wait one minute before taking another action
         # print("Waiting 30 seconds before taking next scaling action ...")
