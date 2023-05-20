@@ -112,6 +112,9 @@ class GymEnvironment(gym.Env):
         self.queries["q_memory_usage"] = mem
         self.queries["q_request_duration"] = t
         self.queries["q_rps"] = rps
+
+        # waiting environment to stabilise
+        # time.sleep(1)
         # get new observation
         new_observation = self._get_observation()
 
@@ -178,8 +181,8 @@ class GymEnvironment(gym.Env):
                 delta_t = new_observation[1]-SLA_RESP_TIME
                 if delta_t > 0:
                     # SLA violated, penalise a lot time exceeded
-                    self.reward = -delta_t**2
-                    print(f"self.reward = -{delta_t**2} = {self.reward}")
+                    self.reward = -delta_t**3
+                    print(f"self.reward = -{delta_t**3} = {self.reward}")
                 else:
                     # SLA satisfided, try to optimise number of replicas
                     self.reward = delta_t + (self.maxReplicas - self.current_replicas)

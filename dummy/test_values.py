@@ -8,13 +8,17 @@ def create_values():
         rep +=1
         if rep == 1:
             # decrease CPU utilisation
-            cpu = 150
+            # cpu = 150
+            cpu = 500
             # decrease memory utilisation
-            mem = 0.6
+            # mem = 0.6
+            mem = 2.2
             # decrease service latency
-            t = 45 
+            # t = 45 
+            t = 180
             # decrease RPS
-            rps = 650
+            # rps = 650
+            rps = 2600
         elif rep == 2:
             # decrease CPU utilisation
             cpu = cpu - cpu*0.16
@@ -51,7 +55,7 @@ def create_values():
 if __name__ == "__main__":
     # Save the data to a JSON file
     data = create_values()
-    with open("data.json", "w") as file:
+    with open("data_3.json", "w") as file:
         json.dump(data, file, indent=4)
 
     print(f"data:\n{data}")

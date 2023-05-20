@@ -11,6 +11,7 @@ from Logger import LoggerWriter
 from ArgParser_learn import StringProcessor
 from stable_baselines3.common.monitor import Monitor
 from stable_baselines3.common.callbacks import BaseCallback
+from stable_baselines3.common.callbacks import EvalCallback
 
 class TensorboardCallback(BaseCallback):
     def __init__(self, verbose=1):
@@ -18,6 +19,7 @@ class TensorboardCallback(BaseCallback):
         self.episode_rewards = []
         self.ep_rew_mean = 0
         self.ep_rew_sum = 0
+
         self.replicas = 0
         self.t = 0
         self.cpu = 0
@@ -32,12 +34,12 @@ class TensorboardCallback(BaseCallback):
         self.mem = 0
         self.rps = 0
 
-
     def _on_step(self) -> bool:
+        # get current reward
         rewards = self.training_env.get_attr("reward")
+        # append reward
         self.episode_rewards.extend(rewards)
-        tot_reward = self.training_env.get_attr("reward_sum")
-        self.ep_rew_sum = tot_reward[0]
+        # get observations to log it at each step
         obs = self.training_env.get_attr("current_observation")
         self.replicas = obs[0][0]
         self.t = obs[0][1]
@@ -52,13 +54,17 @@ class TensorboardCallback(BaseCallback):
         return True
 
     def _on_rollout_end(self) -> None:
+        # compute mean
         self.ep_rew_mean = np.mean(self.episode_rewards)
-        # print(f"episode_rewards dimension: ", len(self.episode_rewards))
+        # get total reward
+        tot_reward = self.training_env.get_attr("reward_sum")
+        self.ep_rew_sum = tot_reward[0]
+        # log values
         self.logger.record("rollout/ep_rew_mean", self.ep_rew_mean)
-        self.logger.record("rollout/ep_rew_sum", self.ep_rew_sum)
         print("self.ep_rew_mean: ", self.ep_rew_mean)
+        self.logger.record("rollout/ep_rew_sum", self.ep_rew_sum)
         print("self.ep_rew_sum: ", self.ep_rew_sum)
-
+        # reset values
         self.ep_rew_sum = 0
         self.episode_rewards = []
 
@@ -177,18 +183,19 @@ def load_model(env, models_dir, tf_logs_dir):
 
     return model
 
-def train_model(model, models_dir):
-    TIMESTEPS = 100000
+def train_model(model, models_dir, timesteps, episodes, callbacks):
     # training
-    for i in range(1,10):
-        print("Learning. Iteration: ", TIMESTEPS*i)
-        rewards_callback = TensorboardCallback()
+    for i in range(1,episodes):
+        print("Learning. Iteration: ", timesteps*i)
         # model.learn(total_timesteps=TIMESTEPS, reset_num_timesteps=False, tb_log_name=MODEL, log_interval=2, callback=rewards_callback)
-        model.learn(total_timesteps=TIMESTEPS, tb_log_name=MODEL, log_interval=2, callback=rewards_callback)
+        model.learn(total_timesteps=timesteps, 
+                    tb_log_name=MODEL, 
+                    log_interval=2, 
+                    callback=callbacks)
         # model.learn(total_timesteps=TIMESTEPS, reset_num_timesteps=False)
-        # logging.info(f"Training iteration {i}, total_timesteps={TIMESTEPS*i}, saving model ...")
-        # print("Saving model ...")
-        # model.save(f"{models_dir}/{TIMESTEPS*i}")
+        logging.info(f"Training iteration {i}, total_timesteps={TIMESTEPS*i}, saving model ...")
+        print("Saving model ...")
+        model.save(f"{models_dir}/{TIMESTEPS*i}")
         # env.reset()
 
     print("Training completed. Check performance on Tensorboard.")
@@ -213,6 +220,9 @@ if __name__ == "__main__":
     elif rew_fun == "quadratic": alpha = 2
     elif rew_fun == "quad_cpu_thr": alpha = 2
     else: alpha = 1
+
+    TIMESTEPS = 1000
+    EPISODES = 10
 
     dirs = create_directories()
     models_dir = dirs[0]
@@ -240,6 +250,22 @@ if __name__ == "__main__":
                             data)
     env = Monitor(env, tf_logs_dir)
     model = load_model(env, models_dir, tf_logs_dir)
-    train_model(model, models_dir)
 
+    # create callbacks
+    rewards_callback = TensorboardCallback()
+    # eval_callback = EvalCallback(env, 
+    #                             best_model_save_path=models_dir,
+    #                             log_path=models_dir, 
+    #                             eval_freq=1,
+    #                             deterministic=True, 
+    #                             render=False,
+    #                             verbose=1)
+    callbacks = [rewards_callback]
+    # train the model
+    train_model(model, 
+                models_dir, 
+                TIMESTEPS,
+                EPISODES,
+                callbacks)
+    # close the environment on completion
     env.close()

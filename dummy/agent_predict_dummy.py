@@ -3,6 +3,7 @@ import sys
 import json
 import logging
 import importlib
+import numpy as np
 from agent_env import GymEnvironment
 from datetime import datetime
 from datetime import timedelta
@@ -10,6 +11,7 @@ from Logger import LoggerWriter
 from ArgParser_predict import StringProcessor
 from stable_baselines3.common.monitor import Monitor
 
+MODULE = "stable_baselines3"
 t = datetime.now()
 t = t + timedelta(hours=2) # UTC+2
 timestamp = t.strftime("%Y_%m_%d_%H%M%S")
@@ -19,10 +21,11 @@ processor = StringProcessor()
 DEPLOYMENT, NAMESPACE, CLUSTER, MODEL, REWARD_FUN, MODEL_DIR = processor.parse_args() # read namespace and model
 print(f"deployment {DEPLOYMENT}, namespace {NAMESPACE}, cluster {CLUSTER}, model {MODEL}, reward function {REWARD_FUN}, model_dir {MODEL_DIR}")
 
+module = importlib.import_module(MODULE) # import stable_baselines3
+model_attr = getattr(module, MODEL) # e.g. from stable_baselines3 import A2C
+
 # Get the absolute path of the script directory
 script_dir = os.path.dirname(os.path.abspath(__file__))
-module = importlib.import_module("stable_baselines3") # import stable_baselines3
-model_attr = getattr(module, MODEL) # e.g. from stable_baselines3 import A2C
 
 def create_directories():
     # create the necessary directories
@@ -65,22 +68,23 @@ def setup_environment(alpha,
                       namespace, 
                       minReplicas, 
                       maxReplicas,
-                      rew_fun):
+                      rew_fun,
+                      data):
 
     # Construct the absolute file path for queries.json
     queries_json_path = os.path.join(script_dir, "queries.json")
-
     q_file = open(queries_json_path, "r")
-    data = json.load(q_file)
+    q = json.load(q_file)
     # QUERIES FOR FRONTEND DEPLOYMENT
-    _queries = data[cluster][name][namespace]
-    queries = [
-        _queries["q_pod_replicas"],
-        _queries["q_request_duration"],
-        _queries["q_cpu_usage"],
-        _queries["q_memory_usage"],
-        _queries["q_rps"]
-    ]
+    # _queries = data[cluster][name][namespace]
+    queries = q[cluster][name][namespace]
+    # queries = [
+    #     _queries["q_pod_replicas"],
+    #     _queries["q_request_duration"],
+    #     _queries["q_cpu_usage"],
+    #     _queries["q_memory_usage"],
+    #     _queries["q_rps"]
+    # ]
     q_file.close()
 
     # Create an instance of GymEnvironment
@@ -91,7 +95,8 @@ def setup_environment(alpha,
                          namespace, 
                          minReplicas, 
                          maxReplicas, 
-                         rew_fun)
+                         rew_fun,
+                         data)
     # set default state
     env.reset()
 
@@ -109,7 +114,6 @@ def load_selected_model(env, model_path, tf_logs_dir):
 
     return model
 
-
 if __name__ == "__main__":
 
     # cluster = "minikube"
@@ -125,12 +129,26 @@ if __name__ == "__main__":
     # define alpha based on the selected reward function
     if rew_fun == "indicator": alpha = 100
     elif rew_fun == "quadratic": alpha = 2
-    else: print("Could not set alpha.")
+    elif rew_fun == "quad_cpu_thr": alpha = 2
+    else: alpha = 1
+
+    TIMESTEPS = 1000
+    EPISODES = 10
 
     dirs = create_directories()
     tf_logs_dir = dirs[0]
     pod_logs_dir = dirs[1]
     logger = enable_logging(pod_logs_dir)
+
+    # copy data
+    data_json_path = os.path.join(script_dir, "data_3.json")
+    # read made up data
+    d_file = open(data_json_path, "r")
+    d = json.load(d_file)
+    data = d
+    print(f"data:\n{data}")
+    d_file.close()
+
     env = setup_environment(alpha, 
                             cluster, 
                             url, 
@@ -138,14 +156,16 @@ if __name__ == "__main__":
                             namespace, 
                             minReplicas, 
                             maxReplicas, 
-                            rew_fun)
+                            rew_fun,
+                            data)
     env = Monitor(env, tf_logs_dir)
     MODEL_DIR = os.path.join(script_dir, MODEL_DIR)
     model = load_selected_model(env, MODEL_DIR, tf_logs_dir)
 
     obs = env.reset()
     # Take actions in a loop
-    while True:
+    # while True:
+    for i in range(1, 500):
         # Get the recommended action from the model
         action, _states = model.predict(obs)
         # Take the recommended action in the environment
@@ -153,4 +173,5 @@ if __name__ == "__main__":
         if done:
             break
 
+    # close the environment on completion
     env.close()
