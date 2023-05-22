@@ -74,8 +74,8 @@ class GymEnvironment(gym.Env):
         time.sleep(30)
         new_observation = self._get_observation()
 
-        # Calculate reward based on the new observation and previous response time
-        SLA_RESP_TIME = 100 # 100 ms
+        # Calculate reward based on the new observation
+        SLA_RESP_TIME = 18 # 100 ms
         if self.rew_fun == "indicator":
             self.reward = -(self.alpha * int(new_observation[1] > SLA_RESP_TIME) + self.current_replicas)
         elif self.rew_fun == "quadratic":
@@ -103,29 +103,58 @@ class GymEnvironment(gym.Env):
             else:
                 # SLA satisfided, try to optimise number of replicas
                 self.reward = delta_t - self.alpha*self.current_replicas + gamma
-        elif self.rew_fun == "quad_new":
+        elif self.rew_fun == "linear_1":
             # Quadratic reward function on exceeded time constraint
             delta_t = new_observation[1]-SLA_RESP_TIME
             if delta_t > 0:
                 # SLA violated, penalise a lot time exceeded
                 self.reward = -100 + self.current_replicas
+                print(f"self.reward = -100 +  {self.current_replicas} = {self.reward}")
             else:
                 # SLA satisfided, try to optimise number of replicas
-                self.reward = self.current_replicas
+                self.reward = 100
+                print(f"self.reward = {self.reward}")
+        elif self.rew_fun == "linear_2":
+            # Quadratic reward function on exceeded time constraint
+            delta_t = new_observation[1]-SLA_RESP_TIME
+            if delta_t > 0:
+                # SLA violated, penalise a lot time exceeded
+                self.reward = -100 + self.current_replicas
+                print(f"self.reward = -100 +  {self.current_replicas} = {self.reward}")
+            else:
+                # SLA satisfided, try to optimise number of replicas
+                self.reward = 100 - 3*self.current_replicas
+                print(f"self.reward = {self.reward}")
+        elif self.rew_fun == "linear_3":
+            # Quadratic reward function on exceeded time constraint
+            if (self.current_replicas == self.maxReplicas and action == 1):
+                self.reward = -1000
+                print(f"self.reward = {self.reward}")
+            elif (self.current_replicas == self.minReplicas and action == 2):
+                self.reward = -1000
+                print(f"self.reward = {self.reward}")
+            else:
+                delta_t = new_observation[1]-SLA_RESP_TIME
+                if delta_t > 0:
+                    # SLA violated, penalise a lot time exceeded
+                    self.reward = -delta_t**2
+                    print(f"self.reward = -{delta_t**2} = {self.reward}")
+                else:
+                    # SLA satisfided, try to optimise number of replicas
+                    self.reward = delta_t + (self.maxReplicas - self.current_replicas)
+                    print(f"self.reward = {delta_t} + {self.maxReplicas} - {self.current_replicas} = {self.reward}")
         else:
             print("ERROR: your reward function selection is not valid.")
             sys.exit(1)
-        
-        print("Reward: ", self.reward)
 
-        # Update the previous response time for the next step
-        # self.previous_response_time = new_observation[1]
         # Set done to False as the environment is not terminated in this example
         done = False
 
+        self.reward_sum += self.reward
         # Set info to an empty dictionary
-        info = {}
-
+        info = {
+            "total_reward": self.reward_sum
+        }
         # wait one minute before taking another action
         # print("Waiting 30 seconds before taking next scaling action ...")
         # time.sleep(30)

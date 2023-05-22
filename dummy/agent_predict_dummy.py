@@ -141,7 +141,7 @@ if __name__ == "__main__":
     logger = enable_logging(pod_logs_dir)
 
     # copy data
-    data_json_path = os.path.join(script_dir, "data_3.json")
+    data_json_path = os.path.join(script_dir, "data.json")
     # read made up data
     d_file = open(data_json_path, "r")
     d = json.load(d_file)
