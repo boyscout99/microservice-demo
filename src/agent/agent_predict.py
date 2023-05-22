@@ -77,9 +77,9 @@ def setup_environment(alpha,
     queries = [
         _queries["q_pod_replicas"],
         _queries["q_request_duration"],
+        _queries["q_rps"],
         _queries["q_cpu_usage"],
-        _queries["q_memory_usage"],
-        _queries["q_rps"]
+        _queries["q_memory_usage"]
     ]
     q_file.close()
 
