@@ -43,7 +43,7 @@ def create_directories():
     return dirs
 
 def enable_logging(pod_logs_dir):
-    pod_log_file = os.path.join(pod_logs_dir, f"{MODEL}_learn_{timestamp}.log")
+    pod_log_file = os.path.join(pod_logs_dir, f"{MODEL}_predict_{timestamp}.log")
     # logging.basicConfig(filename=pod_log_file, level=logging.DEBUG)  # Initialize logging
     logging.basicConfig(
         level=logging.INFO,
@@ -165,7 +165,7 @@ if __name__ == "__main__":
     obs = env.reset()
     # Take actions in a loop
     # while True:
-    for i in range(1, 500):
+    for i in range(1, 100):
         # Get the recommended action from the model
         action, _states = model.predict(obs)
         # Take the recommended action in the environment

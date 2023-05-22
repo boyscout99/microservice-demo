@@ -33,6 +33,7 @@ class TensorboardCallback(BaseCallback):
         self.cpu = 0
         self.mem = 0
         self.rps = 0
+        print("ON ROLLOUT START")
 
     def _on_step(self) -> bool:
         # get current reward
@@ -51,6 +52,7 @@ class TensorboardCallback(BaseCallback):
         self.logger.record("rollout/rps", self.rps)
         self.logger.record("rollout/cpu", self.cpu)
         self.logger.record("rollout/mem", self.mem)
+        print("ON STEP")
         return True
 
     def _on_rollout_end(self) -> None:
@@ -67,6 +69,7 @@ class TensorboardCallback(BaseCallback):
         # reset values
         self.ep_rew_sum = 0
         self.episode_rewards = []
+        print("ON ROLLOUT END")
 
 
 MODULE = "stable_baselines3"
@@ -87,7 +90,7 @@ script_dir = os.path.dirname(os.path.abspath(__file__))
 
 def create_directories():
     # create the necessary directories
-    models_dir = os.path.join(script_dir, f"models/{NAMESPACE}/{MODEL}")
+    models_dir = os.path.join(script_dir, f"models/{NAMESPACE}/{MODEL}/{timestamp}")
     tf_logs_dir = os.path.join(script_dir, f"tf_logs/{NAMESPACE}/{MODEL}/{timestamp}")
     pod_logs_dir = os.path.join(script_dir, f"pod_logs/{NAMESPACE}/{MODEL}")
 
@@ -114,13 +117,13 @@ def enable_logging(pod_logs_dir):
     )
     
     # Define a logger
-    logger = logging.getLogger(__name__)
+    my_logger = logging.getLogger(__name__)
 
     # Redirect console output to logger
-    sys.stdout = LoggerWriter(logger.info)
-    sys.stderr = LoggerWriter(logger.error)
+    sys.stdout = LoggerWriter(my_logger.info)
+    sys.stderr = LoggerWriter(my_logger.error)
 
-    return logger
+    return my_logger
 
 ### SET UP THE ENVIRONMENT ###
 def setup_environment(alpha, 
@@ -179,7 +182,28 @@ def load_model(env, models_dir, tf_logs_dir):
         print("No existing models found. Starting from scratch.")
         logging.info("No existing models found. Starting from scratch.")
         # Create the model
-        model = model_attr("MlpPolicy", env, learning_rate=float(LEARNING_RATE), verbose=1, tensorboard_log=tf_logs_dir)
+        if MODEL == "A2C":
+            model = model_attr("MlpPolicy", 
+                            env, 
+                            learning_rate=float(LEARNING_RATE),
+                            verbose=1,
+                            n_steps=5, 
+                            gamma=0.5, 
+                            gae_lambda=0.5, 
+                            ent_coef=0.0, 
+                            vf_coef=0.5, 
+                            max_grad_norm=0.5, 
+                            rms_prop_eps=1e-05,
+                            tensorboard_log=tf_logs_dir)
+        elif MODEL == "DQN":
+            model = model_attr("MlpPolicy", 
+                            env, 
+                            learning_rate=float(LEARNING_RATE),
+                            learning_starts=0,
+                            target_update_interval=2,
+                            train_freq=1,
+                            verbose=2, 
+                            tensorboard_log=tf_logs_dir)
 
     return model
 
@@ -193,10 +217,11 @@ def train_model(model, models_dir, timesteps, episodes, callbacks):
                     log_interval=2, 
                     callback=callbacks)
         # model.learn(total_timesteps=TIMESTEPS, reset_num_timesteps=False)
-        logging.info(f"Training iteration {i}, total_timesteps={TIMESTEPS*i}, saving model ...")
-        print("Saving model ...")
-        model.save(f"{models_dir}/{TIMESTEPS*i}")
+        
         # env.reset()
+    logging.info(f"Training iteration {i}, total_timesteps={TIMESTEPS*i}, saving model ...")
+    print("Saving last model ...")
+    model.save(f"{models_dir}/{TIMESTEPS*i}")
 
     print("Training completed. Check performance on Tensorboard.")
     logging.info("Training completed. Check performance on Tensorboard.")
@@ -231,7 +256,7 @@ if __name__ == "__main__":
     logger = enable_logging(pod_logs_dir)
 
     # copy data
-    data_json_path = os.path.join(script_dir, "data.json")
+    data_json_path = os.path.join(script_dir, "data_2.json")
     # read made up data
     d_file = open(data_json_path, "r")
     d = json.load(d_file)

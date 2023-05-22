@@ -41,17 +41,24 @@ class GymEnvironment(gym.Env):
         self.reward_sum = 0
         self.action_space = spaces.Discrete(3)  # Action space with 3 discrete actions: 1, 0, -1
         self.observation_space = spaces.Box(low=0, high=np.inf, shape=(5,), dtype=np.float64)  # Observation space with 4 continuous elements: response time, CPU usage, memory usage, replicas
-        # self.observation_space = spaces.Box(low=0, high=np.inf, shape=(4,), dtype=np.float64)  # Observation space with 4 continuous elements: response time, CPU usage, memory usage, replicas
+        # self.observation_space = spaces.Box(low=0, high=np.inf, shape=(3,), dtype=np.float64)  # Observation space with 4 continuous elements: response time, CPU usage, memory usage, replicas
 
     def reset(self):
         # Reset the environment, e.g., initialize the pod states and retrieve initial observation
         # TODO do I need to reset the workload pattern?
         # self.scale.reset_replicas() # Initialize current number of replicas as 1
         # set replicas to 1:
-        self.queries["q_pod_replicas"] = 1
+        # self.queries["q_pod_replicas"] = 1
         print("Waiting 1 seconds to stabilise after reset ...")
-        time.sleep(1)
-        self.current_observation = self._get_observation()  # Retrieve initial observation from Prometheus API
+        time.sleep(0.5)
+        # reset queries to initial state
+        self.queries["q_pod_replicas"] = 1
+        self.queries["q_request_duration"] = self.data[0]["t"]
+        self.queries["q_rps"] = self.data[0]["rps"]
+        self.queries["q_cpu_usage"] = self.data[0]["cpu"]
+        self.queries["q_memory_usage"] = self.data[0]["mem"]
+        # retreive observation
+        self.current_observation = self._get_observation()
         self.current_replicas = self.current_observation[0]
         self.reward_sum = 0
         # self.previous_response_time = self.current_observation[1]  # Initialize previous response time
@@ -75,6 +82,7 @@ class GymEnvironment(gym.Env):
             cpu = self.data[rep-1]["cpu"]
             mem = self.data[rep-1]["mem"]
             print(f"rep: {rep}, t: {t}, rps: {rps}, cpu: {cpu}, mem: {mem}")
+            # print(f"rep: {rep}, t: {t}, rps: {rps}")
             pass
         elif action == 1:  # Increase replicas
             print("Taking action +1")
@@ -90,6 +98,7 @@ class GymEnvironment(gym.Env):
                 cpu = self.data[rep-1]["cpu"]
                 mem = self.data[rep-1]["mem"]
             print(f"rep: {rep}, t: {t}, rps: {rps}, cpu: {cpu}, mem: {mem}")
+            # print(f"rep: {rep}, t: {t}, rps: {rps}")
 
         elif action == 2:  # Decrease replicas
             print("Taking action -1")
@@ -104,6 +113,7 @@ class GymEnvironment(gym.Env):
                 cpu = self.data[rep-1]["cpu"]
                 mem = self.data[rep-1]["mem"]
             print(f"rep: {rep}, t: {t}, rps: {rps}, cpu: {cpu}, mem: {mem}")
+            # print(f"rep: {rep}, t: {t}, rps: {rps}")
 
         self.current_replicas = rep
         # reassign values
@@ -181,8 +191,8 @@ class GymEnvironment(gym.Env):
                 delta_t = new_observation[1]-SLA_RESP_TIME
                 if delta_t > 0:
                     # SLA violated, penalise a lot time exceeded
-                    self.reward = -delta_t**3
-                    print(f"self.reward = -{delta_t**3} = {self.reward}")
+                    self.reward = -delta_t**2
+                    print(f"self.reward = -{delta_t**2} = {self.reward}")
                 else:
                     # SLA satisfided, try to optimise number of replicas
                     self.reward = delta_t + (self.maxReplicas - self.current_replicas)
