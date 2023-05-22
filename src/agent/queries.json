@@ -80,7 +80,7 @@
                     "q_request_duration": "avg by (pod) ((histogram_quantile(0.99, sum by (le, destination_workload, source_workload, pod) (rate(istio_request_duration_milliseconds_bucket{reporter=\"destination\", destination_service_namespace=\"testing\", response_code=\"200\", pod=~\"productcatalogservice-.*\"}[5m])))) / 1000)*1000",
                     "q_cpu_usage": "rate(container_cpu_usage_seconds_total{pod=~\"productcatalogservice-.*\", namespace=\"testing\", container=\"server\"}[5m])/0.1*100",
                     "q_memory_usage": "rate(container_memory_usage_bytes{pod=~\"productcatalogservice-.*\", container=\"server\", namespace=\"testing\"}[5m])/64000000*100",
-                    "q_pod_replicas": "count(kube_pod_info{pod=~\"productcatalogservice-.*\", namespace=\"testing\"}))",
+                    "q_pod_replicas": "count(kube_pod_info{pod=~\"productcatalogservice-.*\", namespace=\"testing\"})",
                     "q_rps": "avg by (pod) (sum by (pod) (rate(istio_requests_total{reporter=\"destination\", namespace=\"testing\", destination_workload=\"productcatalogservice\"}[5m])))"
             }
         }
