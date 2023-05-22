@@ -40,7 +40,7 @@ def create_directories():
     return dirs
 
 def enable_logging(pod_logs_dir):
-    pod_log_file = os.path.join(pod_logs_dir, f"{MODEL}_learn_{timestamp}.log")
+    pod_log_file = os.path.join(pod_logs_dir, f"{MODEL}_predict_{timestamp}.log")
     # logging.basicConfig(filename=pod_log_file, level=logging.DEBUG)  # Initialize logging
     logging.basicConfig(
         level=logging.INFO,
@@ -125,7 +125,7 @@ if __name__ == "__main__":
     # define alpha based on the selected reward function
     if rew_fun == "indicator": alpha = 100
     elif rew_fun == "quadratic": alpha = 2
-    else: print("Could not set alpha.")
+    else: alpha = 1
 
     dirs = create_directories()
     tf_logs_dir = dirs[0]
