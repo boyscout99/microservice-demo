@@ -217,11 +217,10 @@ def train_model(model, models_dir, timesteps, episodes, callbacks):
                     log_interval=2, 
                     callback=callbacks)
         # model.learn(total_timesteps=TIMESTEPS, reset_num_timesteps=False)
-        
+        logging.info(f"Training iteration {i}, total_timesteps={TIMESTEPS*i}, saving model ...")
+        print("Saving model ...")
+        model.save(f"{models_dir}/{TIMESTEPS*i}")
         # env.reset()
-    logging.info(f"Training iteration {i}, total_timesteps={TIMESTEPS*i}, saving model ...")
-    print("Saving last model ...")
-    model.save(f"{models_dir}/{TIMESTEPS*i}")
 
     print("Training completed. Check performance on Tensorboard.")
     logging.info("Training completed. Check performance on Tensorboard.")
@@ -246,8 +245,8 @@ if __name__ == "__main__":
     elif rew_fun == "quad_cpu_thr": alpha = 2
     else: alpha = 1
 
-    TIMESTEPS = 1000
-    EPISODES = 10
+    TIMESTEPS = 10000
+    EPISODES = 20
 
     dirs = create_directories()
     models_dir = dirs[0]

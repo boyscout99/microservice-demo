@@ -129,7 +129,7 @@ class GymEnvironment(gym.Env):
         new_observation = self._get_observation()
 
         # Calculate reward based on the new observation
-        SLA_RESP_TIME = 18 # 100 ms
+        SLA_RESP_TIME = 10 # 100 ms
         if self.rew_fun == "indicator":
             self.reward = -(self.alpha * int(new_observation[1] > SLA_RESP_TIME) + self.current_replicas)
         elif self.rew_fun == "quadratic":

@@ -8,31 +8,31 @@ def create_values():
         rep +=1
         if rep == 1:
             # decrease CPU utilisation
-            cpu = "{:.3f}".format(130)
+            cpu = round(130, 3)
             # decrease memory utilisation
-            mem = "{:.3f}".format(0.5)
+            mem = round(0.5, 3)
             # decrease service latency
-            t = "{:.3f}".format(30)
+            t = round(30, 3)
             # decrease RPS
-            rps = "{:.3f}".format(550)
+            rps = round(550, 3)
         elif rep > 5:
             # decrease CPU utilisation
-            cpu = "{:.3f}".format(160.21*math.exp(-0.22*rep))
+            cpu = round(160.21*math.exp(-0.22*rep), 3)
             # decrease memory utilisation
-            mem = "{:.3f}".format(0.5)
+            mem = round(0.5, 3)
             # block service latency to minimum
-            t = "{:.3f}".format(4)
+            t = round(4, 3)
             # decrease rps
-            rps = "{:.3f}".format(860.28*math.exp(-0.49*rep))
+            rps = round(860.28*math.exp(-0.49*rep), 3)
         else:
             # decrease CPU utilisation
-            cpu = "{:.3f}".format(160.21*math.exp(-0.22*rep))
+            cpu = round(160.21*math.exp(-0.22*rep), 3)
             # decrease memory utilisation
-            mem = "{:.3f}".format(0.5)
+            mem = round(0.5, 3)
             # decrease service latency
-            t = "{:.3f}".format(49.55*math.exp(-0.54*rep))
+            t = round(49.55*math.exp(-0.54*rep), 3)
             # decrease rps
-            rps = "{:.3f}".format(860.28*math.exp(-0.49*rep))
+            rps = round(860.28*math.exp(-0.49*rep), 3)
         print(f"rep: {rep}, t: {t}, rps: {rps}, cpu: {cpu}, mem: {mem}")
 
         # Store the values in a dictionary
