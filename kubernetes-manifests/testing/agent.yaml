@@ -100,7 +100,7 @@ spec:
           --cluster gke \
           --rew_fun linear_3 \
           --model A2C \
-          --model_dir 100000.zip
+          --model_dir 190000.zip
         env:
         - name: POD_NAMESPACE
           valueFrom:
