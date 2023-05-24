@@ -161,6 +161,13 @@ def train_model(model, models_dir):
 
     return
 
+def online_learning():
+    """
+    Continue learning from a pre-trained model and save new best model
+    after X timesteps.
+    """
+    return 
+
 if __name__ == "__main__":
 
     # cluster = "minikube"
@@ -177,7 +184,7 @@ if __name__ == "__main__":
     if rew_fun == "indicator": alpha = 100
     elif rew_fun == "quadratic": alpha = 2
     elif rew_fun == "quad_cpu_thr": alpha = 2
-    else: print("Could not set alpha.")
+    else: alpha = 1
 
     dirs = create_directories()
     models_dir = dirs[0]
