@@ -8,7 +8,7 @@ def create_values():
         rep +=1
         if rep == 1:
             # decrease CPU utilisation
-            cpu = round(130, 3)
+            cpu = round(540, 3)
             # decrease memory utilisation
             mem = round(0.5, 3)
             # decrease service latency
