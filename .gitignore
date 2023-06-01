@@ -25,3 +25,4 @@ src/agent-local/models
 src/agent-local/tf_logs
 src/agent-local/pod_logs
 src/agent-local/__pycache__
+dummy/CPU utilisation [%]-data-as-seriestocolumns-2023-06-01 09_47_45.csv

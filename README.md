@@ -128,7 +128,7 @@ The file `prometheus.yaml` instructs Prometheus to scrape from this server, amon
 Next install Istio 1.17.1 by following the [official documentation](https://istio.io/latest/docs/setup/getting-started/#download).
 `curl -L https://istio.io/downloadIstio | ISTIO_VERSION=1.17.1 TARGET_ARCH=x86_64 sh -`
 
-Use the demo profile `istioctl install --set profile=demo -y`  and label both namespaces for the injection of the [Envoy sidecar](https://istio.io/latest/docs/ops/deployment/architecture/#envoy) with `kubectl label namespace <namespace_name> istio-injection=enabled`. The sidecar is the component that will emit those metrics scraped by Prometheus.
+Use the default profile `istioctl install --set profile=default -y`  and label both namespaces for the injection of the [Envoy sidecar](https://istio.io/latest/docs/ops/deployment/architecture/#envoy) with `kubectl label namespace <namespace_name> istio-injection=enabled`. The sidecar is the component that will emit those metrics scraped by Prometheus.
 
 ##### Enabling Prometheus and Grafana
 Prometheus, Kiali and Grafana are enabled with `kubectl apply -f microservice-demo/kubernetes-manifests/istio-system`.
