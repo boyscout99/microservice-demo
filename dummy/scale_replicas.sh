@@ -10,5 +10,5 @@ while [ $replicas -le 30 ]; do
         kubectl scale deployment -n $namespace $deployment --replicas $replicas
     done
     replicas=$((replicas + 1))
-    sleep 600  # Sleep for 10 minutes
+    sleep 300  # Sleep for 10 minutes
 done
