@@ -140,20 +140,8 @@
             "uid": "PBFA97CFB590B2093"
           },
           "editorMode": "code",
-          "expr": "avg by (pod) (sum by (pod) (rate(istio_requests_total{reporter=\"destination\", namespace=\"testing\", destination_workload=\"productcatalogservice\"}[1m])))",
-          "hide": true,
-          "legendFormat": "{{namespace}}",
-          "range": true,
-          "refId": "G"
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
-          },
-          "editorMode": "code",
           "expr": "avg(sum by (pod) (rate(istio_requests_total{reporter=\"destination\", namespace=\"testing\", destination_workload=\"productcatalogservice\"}[1m])))",
-          "hide": false,
+          "hide": true,
           "legendFormat": "testing",
           "range": true,
           "refId": "A"
@@ -169,6 +157,18 @@
           "legendFormat": "default",
           "range": true,
           "refId": "B"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "editorMode": "code",
+          "expr": "(sum by (pod) (rate(istio_requests_total{reporter=\"destination\", namespace=\"testing\", destination_workload=\"productcatalogservice\"}[1m])))",
+          "hide": false,
+          "legendFormat": "__auto",
+          "range": true,
+          "refId": "C"
         }
       ],
       "title": "RPS to the pod",
@@ -227,68 +227,7 @@
             ]
           }
         },
-        "overrides": [
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "Avg CPU default"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "fixedColor": "yellow",
-                  "mode": "fixed"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "Avg CPU rl-agent"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "fixedColor": "green",
-                  "mode": "fixed"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "testing"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "fixedColor": "yellow",
-                  "mode": "fixed"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "default"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "fixedColor": "green",
-                  "mode": "fixed"
-                }
-              }
-            ]
-          }
-        ]
+        "overrides": []
       },
       "gridPos": {
         "h": 9,
@@ -309,6 +248,7 @@
           "sort": "none"
         }
       },
+      "pluginVersion": "9.0.1",
       "targets": [
         {
           "datasource": {
@@ -329,7 +269,7 @@
           },
           "editorMode": "code",
           "expr": "sum by (container, pod) (rate(container_cpu_usage_seconds_total{namespace=\"testing\", pod=~\"product.*\", image!=\"\"}[2m])) /\nsum by (container, pod) (kube_pod_container_resource_requests{namespace=\"testing\", unit=\"core\", pod=~\"product.*\"}) * 100",
-          "hide": false,
+          "hide": true,
           "legendFormat": "{{container}}, testing",
           "range": true,
           "refId": "B"
@@ -556,6 +496,9 @@
               "viz": false
             },
             "lineInterpolation": "linear",
+            "lineStyle": {
+              "fill": "solid"
+            },
             "lineWidth": 1,
             "pointSize": 5,
             "scaleDistribution": {
@@ -682,7 +625,7 @@
           },
           "editorMode": "code",
           "expr": "avg((histogram_quantile(0.90, sum by (le, destination_workload, source_workload, pod) (rate(istio_request_duration_milliseconds_bucket{reporter=\"destination\", destination_service_namespace=\"testing\", response_code=\"200\", pod=~\"productcatalogservice-.*\"}[2m])))))",
-          "hide": false,
+          "hide": true,
           "legendFormat": "testing",
           "range": true,
           "refId": "A"
@@ -694,13 +637,37 @@
           },
           "editorMode": "code",
           "expr": "avg((histogram_quantile(0.90, sum by (le, destination_workload, source_workload, pod) (rate(istio_request_duration_milliseconds_bucket{reporter=\"destination\", destination_service_namespace=\"default\", response_code=\"200\", pod=~\"productcatalogservice-.*\"}[2m])))))",
-          "hide": false,
+          "hide": true,
           "legendFormat": "default",
           "range": true,
           "refId": "C"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "editorMode": "code",
+          "expr": "avg by (pod) (histogram_quantile(\n      0.90,\n      sum by (le, destination_workload, source_workload, pod) (\n        rate(\n          istio_request_duration_milliseconds_bucket{\n            reporter=\"destination\",\n            destination_service_namespace=\"testing\",\n            response_code=\"200\",\n            pod=~\"productcatalogservice-.*\"\n          }[1m]\n        )\n      )\n    ))\n",
+          "hide": false,
+          "legendFormat": "__auto",
+          "range": true,
+          "refId": "D"
         }
       ],
       "title": "p90 latency of the pod",
+      "transformations": [
+        {
+          "id": "configFromData",
+          "options": {
+            "applyTo": {
+              "id": "byType"
+            },
+            "configRefId": "D",
+            "mappings": []
+          }
+        }
+      ],
       "type": "timeseries"
     },
     {
@@ -903,6 +870,252 @@
         "type": "prometheus",
         "uid": "PBFA97CFB590B2093"
       },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 0,
+        "y": 18
+      },
+      "id": 13,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "editorMode": "code",
+          "expr": "avg(sum by (pod) (rate(istio_requests_total{reporter=\"destination\", namespace=\"testing\", destination_workload=\"productcatalogservice\"}[1m])))",
+          "legendFormat": "RPS-testing",
+          "range": true,
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "editorMode": "code",
+          "expr": "avg(sum by (pod) (rate(container_cpu_usage_seconds_total{namespace=\"testing\", pod=~\"product.*\", image!=\"\"}[2m])) /\nsum by (pod) (kube_pod_container_resource_requests{namespace=\"testing\", unit=\"core\", pod=~\"product.*\"}) * 100)",
+          "hide": false,
+          "legendFormat": "CPU-testing",
+          "range": true,
+          "refId": "B"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "editorMode": "code",
+          "expr": "avg(avg by (pod) (histogram_quantile(\n      0.90,\n      sum by (le, destination_workload, source_workload, pod) (\n        rate(\n          istio_request_duration_milliseconds_bucket{\n            reporter=\"destination\",\n            destination_service_namespace=\"testing\",\n            response_code=\"200\",\n            pod=~\"productcatalogservice-.*\"\n          }[1m]\n        )\n      )\n    )\n  )\n)",
+          "hide": false,
+          "legendFormat": "p90-testing",
+          "range": true,
+          "refId": "C"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "editorMode": "code",
+          "expr": "count(kube_pod_info{pod=~\"productcatalogservice-.*\", namespace=\"testing\"})",
+          "hide": false,
+          "legendFormat": "replicas-testing",
+          "range": true,
+          "refId": "D"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "editorMode": "code",
+          "expr": "avg(sum by (pod) (rate(container_cpu_usage_seconds_total{namespace=\"testing\", pod=~\"product.*\", image!=\"\"}[2m])) /\nsum by (pod) (kube_pod_container_resource_requests{namespace=\"testing\", unit=\"byte\", pod=~\"product.*\"}) * 100)",
+          "hide": false,
+          "legendFormat": "memory-testing",
+          "range": true,
+          "refId": "E"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "editorMode": "code",
+          "expr": "avg(sum by (pod) (rate(istio_requests_total{reporter=\"destination\", namespace=\"rl-agent-e1-a2c\", destination_workload=\"productcatalogservice\"}[1m])))",
+          "hide": false,
+          "legendFormat": "RPS-rl-agent-e1-a2c",
+          "range": true,
+          "refId": "F"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "editorMode": "code",
+          "expr": "avg(sum by (pod) (rate(container_cpu_usage_seconds_total{namespace=\"rl-agent-e1-a2c\", pod=~\"product.*\", image!=\"\"}[2m])) /\nsum by (pod) (kube_pod_container_resource_requests{namespace=\"rl-agent-e1-a2c\", unit=\"core\", pod=~\"product.*\"}) * 100)",
+          "hide": false,
+          "legendFormat": "CPU-rl-agent-e1-a2c",
+          "range": true,
+          "refId": "G"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "editorMode": "code",
+          "expr": "avg(avg by (pod) (histogram_quantile(\n      0.90,\n      sum by (le, destination_workload, source_workload, pod) (\n        rate(\n          istio_request_duration_milliseconds_bucket{\n            reporter=\"destination\",\n            destination_service_namespace=\"rl-agent-e1-a2c\",\n            response_code=\"200\",\n            pod=~\"productcatalogservice-.*\"\n          }[1m]\n        )\n      )\n    )\n  )\n)",
+          "hide": false,
+          "legendFormat": "p90-rl-agent-e1-a2c",
+          "range": true,
+          "refId": "H"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "editorMode": "code",
+          "expr": "count(kube_pod_info{pod=~\"productcatalogservice-.*\", namespace=\"rl-agent-e1-a2c\"})",
+          "hide": false,
+          "legendFormat": "replicas-rl-agent-e1-a2c",
+          "range": true,
+          "refId": "I"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "editorMode": "code",
+          "expr": "avg(sum by (pod) (rate(container_cpu_usage_seconds_total{namespace=\"rl-agent-e1-a2c\", pod=~\"product.*\", image!=\"\"}[2m])) /\nsum by (pod) (kube_pod_container_resource_requests{namespace=\"rl-agent-e1-a2c\", unit=\"byte\", pod=~\"product.*\"}) * 100)",
+          "hide": false,
+          "legendFormat": "memory-rl-agent-e1-a2c",
+          "range": true,
+          "refId": "J"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "editorMode": "code",
+          "expr": "avg(sum by (pod) (rate(istio_requests_total{reporter=\"destination\", namespace=\"rl-agent-e1-ppo\", destination_workload=\"productcatalogservice\"}[1m])))",
+          "hide": false,
+          "legendFormat": "RPS-rl-agent-e1-ppo",
+          "range": true,
+          "refId": "K"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "editorMode": "code",
+          "expr": "avg(sum by (pod) (rate(container_cpu_usage_seconds_total{namespace=\"rl-agent-e1-ppo\", pod=~\"product.*\", image!=\"\"}[2m])) /\nsum by (pod) (kube_pod_container_resource_requests{namespace=\"rl-agent-e1-ppo\", unit=\"core\", pod=~\"product.*\"}) * 100)",
+          "hide": false,
+          "legendFormat": "CPU-rl-agent-e1-ppo",
+          "range": true,
+          "refId": "L"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "editorMode": "code",
+          "expr": "avg(avg by (pod) (histogram_quantile(\n      0.90,\n      sum by (le, destination_workload, source_workload, pod) (\n        rate(\n          istio_request_duration_milliseconds_bucket{\n            reporter=\"destination\",\n            destination_service_namespace=\"rl-agent-e1-ppo\",\n            response_code=\"200\",\n            pod=~\"productcatalogservice-.*\"\n          }[1m]\n        )\n      )\n    )\n  )\n)",
+          "hide": false,
+          "legendFormat": "p90-rl-agent-e1-ppo",
+          "range": true,
+          "refId": "M"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "editorMode": "code",
+          "expr": "count(kube_pod_info{pod=~\"productcatalogservice-.*\", namespace=\"rl-agent-e1-ppo\"})",
+          "hide": false,
+          "legendFormat": "replicas-rl-agent-e1-ppo",
+          "range": true,
+          "refId": "N"
+        }
+      ],
+      "title": "All timeseries together",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -1072,6 +1285,6 @@
   "timezone": "",
   "title": "Autoscaler comparison on Paymentservice",
   "uid": "NzMg15EVk",
-  "version": 7,
+  "version": 17,
   "weekStart": ""
 }
