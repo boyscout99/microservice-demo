@@ -187,10 +187,10 @@ def load_model(env, models_dir, tf_logs_dir):
                             env, 
                             learning_rate=float(LEARNING_RATE),
                             verbose=1,
-                            n_steps=1, 
+                            n_steps=5, 
                             gamma=0.99, 
                             gae_lambda=1.0, 
-                            ent_coef=0.5, 
+                            ent_coef=0.0, 
                             vf_coef=0.5, 
                             max_grad_norm=0.5, 
                             rms_prop_eps=1e-05,
@@ -237,7 +237,7 @@ if __name__ == "__main__":
     #  namespace = "rl-agent" # namespace
     namespace = NAMESPACE
     minReplicas = 1
-    maxReplicas = 30
+    maxReplicas = 7
     rew_fun = REWARD_FUNCTION
     # define alpha based on the selected reward function
     if rew_fun == "indicator": alpha = 100
@@ -245,8 +245,8 @@ if __name__ == "__main__":
     elif rew_fun == "quad_cpu_thr": alpha = 2
     else: alpha = 1
 
-    TIMESTEPS = 5000
-    EPISODES = 20
+    TIMESTEPS = 1000
+    EPISODES = 10
 
     dirs = create_directories()
     models_dir = dirs[0]
@@ -255,7 +255,7 @@ if __name__ == "__main__":
     logger = enable_logging(pod_logs_dir)
 
     # copy data
-    data_json_path = os.path.join(script_dir, "data.json")
+    data_json_path = os.path.join(script_dir, "sample.json")
     # read made up data
     d_file = open(data_json_path, "r")
     d = json.load(d_file)

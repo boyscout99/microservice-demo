@@ -1,7 +1,7 @@
 #!/bin/bash
 
 deployment="productcatalogservice"
-namespaces=("rl-agent-e1-a2c" "testing" "rl-agent-e1-ppo")
+namespaces=("rl-agent-e1-a2c" "testing" "rl-agent-e1-ppo" "rl-agent-e3-1" "rl-agent-e3-2" "rl-agent-e4-1")
 
 replicas=1
 while [ $replicas -le 30 ]; do
@@ -10,5 +10,5 @@ while [ $replicas -le 30 ]; do
         kubectl scale deployment -n $namespace $deployment --replicas $replicas
     done
     replicas=$((replicas + 1))
-    sleep 300  # Sleep for 10 minutes
+    sleep 600  # Sleep for 10 minutes
 done

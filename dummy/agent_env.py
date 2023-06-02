@@ -53,10 +53,10 @@ class GymEnvironment(gym.Env):
         time.sleep(0.5)
         # reset queries to initial state
         self.queries["q_pod_replicas"] = 1
-        self.queries["q_request_duration"] = self.data[0]["t"]
-        self.queries["q_rps"] = self.data[0]["rps"]
-        self.queries["q_cpu_usage"] = self.data[0]["cpu"]
-        self.queries["q_memory_usage"] = self.data[0]["mem"]
+        self.queries["q_request_duration"] = self.data[0]["p90"][0]
+        self.queries["q_rps"] = self.data[0]["rps"][0]
+        self.queries["q_cpu_usage"] = self.data[0]["cpu"][0]
+        self.queries["q_memory_usage"] = self.data[0]["mem"][0]
         # retreive observation
         self.current_observation = self._get_observation()
         self.current_replicas = self.current_observation[0]
@@ -77,10 +77,10 @@ class GymEnvironment(gym.Env):
         # Update the pod states based on the action
         if action == 0:  # No change in replicas
             print("Taking action 0")
-            t = self.data[rep-1]["t"]
-            rps = self.data[rep-1]["rps"]
-            cpu = self.data[rep-1]["cpu"]
-            mem = self.data[rep-1]["mem"]
+            t = self.data[rep-1]["p90"][0]
+            rps = self.data[rep-1]["rps"][0]
+            cpu = self.data[rep-1]["cpu"][0]
+            mem = self.data[rep-1]["mem"][0]
             print(f"rep: {rep}, t: {t}, rps: {rps}, cpu: {cpu}, mem: {mem}")
             # print(f"rep: {rep}, t: {t}, rps: {rps}")
             pass
@@ -88,15 +88,15 @@ class GymEnvironment(gym.Env):
             print("Taking action +1")
             # self.scale.update_replicas(1)
             rep += 1
-            if rep > 30:
+            if rep > self.maxReplicas:
                 print(f"Cannot have more than maxReplicas. Setting to {self.maxReplicas}.")
-                rep = 30
+                rep = self.maxReplicas
             else:
                 # Consequences of action on environment
-                t = self.data[rep-1]["t"]
-                rps = self.data[rep-1]["rps"]
-                cpu = self.data[rep-1]["cpu"]
-                mem = self.data[rep-1]["mem"]
+                t = self.data[rep-1]["p90"][0]
+                rps = self.data[rep-1]["rps"][0]
+                cpu = self.data[rep-1]["cpu"][0]
+                mem = self.data[rep-1]["mem"][0]
             print(f"rep: {rep}, t: {t}, rps: {rps}, cpu: {cpu}, mem: {mem}")
             # print(f"rep: {rep}, t: {t}, rps: {rps}")
 
@@ -104,14 +104,14 @@ class GymEnvironment(gym.Env):
             print("Taking action -1")
             # self.scale.update_replicas(-1)
             rep -= 1
-            if rep < 1:
+            if rep < self.minReplicas:
                 print(f"Cannot have less than minReplicas. Setting to {self.minReplicas}.")
-                rep = 1
+                rep = self.minReplicas
             else:
-                t = self.data[rep-1]["t"]
-                rps = self.data[rep-1]["rps"]
-                cpu = self.data[rep-1]["cpu"]
-                mem = self.data[rep-1]["mem"]
+                t = self.data[rep-1]["p90"][0]
+                rps = self.data[rep-1]["rps"][0]
+                cpu = self.data[rep-1]["cpu"][0]
+                mem = self.data[rep-1]["mem"][0]
             print(f"rep: {rep}, t: {t}, rps: {rps}, cpu: {cpu}, mem: {mem}")
             # print(f"rep: {rep}, t: {t}, rps: {rps}")
 
