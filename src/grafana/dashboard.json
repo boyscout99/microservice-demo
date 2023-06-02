@@ -993,7 +993,7 @@
             "uid": "PBFA97CFB590B2093"
           },
           "editorMode": "code",
-          "expr": "avg(sum by (pod) (rate(container_cpu_usage_seconds_total{namespace=\"testing\", pod=~\"product.*\", image!=\"\"}[2m])) /\nsum by (pod) (kube_pod_container_resource_requests{namespace=\"testing\", unit=\"byte\", pod=~\"product.*\"}) * 100)",
+          "expr": "avg(sum by (pod) (rate(container_memory_usage_bytes{namespace=\"testing\", pod=~\"product.*\", image!=\"\"}[2m])) /\nsum by (pod) (kube_pod_container_resource_requests{namespace=\"testing\", unit=\"byte\", pod=~\"product.*\"}) * 100)",
           "hide": false,
           "legendFormat": "memory-testing",
           "range": true,
@@ -1053,7 +1053,7 @@
             "uid": "PBFA97CFB590B2093"
           },
           "editorMode": "code",
-          "expr": "avg(sum by (pod) (rate(container_cpu_usage_seconds_total{namespace=\"rl-agent-e1-a2c\", pod=~\"product.*\", image!=\"\"}[2m])) /\nsum by (pod) (kube_pod_container_resource_requests{namespace=\"rl-agent-e1-a2c\", unit=\"byte\", pod=~\"product.*\"}) * 100)",
+          "expr": "avg(sum by (pod) (rate(container_memory_usage_bytes{namespace=\"rl-agent-e1-a2c\", pod=~\"product.*\", image!=\"\"}[2m])) /\nsum by (pod) (kube_pod_container_resource_requests{namespace=\"rl-agent-e1-a2c\", unit=\"byte\", pod=~\"product.*\"}) * 100)",
           "hide": false,
           "legendFormat": "memory-rl-agent-e1-a2c",
           "range": true,
@@ -1106,6 +1106,198 @@
           "legendFormat": "replicas-rl-agent-e1-ppo",
           "range": true,
           "refId": "N"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "editorMode": "code",
+          "expr": "avg(sum by (pod) (rate(container_memory_usage_bytes{namespace=\"rl-agent-e1-ppo\", pod=~\"product.*\", image!=\"\"}[2m])) /\nsum by (pod) (kube_pod_container_resource_requests{namespace=\"rl-agent-e1-ppo\", unit=\"byte\", pod=~\"product.*\"}) * 100)",
+          "hide": false,
+          "legendFormat": "memory-rl-agent-e1-ppo",
+          "range": true,
+          "refId": "O"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "editorMode": "code",
+          "expr": "avg(sum by (pod) (rate(istio_requests_total{reporter=\"destination\", namespace=\"rl-agent-e3-1\", destination_workload=\"productcatalogservice\"}[1m])))",
+          "hide": false,
+          "legendFormat": "RPS-rl-agent-e3-1",
+          "range": true,
+          "refId": "P"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "editorMode": "code",
+          "expr": "avg(sum by (pod) (rate(container_cpu_usage_seconds_total{namespace=\"rl-agent-e3-1\", pod=~\"product.*\", image!=\"\"}[2m])) /\nsum by (pod) (kube_pod_container_resource_requests{namespace=\"rl-agent-e3-1\", unit=\"core\", pod=~\"product.*\"}) * 100)",
+          "hide": false,
+          "legendFormat": "CPU-rl-agent-e3-1",
+          "range": true,
+          "refId": "Q"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "editorMode": "code",
+          "expr": "avg(avg by (pod) (histogram_quantile(\n      0.90,\n      sum by (le, destination_workload, source_workload, pod) (\n        rate(\n          istio_request_duration_milliseconds_bucket{\n            reporter=\"destination\",\n            destination_service_namespace=\"rl-agent-e3-1\",\n            response_code=\"200\",\n            pod=~\"productcatalogservice-.*\"\n          }[1m]\n        )\n      )\n    )\n  )\n)",
+          "hide": false,
+          "legendFormat": "p90-rl-agent-e3-1",
+          "range": true,
+          "refId": "R"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "editorMode": "code",
+          "expr": "count(kube_pod_info{pod=~\"productcatalogservice-.*\", namespace=\"rl-agent-e3-1\"})",
+          "hide": false,
+          "legendFormat": "replicas-rl-agent-e3-1",
+          "range": true,
+          "refId": "S"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "editorMode": "code",
+          "expr": "avg(sum by (pod) (rate(container_memory_usage_bytes{namespace=\"rl-agent-e3-1\", pod=~\"product.*\", image!=\"\"}[2m])) /\nsum by (pod) (kube_pod_container_resource_requests{namespace=\"rl-agent-e3-1\", unit=\"byte\", pod=~\"product.*\"}) * 100)",
+          "hide": false,
+          "legendFormat": "memory-rl-agent-e3-1",
+          "range": true,
+          "refId": "T"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "editorMode": "code",
+          "expr": "avg(sum by (pod) (rate(istio_requests_total{reporter=\"destination\", namespace=\"rl-agent-e3-2\", destination_workload=\"productcatalogservice\"}[1m])))",
+          "hide": false,
+          "legendFormat": "RPS-rl-agent-e3-2",
+          "range": true,
+          "refId": "U"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "editorMode": "code",
+          "expr": "avg(sum by (pod) (rate(container_cpu_usage_seconds_total{namespace=\"rl-agent-e3-2\", pod=~\"product.*\", image!=\"\"}[2m])) /\nsum by (pod) (kube_pod_container_resource_requests{namespace=\"rl-agent-e3-2\", unit=\"core\", pod=~\"product.*\"}) * 100)",
+          "hide": false,
+          "legendFormat": "CPU-rl-agent-e3-2",
+          "range": true,
+          "refId": "V"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "editorMode": "code",
+          "expr": "avg(avg by (pod) (histogram_quantile(\n      0.90,\n      sum by (le, destination_workload, source_workload, pod) (\n        rate(\n          istio_request_duration_milliseconds_bucket{\n            reporter=\"destination\",\n            destination_service_namespace=\"rl-agent-e3-2\",\n            response_code=\"200\",\n            pod=~\"productcatalogservice-.*\"\n          }[1m]\n        )\n      )\n    )\n  )\n)",
+          "hide": false,
+          "legendFormat": "p90-rl-agent-e3-2",
+          "range": true,
+          "refId": "W"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "editorMode": "code",
+          "expr": "count(kube_pod_info{pod=~\"productcatalogservice-.*\", namespace=\"rl-agent-e3-2\"})",
+          "hide": false,
+          "legendFormat": "replicas-rl-agent-e3-2",
+          "range": true,
+          "refId": "X"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "editorMode": "code",
+          "expr": "avg(sum by (pod) (rate(container_memory_usage_bytes{namespace=\"rl-agent-e3-2\", pod=~\"product.*\", image!=\"\"}[2m])) /\nsum by (pod) (kube_pod_container_resource_requests{namespace=\"rl-agent-e3-2\", unit=\"byte\", pod=~\"product.*\"}) * 100)",
+          "hide": false,
+          "legendFormat": "memory-rl-agent-e3-2",
+          "range": true,
+          "refId": "Y"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "editorMode": "code",
+          "expr": "avg(sum by (pod) (rate(istio_requests_total{reporter=\"destination\", namespace=\"rl-agent-e4-1\", destination_workload=\"productcatalogservice\"}[1m])))",
+          "hide": false,
+          "legendFormat": "RPS-rl-agent-e4-1",
+          "range": true,
+          "refId": "Z"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "editorMode": "code",
+          "expr": "avg(sum by (pod) (rate(container_cpu_usage_seconds_total{namespace=\"rl-agent-e4-1\", pod=~\"product.*\", image!=\"\"}[2m])) /\nsum by (pod) (kube_pod_container_resource_requests{namespace=\"rl-agent-e4-1\", unit=\"core\", pod=~\"product.*\"}) * 100)",
+          "hide": false,
+          "legendFormat": "CPU-rl-agent-e4-1",
+          "range": true,
+          "refId": "AA"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "editorMode": "code",
+          "expr": "avg(avg by (pod) (histogram_quantile(\n      0.90,\n      sum by (le, destination_workload, source_workload, pod) (\n        rate(\n          istio_request_duration_milliseconds_bucket{\n            reporter=\"destination\",\n            destination_service_namespace=\"rl-agent-e4-1\",\n            response_code=\"200\",\n            pod=~\"productcatalogservice-.*\"\n          }[1m]\n        )\n      )\n    )\n  )\n)",
+          "hide": false,
+          "legendFormat": "p90-rl-agent-e4-1",
+          "range": true,
+          "refId": "AB"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "editorMode": "code",
+          "expr": "count(kube_pod_info{pod=~\"productcatalogservice-.*\", namespace=\"rrl-agent-e4-1\"})",
+          "hide": false,
+          "legendFormat": "replicas-rl-agent-e4-1",
+          "range": true,
+          "refId": "AC"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "editorMode": "code",
+          "expr": "avg(sum by (pod) (rate(container_memory_usage_bytes{namespace=\"rl-agent-e4-1\", pod=~\"product.*\", image!=\"\"}[2m])) /\nsum by (pod) (kube_pod_container_resource_requests{namespace=\"rl-agent-e4-1\", unit=\"byte\", pod=~\"product.*\"}) * 100)",
+          "hide": false,
+          "legendFormat": "memory-rl-agent-e4-1",
+          "range": true,
+          "refId": "AD"
         }
       ],
       "title": "All timeseries together",
@@ -1270,7 +1462,7 @@
       "type": "timeseries"
     }
   ],
-  "refresh": "5s",
+  "refresh": "",
   "schemaVersion": 36,
   "style": "dark",
   "tags": [],
@@ -1285,6 +1477,6 @@
   "timezone": "",
   "title": "Autoscaler comparison on Paymentservice",
   "uid": "NzMg15EVk",
-  "version": 17,
+  "version": 20,
   "weekStart": ""
 }
