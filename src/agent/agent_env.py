@@ -71,8 +71,8 @@ class GymEnvironment(gym.Env):
 
         # Get the new observation from Prometheus API
         # TODO wait 15 seconds to stabilise?
-        print("Waiting 30 seconds to stabilise ...")
-        time.sleep(30)
+        print("Waiting 15 seconds to stabilise ...")
+        time.sleep(15)
         new_observation = self._get_observation()
 
         # Calculate reward based on the new observation
