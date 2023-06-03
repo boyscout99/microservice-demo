@@ -83,10 +83,10 @@ spec:
         resources:
           requests:
             cpu: 300m
-            memory: 256Mi
+            memory: 1.5Gi
           limits:
             cpu: 500m
-            memory: 512Mi
+            memory: 2Gi
       volumes:
       - name: file-storage
         persistentVolumeClaim:
