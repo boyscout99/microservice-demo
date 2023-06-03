@@ -237,7 +237,7 @@ if __name__ == "__main__":
     #  namespace = "rl-agent" # namespace
     namespace = NAMESPACE
     minReplicas = 1
-    maxReplicas = 7
+    maxReplicas = 15
     rew_fun = REWARD_FUNCTION
     # define alpha based on the selected reward function
     if rew_fun == "indicator": alpha = 100
