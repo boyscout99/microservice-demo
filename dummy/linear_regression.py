@@ -1,14 +1,28 @@
 import numpy as np
 from scipy.optimize import curve_fit
 import matplotlib.pyplot as plt
+import json
 
 # Define the exponential function
 def exponential_func(x, a, b):
     return a * np.exp(-b * x)
 
+file = open("sample.json", "r")
+data = json.load(file)
+file.close()
+
+x_values = []
+y_values = []
+
+print(data)
+
+for i in range(len(data)):
+    y_values.append(data[i]["rps"][0])
+    x_values.append(i+1)
+
 # Convert the vectors to numpy arrays
-x_values = np.array([1 ,2, 3, 4, 5])
-y_values = np.array([30, 14, 9, 7, 6])
+x_values = np.array(x_values)
+y_values = np.array(y_values)
 
 # Fit the exponential function to the data
 popt, pcov = curve_fit(exponential_func, x_values, y_values)
