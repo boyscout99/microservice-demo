@@ -70,11 +70,11 @@ spec:
         volumeMounts:
           - name: file-storage
             mountPath: /app
-        # command:
-        # - /bin/sh
-        # - -c
-        # - |
-        #   python3 /app/workload_gen.py --pattern flat
+        command:
+        - /bin/sh
+        - -c
+        - |
+          python3 /app/workload_gen.py --pattern flat
         env:
         - name: FRONTEND_ADDR
           value: "frontend:80"
