@@ -94,13 +94,13 @@ spec:
         - -c
         - |
           python3 /app/health_check.py & \
-          python3 /app/agent_predict.py \
+          python3 /app/agent_learn.py \
           --deployment productcatalogservice \
           --namespace $POD_NAMESPACE \
           --cluster gke \
           --rew_fun linear_3 \
           --model A2C \
-          --model_dir 9000.zip
+          --learn_rate 0.0007
         env:
         - name: POD_NAMESPACE
           valueFrom:
