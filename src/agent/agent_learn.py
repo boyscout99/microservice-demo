@@ -17,20 +17,58 @@ class TensorboardCallback(BaseCallback):
         super(TensorboardCallback, self).__init__(verbose)
         self.episode_rewards = []
         self.ep_rew_mean = 0
+        self.ep_rew_sum = 0
 
+        self.replicas = 0
+        self.t = 0
+        self.rps = 0
+        self.cpu = 0
+        self.mem = 0
+        
     def _on_rollout_start(self) -> None:
         self.episode_rewards = []
+        self.replicas = 0
+        self.t = 0
+        self.rps = 0
+        self.cpu = 0
+        self.mem = 0
+        print("ON ROLLOUT START")
 
     def _on_step(self) -> bool:
+        # get current reward
         rewards = self.training_env.get_attr("reward")
+        # append reward
         self.episode_rewards.extend(rewards)
+        # get observations to log it at each step
+        obs = self.training_env.get_attr("current_observation")
+        self.replicas = obs[0][0]
+        self.t = obs[0][1]
+        self.rps = obs[0][2]
+        self.cpu = obs[0][3] # ! REMEMBER TO CHANGE THE INDEX
+        self.mem = obs[0][4]
+        self.logger.record("rollout/replicas", self.replicas)
+        self.logger.record("rollout/t", self.t)
+        self.logger.record("rollout/rps", self.rps)
+        self.logger.record("rollout/cpu", self.cpu)
+        self.logger.record("rollout/mem", self.mem)
+        print("ON STEP")
         return True
 
     def _on_rollout_end(self) -> None:
+        # compute mean
         self.ep_rew_mean = np.mean(self.episode_rewards)
+        # get total reward
+        tot_reward = self.training_env.get_attr("reward_sum")
+        self.ep_rew_sum = tot_reward[0]
+        # log values
         self.logger.record("rollout/ep_rew_mean", self.ep_rew_mean)
-        self.episode_rewards = []
         print("self.ep_rew_mean: ", self.ep_rew_mean)
+        self.logger.record("rollout/ep_rew_sum", self.ep_rew_sum)
+        print("self.ep_rew_sum: ", self.ep_rew_sum)
+        # reset values
+        self.ep_rew_sum = 0
+        self.episode_rewards = []
+        print("ON ROLLOUT END")
 
 MODULE = "stable_baselines3"
 t = datetime.now()
@@ -144,17 +182,20 @@ def load_model(env, models_dir, tf_logs_dir):
 
     return model
 
-def train_model(model, models_dir):
-    TIMESTEPS = 100
+def train_model(model, models_dir, timesteps, episodes, callbacks):
     # training
-    for i in range(1,10):
-        print("Learning. Iteration: ", TIMESTEPS*i)
-        rewards_callback = TensorboardCallback()
-        model.learn(total_timesteps=TIMESTEPS, reset_num_timesteps=False, tb_log_name=MODEL, log_interval=2, callback=rewards_callback)
+    for i in range(1,episodes):
+        print("Learning. Iteration: ", timesteps*i)
+        # model.learn(total_timesteps=TIMESTEPS, reset_num_timesteps=False, tb_log_name=MODEL, log_interval=2, callback=rewards_callback)
+        model.learn(total_timesteps=timesteps, 
+                    tb_log_name=MODEL, 
+                    log_interval=2, 
+                    callback=callbacks)
         # model.learn(total_timesteps=TIMESTEPS, reset_num_timesteps=False)
         logging.info(f"Training iteration {i}, total_timesteps={TIMESTEPS*i}, saving model ...")
         print("Saving model ...")
         model.save(f"{models_dir}/{TIMESTEPS*i}")
+        # env.reset()
 
     print("Training completed. Check performance on Tensorboard.")
     logging.info("Training completed. Check performance on Tensorboard.")
@@ -186,6 +227,9 @@ if __name__ == "__main__":
     elif rew_fun == "quad_cpu_thr": alpha = 2
     else: alpha = 1
 
+    TIMESTEPS = 1000
+    EPISODES = 10
+
     dirs = create_directories()
     models_dir = dirs[0]
     tf_logs_dir = dirs[1]
@@ -201,6 +245,14 @@ if __name__ == "__main__":
                             rew_fun)
     env = Monitor(env, tf_logs_dir)
     model = load_model(env, models_dir, tf_logs_dir)
-    train_model(model, models_dir)
-
+    # create callbacks
+    rewards_callback = TensorboardCallback()
+    callbacks = [rewards_callback]
+    # train the model
+    train_model(model, 
+                models_dir, 
+                TIMESTEPS,
+                EPISODES,
+                callbacks)
+    # close the environment on completion
     env.close()

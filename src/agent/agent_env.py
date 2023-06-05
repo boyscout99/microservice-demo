@@ -49,7 +49,7 @@ class GymEnvironment(gym.Env):
         self.reward_sum = 0
         self.current_observation = self._get_observation()  # Retrieve initial observation from Prometheus API
         self.current_replicas = self.current_observation[0]
-        self.previous_response_time = self.current_observation[1]  # Initialize previous response time
+        # self.previous_response_time = self.current_observation[1]  # Initialize previous response time
         return self.current_observation
 
     def step(self, action):
