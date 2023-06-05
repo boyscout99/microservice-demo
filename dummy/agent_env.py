@@ -40,8 +40,9 @@ class GymEnvironment(gym.Env):
         self.reward = 0
         self.reward_sum = 0
         self.action_space = spaces.Discrete(3)  # Action space with 3 discrete actions: 1, 0, -1
-        self.observation_space = spaces.Box(low=0, high=np.inf, shape=(5,), dtype=np.float64)  # Observation space with 4 continuous elements: response time, CPU usage, memory usage, replicas
-        # self.observation_space = spaces.Box(low=0, high=np.inf, shape=(3,), dtype=np.float64)  # Observation space with 4 continuous elements: response time, CPU usage, memory usage, replicas
+        # self.observation_space = spaces.Box(low=0, high=np.inf, shape=(5,), dtype=np.float64)  # Observation space with 5 continuous elements: replicas, p90 latency, response time, CPU usage, memory usage
+        # self.observation_space = spaces.Box(low=0, high=np.inf, shape=(3,), dtype=np.float64)  # Observation space with 3 continuous elements: replicas, p90 latency, response time
+        self.observation_space = spaces.Box(low=0, high=np.inf, shape=(4,), dtype=np.float64)
 
     def reset(self):
         # Reset the environment, e.g., initialize the pod states and retrieve initial observation
@@ -56,7 +57,7 @@ class GymEnvironment(gym.Env):
         self.queries["q_request_duration"] = self.data[0]["p90"][0]
         self.queries["q_rps"] = self.data[0]["rps"][0]
         self.queries["q_cpu_usage"] = self.data[0]["cpu"][0]
-        self.queries["q_memory_usage"] = self.data[0]["mem"][0]
+        # self.queries["q_memory_usage"] = self.data[0]["mem"][0]
         # retreive observation
         self.current_observation = self._get_observation()
         self.current_replicas = self.current_observation[0]
@@ -68,10 +69,10 @@ class GymEnvironment(gym.Env):
         # Take a step in the environment based on the given action
         # Update the pod states, calculate reward, and return the new observation, reward, done, and info
         rep = self.queries["q_pod_replicas"]
-        cpu = self.queries["q_cpu_usage"]
-        mem = self.queries["q_memory_usage"]
         t = self.queries["q_request_duration"]
         rps = self.queries["q_rps"]
+        cpu = self.queries["q_cpu_usage"]
+        # mem = self.queries["q_memory_usage"]
 
         print("\n##### NEW ACTION #####")
         # Update the pod states based on the action
@@ -80,9 +81,11 @@ class GymEnvironment(gym.Env):
             t = self.data[rep-1]["p90"][0]
             rps = self.data[rep-1]["rps"][0]
             cpu = self.data[rep-1]["cpu"][0]
-            mem = self.data[rep-1]["mem"][0]
-            print(f"rep: {rep}, t: {t}, rps: {rps}, cpu: {cpu}, mem: {mem}")
+            # mem = self.data[rep-1]["mem"][0]
+            # print(f"rep: {rep}, t: {t}, rps: {rps}, cpu: {cpu}, mem: {mem}")
             # print(f"rep: {rep}, t: {t}, rps: {rps}")
+            # print(f"rep: {rep}, t: {t}, cpu: {cpu}")
+            print(f"rep: {rep}, t: {t}, rps: {rps}, cpu: {cpu}")
             pass
         elif action == 1:  # Increase replicas
             print("Taking action +1")
@@ -96,9 +99,11 @@ class GymEnvironment(gym.Env):
                 t = self.data[rep-1]["p90"][0]
                 rps = self.data[rep-1]["rps"][0]
                 cpu = self.data[rep-1]["cpu"][0]
-                mem = self.data[rep-1]["mem"][0]
-            print(f"rep: {rep}, t: {t}, rps: {rps}, cpu: {cpu}, mem: {mem}")
+                # mem = self.data[rep-1]["mem"][0]
+            # print(f"rep: {rep}, t: {t}, rps: {rps}, cpu: {cpu}, mem: {mem}")
             # print(f"rep: {rep}, t: {t}, rps: {rps}")
+            # print(f"rep: {rep}, t: {t}, cpu: {cpu}")
+            print(f"rep: {rep}, t: {t}, rps: {rps}, cpu: {cpu}")
 
         elif action == 2:  # Decrease replicas
             print("Taking action -1")
@@ -111,17 +116,19 @@ class GymEnvironment(gym.Env):
                 t = self.data[rep-1]["p90"][0]
                 rps = self.data[rep-1]["rps"][0]
                 cpu = self.data[rep-1]["cpu"][0]
-                mem = self.data[rep-1]["mem"][0]
-            print(f"rep: {rep}, t: {t}, rps: {rps}, cpu: {cpu}, mem: {mem}")
+                # mem = self.data[rep-1]["mem"][0]
+            # print(f"rep: {rep}, t: {t}, rps: {rps}, cpu: {cpu}, mem: {mem}")
             # print(f"rep: {rep}, t: {t}, rps: {rps}")
+            # print(f"rep: {rep}, t: {t}, cpu: {cpu}")
+            print(f"rep: {rep}, t: {t}, rps: {rps}, cpu: {cpu}")
 
         self.current_replicas = rep
         # reassign values
         self.queries["q_pod_replicas"] = rep
-        self.queries["q_cpu_usage"] = cpu
-        self.queries["q_memory_usage"] = mem
         self.queries["q_request_duration"] = t
         self.queries["q_rps"] = rps
+        self.queries["q_cpu_usage"] = cpu
+        # self.queries["q_memory_usage"] = mem
 
         # waiting environment to stabilise
         # time.sleep(1)
@@ -224,7 +231,7 @@ class GymEnvironment(gym.Env):
             self.queries["q_request_duration"],
             self.queries["q_rps"],
             self.queries["q_cpu_usage"],
-            self.queries["q_memory_usage"]
+            # self.queries["q_memory_usage"]
         ]
         observation = np.array(observation)
         # Update the current observation for the next step

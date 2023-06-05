@@ -22,17 +22,18 @@ class TensorboardCallback(BaseCallback):
 
         self.replicas = 0
         self.t = 0
-        self.cpu = 0
-        self.mem = 0
         self.rps = 0
-
+        self.cpu = 0
+        # self.mem = 0
+        
     def _on_rollout_start(self) -> None:
         self.episode_rewards = []
         self.replicas = 0
         self.t = 0
-        self.cpu = 0
-        self.mem = 0
         self.rps = 0
+        self.cpu = 0
+        # self.mem = 0
+        
         print("ON ROLLOUT START")
 
     def _on_step(self) -> bool:
@@ -45,13 +46,13 @@ class TensorboardCallback(BaseCallback):
         self.replicas = obs[0][0]
         self.t = obs[0][1]
         self.rps = obs[0][2]
-        self.cpu = obs[0][3]
-        self.mem = obs[0][4]
+        self.cpu = obs[0][3] # ! REMEMBER TO CHANGE THE INDEX
+        # self.mem = obs[0][4]
         self.logger.record("rollout/replicas", self.replicas)
         self.logger.record("rollout/t", self.t)
         self.logger.record("rollout/rps", self.rps)
         self.logger.record("rollout/cpu", self.cpu)
-        self.logger.record("rollout/mem", self.mem)
+        # self.logger.record("rollout/mem", self.mem)
         print("ON STEP")
         return True
 
@@ -90,9 +91,9 @@ script_dir = os.path.dirname(os.path.abspath(__file__))
 
 def create_directories():
     # create the necessary directories
-    models_dir = os.path.join(script_dir, f"models/{NAMESPACE}/{MODEL}/{timestamp}")
-    tf_logs_dir = os.path.join(script_dir, f"tf_logs/{NAMESPACE}/{MODEL}/{timestamp}")
-    pod_logs_dir = os.path.join(script_dir, f"pod_logs/{NAMESPACE}/{MODEL}")
+    models_dir = os.path.join(script_dir, f"models/{NAMESPACE}/{MODEL}/rpscpu/{timestamp}")
+    tf_logs_dir = os.path.join(script_dir, f"tf_logs/{NAMESPACE}/{MODEL}/rpscpu/{timestamp}")
+    pod_logs_dir = os.path.join(script_dir, f"pod_logs/{NAMESPACE}/{MODEL}/rpscpu")
 
     if not os.path.exists(models_dir):
         os.makedirs(models_dir)
@@ -169,21 +170,44 @@ def setup_environment(alpha,
 
 def load_model(env, models_dir, tf_logs_dir):
     # Check for existing models and load the last saved model if available
-    existing_models = [f for f in os.listdir(models_dir)]
-    if existing_models:
-        # Sort models by their names to get the last saved model
-        existing_models.sort()
-        last_saved_model = existing_models[-1]
-        model_path = os.path.join(models_dir, last_saved_model)
-        print(f"Loading last saved model: {model_path}")
-        logging.info(f"Loading last saved model: {model_path}")
-        model = model_attr.load(model_path, env=env, tensorboard_log=tf_logs_dir)
-    else:
-        print("No existing models found. Starting from scratch.")
-        logging.info("No existing models found. Starting from scratch.")
-        # Create the model
-        if MODEL == "A2C":
-            model = model_attr("MlpPolicy", 
+    # existing_models = [f for f in os.listdir(models_dir)]
+    # if existing_models:
+    #     # Sort models by their names to get the last saved model
+    #     existing_models.sort()
+    #     last_saved_model = existing_models[-1]
+    #     model_path = os.path.join(models_dir, last_saved_model)
+    #     print(f"Loading last saved model: {model_path}")
+    #     logging.info(f"Loading last saved model: {model_path}")
+    #     model = model_attr.load(model_path, env=env, tensorboard_log=tf_logs_dir)
+    # else:
+    #     print("No existing models found. Starting from scratch.")
+    #     logging.info("No existing models found. Starting from scratch.")
+    #     # Create the model
+    #     if MODEL == "A2C":
+    #         model = model_attr("MlpPolicy", 
+    #                         env, 
+    #                         learning_rate=float(LEARNING_RATE),
+    #                         verbose=1,
+    #                         n_steps=5, 
+    #                         gamma=0.99, 
+    #                         gae_lambda=1.0, 
+    #                         ent_coef=0.0, 
+    #                         vf_coef=0.5, 
+    #                         max_grad_norm=0.5, 
+    #                         rms_prop_eps=1e-05,
+    #                         tensorboard_log=tf_logs_dir)
+    #     elif MODEL == "DQN":
+    #         model = model_attr("MlpPolicy", 
+    #                         env, 
+    #                         learning_rate=float(LEARNING_RATE),
+    #                         learning_starts=0,
+    #                         target_update_interval=2,
+    #                         train_freq=1,
+    #                         verbose=2, 
+    #                         tensorboard_log=tf_logs_dir)
+    print("No existing models found. Starting from scratch.")
+    logging.info("No existing models found. Starting from scratch.")
+    model = model_attr("MlpPolicy", 
                             env, 
                             learning_rate=float(LEARNING_RATE),
                             verbose=1,
@@ -194,15 +218,6 @@ def load_model(env, models_dir, tf_logs_dir):
                             vf_coef=0.5, 
                             max_grad_norm=0.5, 
                             rms_prop_eps=1e-05,
-                            tensorboard_log=tf_logs_dir)
-        elif MODEL == "DQN":
-            model = model_attr("MlpPolicy", 
-                            env, 
-                            learning_rate=float(LEARNING_RATE),
-                            learning_starts=0,
-                            target_update_interval=2,
-                            train_freq=1,
-                            verbose=2, 
                             tensorboard_log=tf_logs_dir)
 
     return model
