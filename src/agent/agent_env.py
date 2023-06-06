@@ -59,6 +59,9 @@ class GymEnvironment(gym.Env):
         # Update the pod states based on the action
         if action == 0:  # No change in replicas
             # print(f"Taken action {action}, self.current_replicas: {self.current_replicas}")
+            # Get the new observation from Prometheus API
+            new_observation = self._get_observation()
+            self.current_replicas = new_observation[0]
             pass
         elif action == 1:  # Increase replicas
             self.scale.update_replicas(1)
