@@ -44,8 +44,8 @@ class GymEnvironment(gym.Env):
         # Reset the environment, e.g., initialize the pod states and retrieve initial observation
         # TODO do I need to reset the workload pattern?
         self.scale.reset_replicas() # Initialize current number of replicas as 1
-        print("Waiting 30 seconds to stabilise after reset ...")
-        time.sleep(30)
+        print("Waiting 120 seconds to stabilise after reset ...")
+        time.sleep(120)
         self.reward_sum = 0
         self.current_observation = self._get_observation()  # Retrieve initial observation from Prometheus API
         self.current_replicas = self.current_observation[0]
@@ -165,15 +165,15 @@ class GymEnvironment(gym.Env):
     def _get_observation(self):
         # Retrieve observation from Prometheus API, e.g., query response time, CPU usage, memory usage, and replicas
         observation = self.prom.get_results(self.queries)
+        print(f"\nObservation:\n{self.queries[0]}: {observation[0]};\n{self.queries[1]}: {observation[1]};\n{self.queries[2]}: {observation[2]};\n{self.queries[3]}: {observation[3]};\n{self.queries[4]}: {observation[4]};")
         observation = np.array(observation)
 
         # Check for missing values in the observation
-        if np.any(np.isnan(observation)):
-            # Use the previous observation if any of the values are missing
-            print("Attention! Missing values in results[], substituting values of previous observation ...")
-            observation = np.where(np.isnan(observation), self.current_observation, observation)
+        # if np.any(np.isnan(observation)):
+        #     # Use the previous observation if any of the values are missing
+        #     print("Attention! Missing values in results[], substituting values of previous observation ...")
+        #     observation = np.where(np.isnan(observation), self.current_observation, observation)
 
         # Update the current observation for the next step
-        self.current_observation = observation
-
+        # self.current_observation = observation
         return observation
