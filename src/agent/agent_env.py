@@ -58,17 +58,17 @@ class GymEnvironment(gym.Env):
         print("\n##### NEW ACTION #####")
         # Update the pod states based on the action
         if action == 0:  # No change in replicas
-            print("Taking action 0")
+            # print(f"Taken action {action}, self.current_replicas: {self.current_replicas}")
             pass
         elif action == 1:  # Increase replicas
-            print("Taking action +1")
             self.scale.update_replicas(1)
             self.current_replicas += 1
+            # print(f"Taking action +1, self.current_replicas: {self.current_replicas}")
         elif action == 2:  # Decrease replicas
-            print("Taking action -1")
             self.scale.update_replicas(-1)
             self.current_replicas -= 1
-
+            # print(f"Taking action -1, self.current_replicas: {self.current_replicas}")
+        print(f"Taken action {action}, updated self.current_replicas: {self.current_replicas}")
         # Get the new observation from Prometheus API
         # TODO wait 15 seconds to stabilise?
         print("Waiting 15 seconds to stabilise ...")
