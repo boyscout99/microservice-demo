@@ -169,10 +169,10 @@ class GymEnvironment(gym.Env):
         observation = np.array(observation)
 
         # Check for missing values in the observation
-        # if np.any(np.isnan(observation)):
-        #     # Use the previous observation if any of the values are missing
-        #     print("Attention! Missing values in results[], substituting values of previous observation ...")
-        #     observation = np.where(np.isnan(observation), self.current_observation, observation)
+        if np.any(np.isnan(observation)):
+            # Use the previous observation if any of the values are missing
+            print("Attention! Missing values in results[], substituting NaN with 0.0 ...")
+            observation = np.nan_to_num(observation, nan=0.0)
 
         # Update the current observation for the next step
         # self.current_observation = observation
