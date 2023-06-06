@@ -55,7 +55,8 @@ class GymEnvironment(gym.Env):
     def step(self, action):
         # Take a step in the environment based on the given action
         # Update the pod states, calculate reward, and return the new observation, reward, done, and info
-        print("\n##### NEW ACTION #####")
+        print("##### NEW ACTION #####")
+        print(f"Taken action {action}")
         # Update the pod states based on the action
         if action == 0:  # No change in replicas
             # print(f"Taken action {action}, self.current_replicas: {self.current_replicas}")
