@@ -146,7 +146,7 @@ class GymEnvironment(gym.Env):
                 if delta_t > 0:
                     # SLA violated, penalise a lot time exceeded
                     self.reward = -delta_t**2
-                    print(f"self.reward = -{delta_t**2} = {self.reward}")
+                    print(f"self.reward = -delta_t**2 = {self.reward}")
                 else:
                     # SLA satisfided, try to optimise number of replicas
                     self.reward = delta_t + (self.maxReplicas - self.current_replicas)
