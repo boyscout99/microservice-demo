@@ -136,10 +136,10 @@ class GymEnvironment(gym.Env):
         elif self.rew_fun == "linear_3":
             # Quadratic reward function on exceeded time constraint
             if (self.current_replicas == self.maxReplicas and action == 1):
-                self.reward = -1000
+                self.reward = -100000
                 print(f"self.reward = {self.reward}")
             elif (self.current_replicas == self.minReplicas and action == 2):
-                self.reward = -1000
+                self.reward = -100000
                 print(f"self.reward = {self.reward}")
             else:
                 delta_t = new_observation[1]-SLA_RESP_TIME
