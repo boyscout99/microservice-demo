@@ -45,30 +45,61 @@
     ],
     "steps":[
         {
-            "users": 100,
+            "users": 1,
+            "rate": 1,
+            "wait": 300
+        },
+        {
+            "users": 50,
             "rate": 50,
-            "wait": 600
+            "wait": 300
+        },
+        {
+            "users": 100,
+            "rate": 100,
+            "wait": 300
+        },
+        {
+            "users": 150,
+            "rate": 150,
+            "wait": 300
+        },
+        {
+            "users": 200,
+            "rate": 200,
+            "wait": 300
         },
         {
             "users": 250,
-            "rate": 50,
-            "wait": 600
+            "rate": 250,
+            "wait": 300
+        },
+        {
+            "users": 300,
+            "rate": 300,
+            "wait": 300
+        },
+        {
+            "users": 350,
+            "rate": 350,
+            "wait": 300
+        },
+        {
+            "users": 400,
+            "rate": 400,
+            "wait": 300
+        },
+        {
+            "users": 450,
+            "rate": 450,
+            "wait": 300
         },
         {
             "users": 500,
-            "rate": 50,
-            "wait": 600
-        },
-        {
-            "users": 1000,
-            "rate": 50,
-            "wait": 600
-        },
-        {
-            "users": 1500,
-            "rate": 50,
-            "wait": 600
+            "rate": 500,
+            "wait": 300
         }
+        
     ],
     "steps_long":[
         {
