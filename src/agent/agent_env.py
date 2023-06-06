@@ -62,18 +62,21 @@ class GymEnvironment(gym.Env):
             pass
         elif action == 1:  # Increase replicas
             self.scale.update_replicas(1)
-            self.current_replicas += 1
+            print("Waiting 15 seconds to stabilise ...")
+            time.sleep(15)
+            # Get the new observation from Prometheus API
+            new_observation = self._get_observation()
+            self.current_replicas = new_observation[0]
             # print(f"Taking action +1, self.current_replicas: {self.current_replicas}")
         elif action == 2:  # Decrease replicas
             self.scale.update_replicas(-1)
-            self.current_replicas -= 1
+            print("Waiting 15 seconds to stabilise ...")
+            time.sleep(15)
+            # Get the new observation from Prometheus API
+            new_observation = self._get_observation()
+            self.current_replicas = new_observation[0]
             # print(f"Taking action -1, self.current_replicas: {self.current_replicas}")
         print(f"Taken action {action}, updated self.current_replicas: {self.current_replicas}")
-        # Get the new observation from Prometheus API
-        # TODO wait 15 seconds to stabilise?
-        print("Waiting 15 seconds to stabilise ...")
-        time.sleep(15)
-        new_observation = self._get_observation()
 
         # Calculate reward based on the new observation
         SLA_RESP_TIME = 10 # 100 ms
