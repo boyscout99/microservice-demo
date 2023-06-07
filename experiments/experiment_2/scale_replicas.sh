@@ -11,5 +11,5 @@ while [ $replicas -le 15 ]; do
     done
     replicas=$((replicas + 1))
     echo "Waiting 300 seconds ..."
-    sleep 300  # Sleep for 5 minutes
+    sleep 300  # Wait for 5 minutes
 done

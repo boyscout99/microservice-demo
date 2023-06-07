@@ -1,5 +1,5 @@
 #!/bin/bash
-namespaces=("testing" "rl-agent-e1-a2c" "rl-agent-e1-ppo" "rl-agent-e3-1" "rl-agent-e3-2" "rl-agent-e4-1")
+namespaces=("rl-agent-e1-a2c" "testing" "rl-agent-e1-ppo" "rl-agent-e3-1" "rl-agent-e3-2" "rl-agent-e4-1")
 auxiliary=("frontend" "recommendationservice" "checkoutservice")
 
 for namespace in "${namespaces[@]}"; do
