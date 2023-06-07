@@ -82,10 +82,10 @@ spec:
           value: "10"
         resources:
           requests:
-            cpu: 1G
+            cpu: 1500m
             memory: 1.5Gi
           limits:
-            cpu: 1.5G
+            cpu: 2000m
             memory: 2Gi
       volumes:
       - name: file-storage
