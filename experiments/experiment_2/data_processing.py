@@ -6,7 +6,7 @@ import json
 import math
 
 # Read data from DataFrame
-df = pd.read_csv('timeseries/.csv')
+df = pd.read_csv('timeseries/All timeseries together-data-as-seriestocolumns-2023-06-07 11_01_02.csv')
 
 # Fill missing values with 0
 df.fillna(0, inplace=True)

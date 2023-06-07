@@ -31,7 +31,7 @@ columns = ['rep', 'rps', 'p90', 'cpu', 'mem']
 # Generate the LaTeX table header
 table_header = '\\begin{tabular}{|c|c|c|c|c|}\n'
 table_header += '\\hline\n'
-table_header += f"rep & rps (std {std_means['rps']}, stderr {stderr_means['rps']}) & p90 (std {std_means['p90']}, stderr {stderr_means['p90']}) & cpu (std {std_means['cpu']}, stderr {stderr_means['cpu']}) & mem (std {std_means['mem']}, stderr {stderr_means['mem']}) \\\\\n"
+table_header += f"\\Replicas & RPS [req/s] (std {std_means['rps']}, stderr {stderr_means['rps']}) & p90 (std {std_means['p90']}, stderr {stderr_means['p90']}) & cpu (std {std_means['cpu']}, stderr {stderr_means['cpu']}) & mem (std {std_means['mem']}, stderr {stderr_means['mem']}) \\\\\n"
 table_header += '\\hline\n'
 
 # Generate the table rows
