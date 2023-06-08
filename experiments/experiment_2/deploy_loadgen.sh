@@ -4,8 +4,8 @@ auxiliary=("frontend" "recommendationservice" "checkoutservice" "currencyservice
 
 for namespace in "${namespaces[@]}"; do
     for service in "${auxiliary[@]}"; do
-        echo "Scaling up bottleneck service $service to 10 replicas in namespace $namespace"
-        kubectl scale deployment -n $namespace $service --replicas 10
+        echo "Scaling up bottleneck service $service to 6 replicas in namespace $namespace"
+        kubectl scale deployment -n $namespace $service --replicas 6
     done
     echo "Deploying loadgenerator in namespace $namespace"
     kubectl apply -f /mnt/nfs-client/microservice-demo/kubernetes-manifests/$namespace/loadgenerator.yaml -n $namespace
