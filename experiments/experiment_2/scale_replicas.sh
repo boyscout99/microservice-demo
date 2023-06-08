@@ -1,7 +1,7 @@
 #!/bin/bash
 
 deployment="productcatalogservice"
-namespaces=("rl-agent-e1-a2c" "testing" "default" "rl-agent-e1-ppo" "rl-agent-e3-1" "rl-agent-e3-2" "rl-agent-e4-1")
+namespaces=("testing" "default" "rl-agent-e1-a2c" "rl-agent-e1-ppo" "rl-agent-e3-1" "rl-agent-e3-2" "rl-agent-e4-1")
 
 replicas=1
 while [ $replicas -le 15 ]; do
