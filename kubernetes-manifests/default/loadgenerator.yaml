@@ -74,7 +74,7 @@ spec:
         - /bin/sh
         - -c
         - |
-          python3 /app/workload_gen.py --pattern steps
+          python3 /app/workload_gen.py --pattern flat
         env:
         - name: FRONTEND_ADDR
           value: "frontend:80"
