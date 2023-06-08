@@ -471,7 +471,7 @@ spec:
       labels:
         app: productcatalogservice
       annotations:
-        sidecar.istio.io/proxyCPU: "300m"
+        sidecar.istio.io/proxyCPU: "500m"
         sidecar.istio.io/proxyMemory: "256Mi"
     spec:
       serviceAccountName: default
@@ -496,7 +496,7 @@ spec:
             command: ["/bin/grpc_health_probe", "-addr=:3550"]
         resources:
           requests:
-            cpu: 200m
+            cpu: 250m
             memory: 64Mi
           limits:
             cpu: 300m
