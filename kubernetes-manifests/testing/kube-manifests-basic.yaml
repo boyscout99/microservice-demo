@@ -470,6 +470,9 @@ spec:
     metadata:
       labels:
         app: productcatalogservice
+      annotations:
+        sidecar.istio.io/proxyCPU: "300m"
+        sidecar.istio.io/proxyMemory: "256Mi"
     spec:
       serviceAccountName: default
       terminationGracePeriodSeconds: 5
