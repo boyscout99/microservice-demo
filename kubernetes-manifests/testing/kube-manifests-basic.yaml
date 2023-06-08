@@ -13,7 +13,7 @@ spec:
       labels:
         app: adservice
       annotations:
-        sidecar.istio.io/proxyCPU: "500m"
+        sidecar.istio.io/proxyCPU: "250m"
         sidecar.istio.io/proxyMemory: "256Mi"
     spec:
       serviceAccountName: default
@@ -74,7 +74,7 @@ spec:
       labels:
         app: cartservice
       annotations:
-        sidecar.istio.io/proxyCPU: "500m"
+        sidecar.istio.io/proxyCPU: "250m"
         sidecar.istio.io/proxyMemory: "256Mi"
     spec:
       serviceAccountName: default
@@ -135,7 +135,7 @@ spec:
       labels:
         app: checkoutservice
       annotations:
-        sidecar.istio.io/proxyCPU: "500m"
+        sidecar.istio.io/proxyCPU: "250m"
         sidecar.istio.io/proxyMemory: "256Mi"
     spec:
       serviceAccountName: default
@@ -204,7 +204,7 @@ spec:
       labels:
         app: currencyservice
       annotations:
-        sidecar.istio.io/proxyCPU: "500m"
+        sidecar.istio.io/proxyCPU: "250m"
         sidecar.istio.io/proxyMemory: "256Mi"
     spec:
       serviceAccountName: default
@@ -428,7 +428,7 @@ spec:
       labels:
         app: paymentservice
       annotations:
-        sidecar.istio.io/proxyCPU: "500m"
+        sidecar.istio.io/proxyCPU: "250m"
         sidecar.istio.io/proxyMemory: "256Mi"
     spec:
       serviceAccountName: default
@@ -548,7 +548,7 @@ spec:
       labels:
         app: recommendationservice
       annotations:
-        sidecar.istio.io/proxyCPU: "500m"
+        sidecar.istio.io/proxyCPU: "250m"
         sidecar.istio.io/proxyMemory: "256Mi"
     spec:
       serviceAccountName: default
@@ -670,7 +670,7 @@ spec:
       labels:
         app: shippingservice
       annotations:
-        sidecar.istio.io/proxyCPU: "500m"
+        sidecar.istio.io/proxyCPU: "250m"
         sidecar.istio.io/proxyMemory: "256Mi"
     spec:
       serviceAccountName: default
