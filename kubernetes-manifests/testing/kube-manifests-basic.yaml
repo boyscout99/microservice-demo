@@ -12,6 +12,9 @@ spec:
     metadata:
       labels:
         app: adservice
+      annotations:
+        sidecar.istio.io/proxyCPU: "500m"
+        sidecar.istio.io/proxyMemory: "256Mi"
     spec:
       serviceAccountName: default
       terminationGracePeriodSeconds: 5
@@ -70,6 +73,9 @@ spec:
     metadata:
       labels:
         app: cartservice
+      annotations:
+        sidecar.istio.io/proxyCPU: "500m"
+        sidecar.istio.io/proxyMemory: "256Mi"
     spec:
       serviceAccountName: default
       terminationGracePeriodSeconds: 5
@@ -128,6 +134,9 @@ spec:
     metadata:
       labels:
         app: checkoutservice
+      annotations:
+        sidecar.istio.io/proxyCPU: "500m"
+        sidecar.istio.io/proxyMemory: "256Mi"
     spec:
       serviceAccountName: default
       imagePullSecrets:
@@ -160,10 +169,10 @@ spec:
             value: "cartservice:7070"
           resources:
             requests:
-              cpu: 100m
+              cpu: 300m
               memory: 64Mi
             limits:
-              cpu: 200m
+              cpu: 500m
               memory: 128Mi
 ---
 apiVersion: v1
@@ -194,6 +203,9 @@ spec:
     metadata:
       labels:
         app: currencyservice
+      annotations:
+        sidecar.istio.io/proxyCPU: "500m"
+        sidecar.istio.io/proxyMemory: "256Mi"
     spec:
       serviceAccountName: default
       terminationGracePeriodSeconds: 5
@@ -218,10 +230,10 @@ spec:
             command: ["/bin/grpc_health_probe", "-addr=:7000"]
         resources:
           requests:
-            cpu: 100m
+            cpu: 200m
             memory: 64Mi
           limits:
-            cpu: 200m
+            cpu: 300m
             memory: 128Mi
 ---
 apiVersion: v1
@@ -313,6 +325,8 @@ spec:
         app: frontend
       annotations:
         sidecar.istio.io/rewriteAppHTTPProbers: "true"
+        sidecar.istio.io/proxyCPU: "500m"
+        sidecar.istio.io/proxyMemory: "256Mi"
     spec:
       serviceAccountName: default
       imagePullSecrets:
@@ -365,7 +379,7 @@ spec:
           #   value: "true"
           resources:
             requests:
-              cpu: 200m
+              cpu: 300m
               memory: 64Mi
             limits:
               cpu: 400m
@@ -413,6 +427,9 @@ spec:
     metadata:
       labels:
         app: paymentservice
+      annotations:
+        sidecar.istio.io/proxyCPU: "500m"
+        sidecar.istio.io/proxyMemory: "256Mi"
     spec:
       serviceAccountName: default
       terminationGracePeriodSeconds: 5
@@ -530,6 +547,9 @@ spec:
     metadata:
       labels:
         app: recommendationservice
+      annotations:
+        sidecar.istio.io/proxyCPU: "500m"
+        sidecar.istio.io/proxyMemory: "256Mi"
     spec:
       serviceAccountName: default
       terminationGracePeriodSeconds: 5
@@ -557,10 +577,10 @@ spec:
           value: "1"
         resources:
           requests:
-            cpu: 100m
+            cpu: 200m
             memory: 220Mi
           limits:
-            cpu: 200m
+            cpu: 300m
             memory: 450Mi
 ---
 apiVersion: v1
@@ -649,6 +669,9 @@ spec:
     metadata:
       labels:
         app: shippingservice
+      annotations:
+        sidecar.istio.io/proxyCPU: "500m"
+        sidecar.istio.io/proxyMemory: "256Mi"
     spec:
       serviceAccountName: default
       imagePullSecrets:
