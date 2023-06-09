@@ -6,7 +6,7 @@ import json
 import math
 
 # Read data from DataFrame
-df = pd.read_csv('timeseries/All timeseries together-data-as-seriestocolumns-2023-06-07 11_01_02.csv')
+df = pd.read_csv('timeseries/All timeseries together-data-as-seriestocolumns-2023-06-09 12_36_21.csv')
 
 # Fill missing values with 0
 df.fillna(0, inplace=True)
@@ -16,7 +16,7 @@ timestamps = pd.to_datetime(df['Time'])
 # Filter columns that start with 'RPS'
 rep_columns = [col for col in df.columns if col.startswith('replicas')]
 rps_columns = [col for col in df.columns if col.startswith('RPS')]
-p90_columns = [col for col in df.columns if col.startswith('p90')]
+p90_columns = [col for col in df.columns if col.startswith('p95')]
 cpu_columns = [col for col in df.columns if col.startswith('CPU')]
 mem_columns = [col for col in df.columns if col.startswith('mem')]
 
@@ -29,7 +29,7 @@ mem = df[mem_columns]
 
 # define the order of the metrics
 metrics_df = [rep, rps, p90, cpu, mem]
-metrics_df_order = ["rep", "rps", "p90", "cpu", "mem"]
+metrics_df_order = ["rep", "rps", "p95", "cpu", "mem"]
 
 # Create a series of plots for each measurement
 fig, axs = plt.subplots(len(metrics_df), 1)
@@ -52,7 +52,7 @@ total_time_sec = size*5
 # total time of interval before changing replicas into number of indexes
 tot_time_interval_index = 300/5
 i = math.ceil(tot_time_interval_index)
-j = math.ceil(i/2)-11
+j = math.ceil(i/2)-2
 # i = 70
 # j = 35
 print(f"total_timestamps: {size}, total_time_sec: {total_time_sec}, tot_time_interval_index: {tot_time_interval_index}, (i,j): ({i},{j})")
@@ -104,7 +104,7 @@ json_object = json.dumps(measurements, indent=4, separators=(',', ':'))
 with open("exp2_samples.json", "w") as outfile:
     outfile.write(json_object)
 # check correct indexing
-print("Data:", measurements[0]["p90"][0])
+print("Data:", measurements[0]["p95"][0])
 
 # Add legend
 # plt.legend()

@@ -26,3 +26,7 @@ src/agent-local/tf_logs
 src/agent-local/pod_logs
 src/agent-local/__pycache__
 dummy/CPU utilisation [%]-data-as-seriestocolumns-2023-06-01 09_47_45.csv
+experiments/experiment_2/timeseries/All timeseries together-data-as-seriestocolumns-2023-06-09 11_02_06.csv
+experiments/experiment_2/timeseries/All timeseries together-data-as-seriestocolumns-2023-06-09 12_33_48.csv
+.gitignore
+experiments/experiment_2/timeseries/All timeseries together-data-as-seriestocolumns-2023-06-09 12_36_21.csv

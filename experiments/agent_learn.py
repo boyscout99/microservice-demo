@@ -24,7 +24,7 @@ class TensorboardCallback(BaseCallback):
         self.t = 0
         self.rps = 0
         self.cpu = 0
-        # self.mem = 0
+        self.mem = 0
         
     def _on_rollout_start(self) -> None:
         self.episode_rewards = []
@@ -32,7 +32,7 @@ class TensorboardCallback(BaseCallback):
         self.t = 0
         self.rps = 0
         self.cpu = 0
-        # self.mem = 0
+        self.mem = 0
         
         print("ON ROLLOUT START")
 
@@ -47,12 +47,12 @@ class TensorboardCallback(BaseCallback):
         self.t = obs[0][1]
         self.rps = obs[0][2]
         self.cpu = obs[0][3] # ! REMEMBER TO CHANGE THE INDEX
-        # self.mem = obs[0][4]
+        self.mem = obs[0][4]
         self.logger.record("rollout/replicas", self.replicas)
         self.logger.record("rollout/t", self.t)
         self.logger.record("rollout/rps", self.rps)
         self.logger.record("rollout/cpu", self.cpu)
-        # self.logger.record("rollout/mem", self.mem)
+        self.logger.record("rollout/mem", self.mem)
         print("ON STEP")
         return True
 
@@ -91,9 +91,9 @@ script_dir = os.path.dirname(os.path.abspath(__file__))
 
 def create_directories():
     # create the necessary directories
-    models_dir = os.path.join(script_dir, f"models/{NAMESPACE}/{MODEL}/rpscpu/{timestamp}")
-    tf_logs_dir = os.path.join(script_dir, f"tf_logs/{NAMESPACE}/{MODEL}/rpscpu/{timestamp}")
-    pod_logs_dir = os.path.join(script_dir, f"pod_logs/{NAMESPACE}/{MODEL}/rpscpu")
+    models_dir = os.path.join(script_dir, f"models/{NAMESPACE}/{MODEL}/{timestamp}")
+    tf_logs_dir = os.path.join(script_dir, f"tf_logs/{NAMESPACE}/{MODEL}/{timestamp}")
+    pod_logs_dir = os.path.join(script_dir, f"pod_logs/{NAMESPACE}/{MODEL}")
 
     if not os.path.exists(models_dir):
         os.makedirs(models_dir)
@@ -211,7 +211,7 @@ def load_model(env, models_dir, tf_logs_dir):
                             env, 
                             learning_rate=float(LEARNING_RATE),
                             verbose=1,
-                            n_steps=5, 
+                            n_steps=10, 
                             gamma=0.99, 
                             gae_lambda=1.0, 
                             ent_coef=0.0, 
@@ -260,8 +260,8 @@ if __name__ == "__main__":
     elif rew_fun == "quad_cpu_thr": alpha = 2
     else: alpha = 1
 
-    TIMESTEPS = 1000
-    EPISODES = 10
+    TIMESTEPS = 5000
+    EPISODES = 12
 
     dirs = create_directories()
     models_dir = dirs[0]
@@ -270,7 +270,7 @@ if __name__ == "__main__":
     logger = enable_logging(pod_logs_dir)
 
     # copy data
-    data_json_path = os.path.join(script_dir, "sample.json")
+    data_json_path = os.path.join(script_dir, "experiment_2/exp2_samples.json")
     # read made up data
     d_file = open(data_json_path, "r")
     d = json.load(d_file)

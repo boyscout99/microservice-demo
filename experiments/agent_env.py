@@ -40,9 +40,9 @@ class GymEnvironment(gym.Env):
         self.reward = 0
         self.reward_sum = 0
         self.action_space = spaces.Discrete(3)  # Action space with 3 discrete actions: 1, 0, -1
-        # self.observation_space = spaces.Box(low=0, high=np.inf, shape=(5,), dtype=np.float64)  # Observation space with 5 continuous elements: replicas, p90 latency, response time, CPU usage, memory usage
+        self.observation_space = spaces.Box(low=0, high=np.inf, shape=(5,), dtype=np.float64)  # Observation space with 5 continuous elements: replicas, p90 latency, response time, CPU usage, memory usage
         # self.observation_space = spaces.Box(low=0, high=np.inf, shape=(3,), dtype=np.float64)  # Observation space with 3 continuous elements: replicas, p90 latency, response time
-        self.observation_space = spaces.Box(low=0, high=np.inf, shape=(4,), dtype=np.float64)
+        # self.observation_space = spaces.Box(low=0, high=np.inf, shape=(4,), dtype=np.float64)
 
     def reset(self):
         # Reset the environment, e.g., initialize the pod states and retrieve initial observation
@@ -54,10 +54,10 @@ class GymEnvironment(gym.Env):
         time.sleep(0.5)
         # reset queries to initial state
         self.queries["q_pod_replicas"] = 1
-        self.queries["q_request_duration"] = self.data[0]["p90"][0]
+        self.queries["q_request_duration"] = self.data[0]["p95"][0]
         self.queries["q_rps"] = self.data[0]["rps"][0]
         self.queries["q_cpu_usage"] = self.data[0]["cpu"][0]
-        # self.queries["q_memory_usage"] = self.data[0]["mem"][0]
+        self.queries["q_memory_usage"] = self.data[0]["mem"][0]
         # retreive observation
         self.current_observation = self._get_observation()
         self.current_replicas = self.current_observation[0]
@@ -72,20 +72,20 @@ class GymEnvironment(gym.Env):
         t = self.queries["q_request_duration"]
         rps = self.queries["q_rps"]
         cpu = self.queries["q_cpu_usage"]
-        # mem = self.queries["q_memory_usage"]
+        mem = self.queries["q_memory_usage"]
 
         print("\n##### NEW ACTION #####")
         # Update the pod states based on the action
         if action == 0:  # No change in replicas
             print("Taking action 0")
-            t = self.data[rep-1]["p90"][0]
+            t = self.data[rep-1]["p95"][0]
             rps = self.data[rep-1]["rps"][0]
             cpu = self.data[rep-1]["cpu"][0]
-            # mem = self.data[rep-1]["mem"][0]
-            # print(f"rep: {rep}, t: {t}, rps: {rps}, cpu: {cpu}, mem: {mem}")
+            mem = self.data[rep-1]["mem"][0]
+            print(f"rep: {rep}, t: {t}, rps: {rps}, cpu: {cpu}, mem: {mem}")
             # print(f"rep: {rep}, t: {t}, rps: {rps}")
             # print(f"rep: {rep}, t: {t}, cpu: {cpu}")
-            print(f"rep: {rep}, t: {t}, rps: {rps}, cpu: {cpu}")
+            # print(f"rep: {rep}, t: {t}, rps: {rps}, cpu: {cpu}")
             pass
         elif action == 1:  # Increase replicas
             print("Taking action +1")
@@ -96,14 +96,14 @@ class GymEnvironment(gym.Env):
                 rep = self.maxReplicas
             else:
                 # Consequences of action on environment
-                t = self.data[rep-1]["p90"][0]
+                t = self.data[rep-1]["p95"][0]
                 rps = self.data[rep-1]["rps"][0]
                 cpu = self.data[rep-1]["cpu"][0]
-                # mem = self.data[rep-1]["mem"][0]
-            # print(f"rep: {rep}, t: {t}, rps: {rps}, cpu: {cpu}, mem: {mem}")
+                mem = self.data[rep-1]["mem"][0]
+            print(f"rep: {rep}, t: {t}, rps: {rps}, cpu: {cpu}, mem: {mem}")
             # print(f"rep: {rep}, t: {t}, rps: {rps}")
             # print(f"rep: {rep}, t: {t}, cpu: {cpu}")
-            print(f"rep: {rep}, t: {t}, rps: {rps}, cpu: {cpu}")
+            # print(f"rep: {rep}, t: {t}, rps: {rps}, cpu: {cpu}")
 
         elif action == 2:  # Decrease replicas
             print("Taking action -1")
@@ -113,14 +113,14 @@ class GymEnvironment(gym.Env):
                 print(f"Cannot have less than minReplicas. Setting to {self.minReplicas}.")
                 rep = self.minReplicas
             else:
-                t = self.data[rep-1]["p90"][0]
+                t = self.data[rep-1]["p95"][0]
                 rps = self.data[rep-1]["rps"][0]
                 cpu = self.data[rep-1]["cpu"][0]
-                # mem = self.data[rep-1]["mem"][0]
-            # print(f"rep: {rep}, t: {t}, rps: {rps}, cpu: {cpu}, mem: {mem}")
+                mem = self.data[rep-1]["mem"][0]
+            print(f"rep: {rep}, t: {t}, rps: {rps}, cpu: {cpu}, mem: {mem}")
             # print(f"rep: {rep}, t: {t}, rps: {rps}")
             # print(f"rep: {rep}, t: {t}, cpu: {cpu}")
-            print(f"rep: {rep}, t: {t}, rps: {rps}, cpu: {cpu}")
+            # print(f"rep: {rep}, t: {t}, rps: {rps}, cpu: {cpu}")
 
         self.current_replicas = rep
         # reassign values
@@ -128,7 +128,7 @@ class GymEnvironment(gym.Env):
         self.queries["q_request_duration"] = t
         self.queries["q_rps"] = rps
         self.queries["q_cpu_usage"] = cpu
-        # self.queries["q_memory_usage"] = mem
+        self.queries["q_memory_usage"] = mem
 
         # waiting environment to stabilise
         # time.sleep(1)
@@ -136,7 +136,7 @@ class GymEnvironment(gym.Env):
         new_observation = self._get_observation()
 
         # Calculate reward based on the new observation
-        SLA_RESP_TIME = 10 # 100 ms
+        SLA_RESP_TIME = 5 # 100 ms
         if self.rew_fun == "indicator":
             self.reward = -(self.alpha * int(new_observation[1] > SLA_RESP_TIME) + self.current_replicas)
         elif self.rew_fun == "quadratic":
@@ -165,36 +165,34 @@ class GymEnvironment(gym.Env):
                 # SLA satisfided, try to optimise number of replicas
                 self.reward = delta_t - self.alpha*self.current_replicas + gamma
         elif self.rew_fun == "linear_1":
-            # Quadratic reward function on exceeded time constraint
             delta_t = new_observation[1]-SLA_RESP_TIME
             if delta_t > 0:
                 # SLA violated, penalise a lot time exceeded
-                self.reward = -100 + self.current_replicas
-                print(f"self.reward = -100 +  {self.current_replicas} = {self.reward}")
+                self.reward = -delta_t
+                print(f"self.reward = -{delta_t} = {self.reward}")
             else:
                 # SLA satisfided, try to optimise number of replicas
-                self.reward = 100
-                print(f"self.reward = {self.reward}")
+                self.reward = (self.maxReplicas - self.current_replicas)
+                print(f"self.reward = {self.maxReplicas} - {self.current_replicas} = {self.reward}")
         elif self.rew_fun == "linear_2":
-            # Quadratic reward function on exceeded time constraint
             delta_t = new_observation[1]-SLA_RESP_TIME
             if delta_t > 0:
                 # SLA violated, penalise a lot time exceeded
-                self.reward = -100 + self.current_replicas
-                print(f"self.reward = -100 +  {self.current_replicas} = {self.reward}")
+                self.reward = -delta_t
+                print(f"self.reward = -{delta_t} = {self.reward}")
             else:
                 # SLA satisfided, try to optimise number of replicas
-                self.reward = 100 - 3*self.current_replicas
-                print(f"self.reward = {self.reward}")
+                self.reward = (self.maxReplicas - self.current_replicas)
+                print(f"self.reward = {self.maxReplicas} - {self.current_replicas} = {self.reward}")
         elif self.rew_fun == "linear_3":
             # Quadratic reward function on exceeded time constraint
-            if (self.current_replicas == self.maxReplicas and action == 1):
-                self.reward = -1000
-                print(f"self.reward = {self.reward}")
-            elif (self.current_replicas == self.minReplicas and action == 2):
-                self.reward = -1000
-                print(f"self.reward = {self.reward}")
-            else:
+            # if (self.current_replicas == self.maxReplicas and action == 1):
+            #     self.reward = -10000
+            #     print(f"self.reward = {self.reward}")
+            # elif (self.current_replicas == self.minReplicas and action == 2):
+            #     self.reward = -10000
+            #     print(f"self.reward = {self.reward}")
+            # else:
                 delta_t = new_observation[1]-SLA_RESP_TIME
                 if delta_t > 0:
                     # SLA violated, penalise a lot time exceeded
@@ -231,7 +229,7 @@ class GymEnvironment(gym.Env):
             self.queries["q_request_duration"],
             self.queries["q_rps"],
             self.queries["q_cpu_usage"],
-            # self.queries["q_memory_usage"]
+            self.queries["q_memory_usage"]
         ]
         observation = np.array(observation)
         # Update the current observation for the next step
