@@ -6,7 +6,7 @@ import json
 import math
 
 # Read data from DataFrame
-df = pd.read_csv('timeseries/All timeseries together-data-as-seriestocolumns-2023-06-06 19_53_49.csv')
+df = pd.read_csv('timeseries/All timeseries together-data-as-seriestocolumns-2023-06-09 16_25_19.csv')
 
 # Fill missing values with 0
 df.fillna(0, inplace=True)
@@ -16,22 +16,22 @@ timestamps = pd.to_datetime(df['Time'])
 # Filter columns that start with 'RPS'
 # rep_columns = [col for col in df.columns if col.startswith('replicas')]
 rps_columns = [col for col in df.columns if col.startswith('RPS')]
-p90_columns = [col for col in df.columns if col.startswith('p90')]
+p95_columns = [col for col in df.columns if col.startswith('p95')]
 cpu_columns = [col for col in df.columns if col.startswith('CPU')]
 mem_columns = [col for col in df.columns if col.startswith('mem')]
 
 # Create a new DataFrame with selected columns
 # rep = df[rep_columns]
 rps = df[rps_columns]
-p90 = df[p90_columns]
+p95 = df[p95_columns]
 cpu = df[cpu_columns]
 mem = df[mem_columns]
 
 # define the order of the metrics
 # metrics_df = [rep, rps, p90, cpu, mem]
-metrics_df = [rps, p90, cpu, mem]
-# metrics_df_order = ["rep", "rps", "p90", "cpu", "mem"]
-metrics_df_order = ["RPS [req/s]", "p90 latency [ms]", "CPU [%]", "Memory [%]"]
+metrics_df = [rps, p95, cpu, mem]
+metrics_df_order = ["rps", "p95", "cpu", "mem"]
+# metrics_df_order = ["RPS [req/s]", "p95 latency [ms]", "CPU [%]", "Memory [%]"]
 
 # Create a series of plots for each measurement
 # fig, axs = plt.subplots(len(metrics_df), 1)
