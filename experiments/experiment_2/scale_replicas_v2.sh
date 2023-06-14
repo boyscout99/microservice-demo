@@ -10,6 +10,6 @@ while [ $replicas -le 15 ]; do
         kubectl scale deployment -n $namespace $deployment --replicas $replicas
     done
     replicas=$((replicas + 1))
-    echo "Waiting 660 seconds ..."
+    echo "Waiting 600 seconds ..."
     sleep 600  # Wait for loadgen experiment to finish
 done
