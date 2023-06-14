@@ -104,7 +104,7 @@ spec:
         - /bin/sh
         - -c
         - |
-          sudo chmod +x scale_replicas_v2.sh && ./scale_replicas_v2.sh
+          chmod +x scale_replicas_v2.sh && ./scale_replicas_v2.sh
         env:
         - name: POD_NAMESPACE
           valueFrom:
