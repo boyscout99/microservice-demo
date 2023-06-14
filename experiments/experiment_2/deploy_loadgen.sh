@@ -1,6 +1,6 @@
 #!/bin/bash
 namespaces=("default" "testing" "rl-agent-e1-a2c" "rl-agent-e1-ppo" "rl-agent-e3-1" "rl-agent-e3-2" "rl-agent-e4-1")
-auxiliary=("frontend" "recommendationservice" "checkoutservice" "currencyservice" "adservice")
+auxiliary=("frontend" "recommendationservice" "checkoutservice" "currencyservice" "adservice" "cartservice")
 
 for namespace in "${namespaces[@]}"; do
     for service in "${auxiliary[@]}"; do

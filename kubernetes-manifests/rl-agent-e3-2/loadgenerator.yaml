@@ -70,11 +70,16 @@ spec:
         volumeMounts:
           - name: file-storage
             mountPath: /app
+        # command:
+        # - /bin/sh
+        # - -c
+        # - |
+        #   python3 /app/workload_gen.py --pattern steps
         command:
         - /bin/sh
         - -c
         - |
-          python3 /app/workload_gen.py --pattern steps
+          cd /app && locust --host="http://${FRONTEND_ADDR}" --headless -f locustfile.py
         env:
         - name: FRONTEND_ADDR
           value: "frontend:80"

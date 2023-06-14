@@ -97,7 +97,7 @@ class StepLoadShape(LoadTestShape):
     step_time = 20
     step_load = 50
     spawn_rate = 50
-    time_limit = 2000
+    time_limit = 600 # reach 1500 users
 
     def tick(self):
         run_time = self.get_run_time()
