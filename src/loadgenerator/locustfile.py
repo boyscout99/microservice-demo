@@ -16,6 +16,8 @@
 
 import random
 from locust import HttpUser, TaskSet, between
+from locust import LoadTestShape
+import math
 
 products = [
     '0PUK6V6EV0',
@@ -81,3 +83,27 @@ class UserBehavior(TaskSet):
 class WebsiteUser(HttpUser):
     tasks = [UserBehavior]
     wait_time = between(1, 10)
+
+class StepLoadShape(LoadTestShape):
+    """
+    A step load shape
+    Keyword arguments:
+        step_time -- Time between steps
+        step_load -- User increase amount at each step
+        spawn_rate -- Users to stop/start per second at every step
+        time_limit -- Time limit in seconds
+    """
+
+    step_time = 20
+    step_load = 50
+    spawn_rate = 50
+    time_limit = 2000
+
+    def tick(self):
+        run_time = self.get_run_time()
+
+        if run_time > self.time_limit:
+            return None
+
+        current_step = math.floor(run_time / self.step_time) + 1
+        return (current_step * self.step_load, self.spawn_rate)

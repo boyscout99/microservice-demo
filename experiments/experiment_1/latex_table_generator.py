@@ -31,13 +31,14 @@ columns = ['rps', 'p95', 'cpu', 'mem']
 # Generate the LaTeX table header
 table_header = '\\begin{tabular}{|c|c|c|c|c|}\n'
 table_header += '\\hline\n'
-table_header += f"users & rps (std {std_means['rps']}, stderr {stderr_means['rps']}) & p95 (std {std_means['p95']}, stderr {stderr_means['p95']}) & cpu (std {std_means['cpu']}, stderr {stderr_means['cpu']}) & mem (std {std_means['mem']}, stderr {stderr_means['mem']}) \\\\\n"
+# table_header += f"users & rps (std {std_means['rps']}, stderr {stderr_means['rps']}) & p95 (std {std_means['p95']}, stderr {stderr_means['p95']}) & cpu (std {std_means['cpu']}, stderr {stderr_means['cpu']}) & mem (std {std_means['mem']}, stderr {stderr_means['mem']}) \\\\\n"
+table_header += f"Users & RPS & p95 & CPU & memory \\\\\n"
 table_header += '\\hline\n'
 
 # Generate the table rows
 table_rows = ''
 for item in data:
-    row = ' & '.join([f'{item[column][0]}' for column in columns])
+    row = ' & '.join([f'{item[column][0]}, {item[column][1]}, {item[column][2]}' for column in columns])
     table_rows += f'{row} \\\\\n'
     table_rows += '\\hline\n'
 

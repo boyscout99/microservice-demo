@@ -93,7 +93,7 @@ for index in range(0, size, i):
             means.append(mean)
         # compute standard deviation and standard error for the interval on same metric
         std = np.std(means)
-        stde = np.std(means, ddof=1) / np.sqrt(np.size(means))
+        stde = std / np.sqrt(np.size(means))
         # save an entry in the dictionary as
         # {"metric name":[mean of measurements, std, sterr]}
         measure[metrics_df_order[metric_idx]] = [round(np.mean(means),2), round(std,2), round(stde,2)]
