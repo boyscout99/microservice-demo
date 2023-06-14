@@ -46,7 +46,8 @@ namespaces=[
     "rl-agent-e1-ppo",
     "rl-agent-e3-1",
     "rl-agent-e3-2",
-    "rl-agent-e4-1"
+    "rl-agent-e4-1",
+    "rl-agent-e5-a2c"
 ]
 replicas=1
 while replicas <=15:
