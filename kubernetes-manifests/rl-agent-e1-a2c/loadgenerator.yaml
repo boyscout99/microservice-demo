@@ -79,7 +79,8 @@ spec:
         - /bin/sh
         - -c
         - |
-          cd /app && locust --host="http://${FRONTEND_ADDR}" --headless -f locustfile.py
+          cd /app && locust --host="http://${FRONTEND_ADDR}" --headless -f locustfile.py && 
+          sleep 10
         env:
         - name: FRONTEND_ADDR
           value: "frontend:80"

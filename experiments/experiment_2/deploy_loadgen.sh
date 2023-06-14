@@ -6,7 +6,7 @@ auxiliary=("frontend" "recommendationservice" "checkoutservice" "currencyservice
 
 for namespace in "${namespaces[@]}"; do
     echo "Scaling $deployment in $namespace to 1 replica."
-    kubectl scale deployment -n $namespace $service --replicas 1
+    kubectl scale deployment -n $namespace $deployment --replicas 1
 done
 
 for namespace in "${namespaces[@]}"; do
