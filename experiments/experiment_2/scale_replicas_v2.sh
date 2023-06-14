@@ -11,5 +11,5 @@ while [ $replicas -le 15 ]; do
     done
     replicas=$((replicas + 1))
     echo "Waiting 660 seconds ..."
-    sleep 660  # Wait for loadgen experiment to finish
+    sleep 600  # Wait for loadgen experiment to finish
 done
