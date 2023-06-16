@@ -71,57 +71,120 @@ print(metrics_df_means)
 [
     {
         'rep':1.0,
-        'rps':22,
-        'cpu':10
-    },
-    {
-        'rep':1.0,
-        'rps':32,
-        'cpu':20
+        'metric_rows':[
+            {'rps':200, 'cpu':50},
+            {'rps':300, 'cpu':80}
+        ]
     },
     {
         'rep':2.0,
-        'rps':22,
-        'cpu':5
-    },
+        'metric_rows':[
+            {'rps':200, 'cpu':25},
+            {'rps':300, 'cpu':40}
+        ]
+    }
 ]
 """
+# json_list = []
+# for _, row in metrics_df_means.iterrows():
+#     json_dict = row.to_dict()
+#     json_list.append(json_dict)
+
 json_list = []
+json_dict = {}
 for _, row in metrics_df_means.iterrows():
-    json_dict = row.to_dict()
-    json_list.append(json_dict)
+    # if list is empty
+    if not json_list:
+        d = {'rep': row['rep'], 'metric_rows':[row.drop('rep').to_dict()]}
+        # print(d)
+        # append that dictionary to the list
+        json_list.append(d)
+    else:
+        # check if dicitonary for that replica is already present in the list
+        if not any(d['rep'] == row['rep'] for d in json_list):
+            # create a new dictionary for the number of replicas
+            d = {'rep': row['rep'], 'metric_rows':[row.drop('rep').to_dict()]}
+            # print(d)
+            # append that dictionary to the list
+            json_list.append(d)
+        else:
+            # add metrics for that replica
+            for index in range(len(json_list)):
+                if json_list[index]['rep'] == row['rep']:
+                    json_list[index]['metric_rows'].append(row.drop('rep').to_dict())
+                    # sort by rps
+                    json_list[index]['metric_rows'] = sorted(json_list[index]['metric_rows'], key=lambda metric: metric['rps'])
+
+# print(json_list)
 
 # Save file to json
 json_object = json.dumps(json_list, indent=4, separators=(',', ':'))
-with open("exp3_samples.json", "w") as outfile:
+with open("exp3_sorted_samples.json", "w") as outfile:
     outfile.write(json_object)
 # check correct indexing
-print("Data:", json_list[0]["p95"])
+# print("Data:", json_list[0]["p95"])
 
-# Search for RPS, given replicas, to set cpu, p95, mem
-replicas = 1
-RPS = 250
-with open("exp3_samples.json", "r") as f_input:
+# # Search for RPS, given replicas, to set cpu, p95, mem
+# replicas = 10
+# RPS = 300
+# with open("exp3_samples.json", "r") as f_input:
+#     data = json.load(f_input)
+
+# for elem in range(len(data)):
+#     # search for the intended number of replicas
+#     if data[elem]["rep"] == replicas:
+#         # search for the given RPS
+#         print("Element: ", data[elem])
+#         # print(f"elem {data[elem]['rps']} type: {type(data[elem]['rps'])}, elem+1 {data[elem+1]['rps']}")
+#         if (data[elem]["rps"] <= RPS) & (data[elem+1]["rps"] >= RPS):
+#             print("Element: ", data[elem+1])
+#             # take the wighted mean between the two measures and apply the coefficient to the metrics
+#             print("Inside the loop.")
+#             coeff = np.abs((RPS-data[elem]["rps"])/(data[elem+1]["rps"]-data[elem]["rps"])) # relative distance wrt the first element
+#             print(f"coeff: {coeff}")
+#             adj_cpu = data[elem]["cpu"]+coeff*(data[elem+1]["cpu"]-data[elem]["cpu"]) # the adjusted cpu
+#             adj_mem = data[elem]["mem"]+coeff*(data[elem+1]["mem"]-data[elem]["mem"]) # the adjusted mem
+#             adj_p95 = data[elem]["p95"]+coeff*(data[elem+1]["p95"]-data[elem]["p95"]) # the adjusted p95
+#             break
+
+# Generalisation of the algorithm for (replicas, metric) correspondence
+REPLICAS = 10
+RPS = 200
+with open("exp3_sorted_samples.json", "r") as f_input:
     data = json.load(f_input)
+    print("Data:\n", data)
 
 for elem in range(len(data)):
     # search for the intended number of replicas
-    if data[elem]["rep"] == replicas:
+    if data[elem]["rep"] == REPLICAS:
         # search for the given RPS
-        print("Element: ", data[elem])
+        metric_list = data[elem]["metric_rows"]
+        # print("Metric_list: ", metric_list)
         # print(f"elem {data[elem]['rps']} type: {type(data[elem]['rps'])}, elem+1 {data[elem+1]['rps']}")
-        if (data[elem]["rps"] <= RPS) & (data[elem+1]["rps"] >= RPS):
-            print("Element: ", data[elem+1])
-            # take the wighted mean between the two measures and apply the coefficient to the metrics
-            print("Inside the loop.")
-            coeff = np.abs((RPS-data[elem]["rps"])/(data[elem+1]["rps"]-data[elem]["rps"])) # relative distance wrt the first element
-            print(f"coeff: {coeff}")
-            adj_cpu = data[elem]["cpu"]+coeff*(data[elem+1]["cpu"]-data[elem]["cpu"]) # the adjusted cpu
-            adj_mem = data[elem]["mem"]+coeff*(data[elem+1]["mem"]-data[elem]["mem"]) # the adjusted mem
-            adj_p95 = data[elem]["p95"]+coeff*(data[elem+1]["p95"]-data[elem]["p95"]) # the adjusted p95
+        if (RPS<metric_list[0]["rps"]): # case in which RPS is too low
+            # TODO Estimate new coefficient
+            print("ERROR - RPS too low!")
             break
-
-print(f"Replicas: {replicas}, RPS: {RPS}, CPU: {adj_cpu}, memory: {adj_mem}, p95: {adj_p95}")
+        elif (RPS>metric_list[-1]["rps"]):
+            # TODO estimate new coefficient
+            print("ERROR - RPS too high!")
+            break
+        else:
+            for index in range(len(metric_list)-1):
+                prev = metric_list[index]
+                next = metric_list[index+1]
+                print("Element: ", prev)
+                if (prev["rps"] <= RPS) and (next["rps"] >= RPS):
+                    print("Element: ", next)
+                    # take the wighted mean between the two measures and apply the coefficient to the metrics
+                    print("Inside the loop.")
+                    coeff = np.abs((RPS-prev['rps'])/(next['rps']-prev['rps'])) # relative distance wrt the first element
+                    print(f"coeff: {coeff}")
+                    adj_cpu = prev["cpu"]+coeff*(next["cpu"]-prev["cpu"]) # the adjusted cpu
+                    adj_mem = prev["mem"]+coeff*(next["mem"]-prev["mem"]) # the adjusted mem
+                    adj_p95 = prev["p95"]+coeff*(next["p95"]-prev["p95"]) # the adjusted p95
+                    print(f"Replicas: {REPLICAS}, RPS: {RPS}, CPU: {adj_cpu}, memory: {adj_mem}, p95: {adj_p95}")
+                    break 
 
 # Add legend
 # plt.legend()
