@@ -37,7 +37,7 @@ mem = df[mem_columns]
 # define the order of the metrics
 metrics_df = [rep, rps, p90, cpu, mem]
 metrics_df_order = ["rep", "rps", "p95", "cpu", "mem"]
-metrics_df_means = []
+metrics_df_means = pd.DataFrame()
 
 print("rps df\n", rps)
 
@@ -52,7 +52,7 @@ for df in metrics_df:
     for timestamp in range(len(timestamps)):
         row_mean = np.mean(df.iloc[timestamp])
         # append the value to the array mean_signal
-        mean_signal.append(row_mean)
+        mean_signal.append(np.round(row_mean,2))
     
     for col in df:
         # plot every signal of that metric
@@ -62,12 +62,11 @@ for df in metrics_df:
     # save the mean as the new signal
     df = pd.DataFrame({f'{metrics_df_order[metric_idx]}_mean':mean_signal})
     # print("df", df)
-    metrics_df_means.append(df)
+    metrics_df_means[metrics_df_order[metric_idx]] = df
     metric_idx += 1
 
 print(metrics_df_means)
-# Create a dictionary for the measurements
-measurements = []
+# Create a dictionary for the JSON
 """
 [
     {
@@ -87,27 +86,45 @@ measurements = []
     },
 ]
 """
-
-# Create a rolling window with a size of 2.5 minutes and a step of 2.5 minutes
-# Resample the DataFrame to 2.5 minute intervals
-# the time length of the timeseries is len(df)*5s
-size = len(timestamps)
-total_time_sec = size*5
-# 2.5 minutes correspond to 2*60+30s = 150s = 30 index
-# total time of interval before changing replicas into number of indexes
-tot_time_interval_index = 600/5
-
-print(f"total_timestamps: {size}, total_time_sec: {total_time_sec}, tot_time_interval_index: {tot_time_interval_index}")
-
+json_list = []
+for _, row in metrics_df_means.iterrows():
+    json_dict = row.to_dict()
+    json_list.append(json_dict)
 
 # Save file to json
-json_object = json.dumps(measurements, indent=4, separators=(',', ':'))
+json_object = json.dumps(json_list, indent=4, separators=(',', ':'))
 with open("exp3_samples.json", "w") as outfile:
     outfile.write(json_object)
 # check correct indexing
-print("Data:", measurements[0]["p95"][0])
+print("Data:", json_list[0]["p95"])
+
+# Search for RPS, given replicas, to set cpu, p95, mem
+replicas = 1
+RPS = 250
+with open("exp3_samples.json", "r") as f_input:
+    data = json.load(f_input)
+
+for elem in range(len(data)):
+    # search for the intended number of replicas
+    if data[elem]["rep"] == replicas:
+        # search for the given RPS
+        print("Element: ", data[elem])
+        # print(f"elem {data[elem]['rps']} type: {type(data[elem]['rps'])}, elem+1 {data[elem+1]['rps']}")
+        if (data[elem]["rps"] <= RPS) & (data[elem+1]["rps"] >= RPS):
+            print("Element: ", data[elem+1])
+            # take the wighted mean between the two measures and apply the coefficient to the metrics
+            print("Inside the loop.")
+            coeff = np.abs((RPS-data[elem]["rps"])/(data[elem+1]["rps"]-data[elem]["rps"])) # relative distance wrt the first element
+            print(f"coeff: {coeff}")
+            adj_cpu = data[elem]["cpu"]*(1+coeff*(data[elem+1]["cpu"]-data[elem]["cpu"])) # the adjusted cpu
+            adj_mem = data[elem]["mem"]*coeff # the adjusted mem
+            adj_p95 = data[elem]["p95"]*coeff # the adjusted p95
+            break
+
+print(f"Replicas: {replicas}, RPS: {RPS}, CPU: {adj_cpu}, memory: {adj_mem}, p95: {adj_p95}")
+
 
 # Add legend
 # plt.legend()
 # Display the plot
-plt.show()
+# plt.show()
