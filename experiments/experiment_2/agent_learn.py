@@ -211,7 +211,7 @@ def load_model(env, models_dir, tf_logs_dir):
                             env, 
                             learning_rate=float(LEARNING_RATE),
                             verbose=1,
-                            n_steps=10, 
+                            n_steps=5, 
                             gamma=0.99, 
                             gae_lambda=1.0, 
                             ent_coef=0.0, 
@@ -260,8 +260,8 @@ if __name__ == "__main__":
     elif rew_fun == "quad_cpu_thr": alpha = 2
     else: alpha = 1
 
-    TIMESTEPS = 5000
-    EPISODES = 12
+    TIMESTEPS = 4000
+    EPISODES = 15
 
     dirs = create_directories()
     models_dir = dirs[0]

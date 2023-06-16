@@ -134,6 +134,7 @@ class GymEnvironment(gym.Env):
         # time.sleep(1)
         # get new observation
         new_observation = self._get_observation()
+        resp_time = new_observation[1]
 
         # Calculate reward based on the new observation
         SLA_RESP_TIME = 5 # 100 ms
@@ -200,8 +201,18 @@ class GymEnvironment(gym.Env):
                     print(f"self.reward = -{delta_t**2} = {self.reward}")
                 else:
                     # SLA satisfided, try to optimise number of replicas
-                    self.reward = delta_t + (self.maxReplicas - self.current_replicas)
-                    print(f"self.reward = {delta_t} + {self.maxReplicas} - {self.current_replicas} = {self.reward}")
+                    self.reward = 1 - (self.current_replicas/self.maxReplicas)# + (self.maxReplicas - self.current_replicas)
+                    print(f"self.reward = {delta_t}*{self.current_replicas/self.maxReplicas} = {self.reward}")
+        elif self.rew_fun == "asarsa-based":
+            p = 0.1
+            rho = 0.8 # self.current_replicas/self.maxReplicas
+            if resp_time>SLA_RESP_TIME:
+                self.reward = (1-np.exp(-p*(1-resp_time/SLA_RESP_TIME)))/(1-rho)
+                print(f"self.reward = {self.reward}")
+            else:
+                # TODO penalise over-provisioning
+                self.reward = (1-np.exp(-p))/(1-rho)
+                print(f"self.reward = {self.reward}")
         else:
             print("ERROR: your reward function selection is not valid.")
             sys.exit(1)
