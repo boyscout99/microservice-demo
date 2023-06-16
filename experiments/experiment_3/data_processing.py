@@ -116,13 +116,12 @@ for elem in range(len(data)):
             print("Inside the loop.")
             coeff = np.abs((RPS-data[elem]["rps"])/(data[elem+1]["rps"]-data[elem]["rps"])) # relative distance wrt the first element
             print(f"coeff: {coeff}")
-            adj_cpu = data[elem]["cpu"]*(1+coeff*(data[elem+1]["cpu"]-data[elem]["cpu"])) # the adjusted cpu
-            adj_mem = data[elem]["mem"]*coeff # the adjusted mem
-            adj_p95 = data[elem]["p95"]*coeff # the adjusted p95
+            adj_cpu = data[elem]["cpu"]+coeff*(data[elem+1]["cpu"]-data[elem]["cpu"]) # the adjusted cpu
+            adj_mem = data[elem]["mem"]+coeff*(data[elem+1]["mem"]-data[elem]["mem"]) # the adjusted mem
+            adj_p95 = data[elem]["p95"]+coeff*(data[elem+1]["p95"]-data[elem]["p95"]) # the adjusted p95
             break
 
 print(f"Replicas: {replicas}, RPS: {RPS}, CPU: {adj_cpu}, memory: {adj_mem}, p95: {adj_p95}")
-
 
 # Add legend
 # plt.legend()
