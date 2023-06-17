@@ -25,6 +25,11 @@ spec:
           image: gcr.io/master-thesis-hpa/fullstorydev/grpcurl:latest
           ports:
           - containerPort: 8080
+          command:
+          - /bin/sh
+          - -c 
+          - |
+            grpcurl -help
           readinessProbe:
             exec:
               command: ["sh", "-c", "grpcurl -plaintext -d '{}' productcatalogservice:3550 ProductCatalogService.ListProducts"]
