@@ -32,12 +32,12 @@ spec:
             grpcurl -help
           readinessProbe:
             exec:
-              command: ["sh", "-c", "grpcurl -plaintext -d '{}' productcatalogservice:3550 ProductCatalogService.ListProducts"]
+              command: ["sh", "-c", "grpcurl productcatalogservice:3550 list"]
             initialDelaySeconds: 5
             periodSeconds: 10
           livenessProbe:
             exec:
-              command: ["sh", "-c", "grpcurl -plaintext -d '{}' productcatalogservice:3550 ProductCatalogService.ListProducts"]
+              command: ["sh", "-c", "grpcurl productcatalogservice:3550 list"]
             initialDelaySeconds: 10
             periodSeconds: 15
           env:
