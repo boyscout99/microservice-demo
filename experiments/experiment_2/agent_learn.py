@@ -14,6 +14,7 @@ from stable_baselines3.common.callbacks import BaseCallback
 from stable_baselines3.common.callbacks import EvalCallback
 
 BEST_MODEL = -np.Inf
+CURRENT_EPISODE = 1
 
 MODULE = "stable_baselines3"
 t = datetime.now()
@@ -38,8 +39,9 @@ class TensorboardCallback(BaseCallback):
         self.ep_rew_mean = 0
         self.ep_rew_sum = 0
         self.train_mean_rew = []
+        print(f"Length self.train_mean_rew: {len(self.train_mean_rew)}")
         # self.best = BEST_MODEL
-        self.save_path = os.path.join(script_dir, f"models/{NAMESPACE}/{MODEL}/{timestamp}/best")
+        self.save_path = os.path.join(script_dir, f"models/{NAMESPACE}/{MODEL}/{timestamp}")
 
         self.replicas = 0
         self.t = 0
@@ -99,14 +101,18 @@ class TensorboardCallback(BaseCallback):
         This event is triggered before exiting the `learn()` method.
         """
         global BEST_MODEL
+        global CURRENT_EPISODE
         print("ON TRAINING END")
-        print("Mean reward of the episode: ", np.mean(self.train_mean_rew))
-        if np.mean(self.train_mean_rew) > BEST_MODEL:
+        print(f"self.train_mean_rew[len: {len(self.train_mean_rew)}]: {self.train_mean_rew}")
+        sum_positives = sum(1 for element in self.train_mean_rew if element > 0)
+        print("Positive rewards in the episode: ", sum_positives)
+        if sum_positives > BEST_MODEL:
             # update the new best model
-            BEST_MODEL = np.mean(self.train_mean_rew)
+            BEST_MODEL = sum_positives
             # save the new best model
             print(f"Saving new best model to {self.save_path}")
-            self.model.save(self.save_path)
+            self.model.save(os.path.join(self.save_path, f"best_ep{CURRENT_EPISODE}"))
+        self.train_mean_rew = []
         pass
 
 def create_directories():
@@ -231,7 +237,7 @@ def load_model(env, models_dir, tf_logs_dir):
                             env, 
                             learning_rate=float(LEARNING_RATE),
                             verbose=1,
-                            n_steps=5, 
+                            n_steps=2, 
                             gamma=0.99, 
                             gae_lambda=1.0, 
                             ent_coef=0.0, 
@@ -249,10 +255,12 @@ def train_model(model, models_dir, timesteps, episodes, callbacks):
         # model.learn(total_timesteps=TIMESTEPS, reset_num_timesteps=False, tb_log_name=MODEL, log_interval=2, callback=rewards_callback)
         model.learn(total_timesteps=timesteps, 
                     tb_log_name=MODEL, 
-                    log_interval=2, 
+                    log_interval=1, 
                     callback=callbacks)
         # model.learn(total_timesteps=TIMESTEPS, reset_num_timesteps=False)
         logging.info(f"Training iteration {i}, total_timesteps={TIMESTEPS*i}, saving model ...")
+        global CURRENT_EPISODE 
+        CURRENT_EPISODE += 1
         # print("Saving model ...")
         # model.save(f"{models_dir}/{TIMESTEPS*i}")
         # env.reset()
@@ -281,7 +289,7 @@ if __name__ == "__main__":
     else: alpha = 1
 
     TIMESTEPS = 300
-    EPISODES = 250
+    EPISODES = 300
 
     dirs = create_directories()
     models_dir = dirs[0]

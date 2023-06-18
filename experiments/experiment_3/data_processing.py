@@ -152,7 +152,7 @@ REPLICAS = 10
 RPS = 200
 with open("exp3_sorted_samples.json", "r") as f_input:
     data = json.load(f_input)
-    print("Data:\n", data)
+    # print("Data:\n", data)
 
 for elem in range(len(data)):
     # search for the intended number of replicas
@@ -185,6 +185,17 @@ for elem in range(len(data)):
                     adj_p95 = prev["p95"]+coeff*(next["p95"]-prev["p95"]) # the adjusted p95
                     print(f"Replicas: {REPLICAS}, RPS: {RPS}, CPU: {adj_cpu}, memory: {adj_mem}, p95: {adj_p95}")
                     break 
+
+print("##### Testing new class #####")
+from get_metrics import GetMetrics
+
+with open("exp3_sorted_samples.json", "r") as f_input:
+    data = json.load(f_input)
+    # print("Data:\n", data)
+
+approximator = GetMetrics(data)
+app_cpu, app_mem, app_p95 = approximator.get_metrics_approx(REPLICAS, RPS)
+print(f"app_cpu: {app_cpu}, app_mem: {app_mem}, app_p95: {app_p95}")
 
 # Add legend
 # plt.legend()
