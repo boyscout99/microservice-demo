@@ -166,15 +166,15 @@ class GymEnvironment(gym.Env):
                 # SLA satisfided, try to optimise number of replicas
                 self.reward = delta_t - self.alpha*self.current_replicas + gamma
         elif self.rew_fun == "linear_1":
-            delta_t = new_observation[1]-SLA_RESP_TIME
-            if delta_t > 0:
-                # SLA violated, penalise a lot time exceeded
-                self.reward = -delta_t
-                print(f"self.reward = -{delta_t} = {self.reward}")
+            resp = new_observation[1]
+            delta_t = resp-SLA_RESP_TIME
+            perc = delta_t/SLA_RESP_TIME
+            if perc>0:
+                self.reward = -100*perc
+                print(f"self.reward = -100*{perc} = {self.reward}")
             else:
-                # SLA satisfided, try to optimise number of replicas
-                self.reward = (self.maxReplicas - self.current_replicas)
-                print(f"self.reward = {self.maxReplicas} - {self.current_replicas} = {self.reward}")
+                self.reward = 10*(10*perc+1)
+                print(f"self.reward = 100*(10*{perc}+1) = {self.reward}")
         elif self.rew_fun == "linear_2":
             delta_t = new_observation[1]-SLA_RESP_TIME
             if delta_t > 0:
@@ -183,7 +183,7 @@ class GymEnvironment(gym.Env):
                 print(f"self.reward = -{delta_t} = {self.reward}")
             else:
                 # SLA satisfided, try to optimise number of replicas
-                self.reward = (self.maxReplicas - self.current_replicas)
+                self.reward = 10*(self.maxReplicas - self.current_replicas)
                 print(f"self.reward = {self.maxReplicas} - {self.current_replicas} = {self.reward}")
         elif self.rew_fun == "linear_3":
             # Quadratic reward function on exceeded time constraint
@@ -202,7 +202,7 @@ class GymEnvironment(gym.Env):
                 else:
                     # SLA satisfided, try to optimise number of replicas
                     self.reward = 1 - (self.current_replicas/self.maxReplicas)# + (self.maxReplicas - self.current_replicas)
-                    print(f"self.reward = {delta_t}*{self.current_replicas/self.maxReplicas} = {self.reward}")
+                    print(f"self.reward = 1 - {self.current_replicas/self.maxReplicas} = {self.reward}")
         elif self.rew_fun == "asarsa-based":
             p = 0.1
             rho = 0.8 # self.current_replicas/self.maxReplicas

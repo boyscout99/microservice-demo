@@ -13,12 +13,33 @@ from stable_baselines3.common.monitor import Monitor
 from stable_baselines3.common.callbacks import BaseCallback
 from stable_baselines3.common.callbacks import EvalCallback
 
+BEST_MODEL = -np.Inf
+
+MODULE = "stable_baselines3"
+t = datetime.now()
+t = t + timedelta(hours=2) # UTC+2
+timestamp = t.strftime("%Y_%m_%d_%H%M%S")
+
+# Read arguments
+processor = StringProcessor()
+DEPLOYMENT, NAMESPACE, CLUSTER, MODEL, REWARD_FUNCTION, LEARNING_RATE = processor.parse_args() # read namespace and model
+print(f"deployment {DEPLOYMENT}, namespace {NAMESPACE}, cluster {CLUSTER}, model {MODEL}, reward function {REWARD_FUNCTION}, learning rate {LEARNING_RATE}.")
+
+module = importlib.import_module(MODULE) # import stable_baselines3
+model_attr = getattr(module, MODEL) # e.g. from stable_baselines3 import A2C
+
+# Get the absolute path of the script directory
+script_dir = os.path.dirname(os.path.abspath(__file__))
+
 class TensorboardCallback(BaseCallback):
     def __init__(self, verbose=1):
         super(TensorboardCallback, self).__init__(verbose)
         self.episode_rewards = []
         self.ep_rew_mean = 0
         self.ep_rew_sum = 0
+        self.train_mean_rew = []
+        # self.best = BEST_MODEL
+        self.save_path = os.path.join(script_dir, f"models/{NAMESPACE}/{MODEL}/{timestamp}/best")
 
         self.replicas = 0
         self.t = 0
@@ -59,6 +80,7 @@ class TensorboardCallback(BaseCallback):
     def _on_rollout_end(self) -> None:
         # compute mean
         self.ep_rew_mean = np.mean(self.episode_rewards)
+        self.train_mean_rew.append(self.ep_rew_mean)
         # get total reward
         tot_reward = self.training_env.get_attr("reward_sum")
         self.ep_rew_sum = tot_reward[0]
@@ -71,23 +93,21 @@ class TensorboardCallback(BaseCallback):
         self.ep_rew_sum = 0
         self.episode_rewards = []
         print("ON ROLLOUT END")
-
-
-MODULE = "stable_baselines3"
-t = datetime.now()
-t = t + timedelta(hours=2) # UTC+2
-timestamp = t.strftime("%Y_%m_%d_%H%M%S")
-
-# Read arguments
-processor = StringProcessor()
-DEPLOYMENT, NAMESPACE, CLUSTER, MODEL, REWARD_FUNCTION, LEARNING_RATE = processor.parse_args() # read namespace and model
-print(f"deployment {DEPLOYMENT}, namespace {NAMESPACE}, cluster {CLUSTER}, model {MODEL}, reward function {REWARD_FUNCTION}, learning rate {LEARNING_RATE}.")
-
-module = importlib.import_module(MODULE) # import stable_baselines3
-model_attr = getattr(module, MODEL) # e.g. from stable_baselines3 import A2C
-
-# Get the absolute path of the script directory
-script_dir = os.path.dirname(os.path.abspath(__file__))
+    
+    def _on_training_end(self) -> None:
+        """
+        This event is triggered before exiting the `learn()` method.
+        """
+        global BEST_MODEL
+        print("ON TRAINING END")
+        print("Mean reward of the episode: ", np.mean(self.train_mean_rew))
+        if np.mean(self.train_mean_rew) > BEST_MODEL:
+            # update the new best model
+            BEST_MODEL = np.mean(self.train_mean_rew)
+            # save the new best model
+            print(f"Saving new best model to {self.save_path}")
+            self.model.save(self.save_path)
+        pass
 
 def create_directories():
     # create the necessary directories
@@ -233,8 +253,8 @@ def train_model(model, models_dir, timesteps, episodes, callbacks):
                     callback=callbacks)
         # model.learn(total_timesteps=TIMESTEPS, reset_num_timesteps=False)
         logging.info(f"Training iteration {i}, total_timesteps={TIMESTEPS*i}, saving model ...")
-        print("Saving model ...")
-        model.save(f"{models_dir}/{TIMESTEPS*i}")
+        # print("Saving model ...")
+        # model.save(f"{models_dir}/{TIMESTEPS*i}")
         # env.reset()
 
     print("Training completed. Check performance on Tensorboard.")
@@ -260,8 +280,8 @@ if __name__ == "__main__":
     elif rew_fun == "quad_cpu_thr": alpha = 2
     else: alpha = 1
 
-    TIMESTEPS = 4000
-    EPISODES = 15
+    TIMESTEPS = 300
+    EPISODES = 250
 
     dirs = create_directories()
     models_dir = dirs[0]

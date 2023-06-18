@@ -14,32 +14,33 @@ spec:
         app: grpcurl
       annotations:
         sidecar.istio.io/rewriteAppHTTPProbers: "true"
-        sidecar.istio.io/proxyCPU: "500m"
+        sidecar.istio.io/proxyCPU: "250m"
         sidecar.istio.io/proxyMemory: "256Mi"
     spec:
       serviceAccountName: default
-      imagePullSecrets:
-      - name: gcr-json-key
+      # imagePullSecrets:
+      # - name: gcr-json-key
       containers:
         - name: grpcurl-server
-          image: gcr.io/master-thesis-hpa/fullstorydev/grpcurl:latest
+          # image: gcr.io/master-thesis-hpa/fullstorydev/grpcurl:latest
+          image: grpcurl:0.4
           ports:
           - containerPort: 8080
-          command:
-          - /bin/sh
-          - -c 
-          - |
-            grpcurl -help
-          readinessProbe:
-            exec:
-              command: ["sh", "-c", "grpcurl productcatalogservice:3550 list"]
-            initialDelaySeconds: 5
-            periodSeconds: 10
-          livenessProbe:
-            exec:
-              command: ["sh", "-c", "grpcurl productcatalogservice:3550 list"]
-            initialDelaySeconds: 10
-            periodSeconds: 15
+          # command:
+          # - /bin/sh
+          # - -c 
+          # - |
+          #   while true; do sleep 1; done
+          # readinessProbe:
+          #   exec:
+          #     command: ["sh", "-c", "grpcurl productcatalogservice:3550 list"]
+          #   initialDelaySeconds: 5
+          #   periodSeconds: 10
+          # livenessProbe:
+          #   exec:
+          #     command: ["sh", "-c", "grpcurl productcatalogservice:3550 list"]
+          #   initialDelaySeconds: 10
+          #   periodSeconds: 15
           env:
           - name: PORT
             value: "8080"
@@ -59,11 +60,11 @@ spec:
             value: "adservice:9555"
           resources:
             requests:
-              cpu: 300m
-              memory: 64Mi
-            limits:
-              cpu: 400m
+              cpu: 500m
               memory: 128Mi
+            limits:
+              cpu: 1000m
+              memory: 256Mi
 # ---
 # apiVersion: v1
 # kind: Service
