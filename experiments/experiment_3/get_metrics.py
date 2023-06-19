@@ -1,5 +1,30 @@
 """
 This script returns CPU, memory and p95 based on RPS and replicas.
+Takes input data of this format.
+[
+    {
+        "rep":1.0,
+        "metric_rows":[
+            {
+                "rps":150.43,
+                "p95":4.85,
+                "cpu":14.44,
+                "mem":0.4
+            },
+            {
+                "rps":205.14,
+                "p95":4.58,
+                "cpu":20.8,
+                "mem":0.37
+            },
+            {
+                "rps":257.43,
+                "p95":4.54,
+                "cpu":28.2,
+                "mem":0.46
+            }
+    }
+]
 """
 # Generalisation of the algorithm for (replicas, metric) correspondence
 import numpy as np
@@ -10,6 +35,7 @@ class GetMetrics:
         self.data = data
 
     def get_metrics_approx(self, replicas, rps):
+        # TODO add metric about RPS to deployment and approx RPS to pod
         for elem in range(len(self.data)):
             # search for the intended number of replicas
             if self.data[elem]["rep"] == replicas:

@@ -26,6 +26,7 @@ rps_columns = [col for col in df.columns if col.startswith('RPS')]
 p90_columns = [col for col in df.columns if col.startswith('p95')]
 cpu_columns = [col for col in df.columns if col.startswith('CPU')]
 mem_columns = [col for col in df.columns if col.startswith('mem')]
+# add one more column for rps to deployment
 
 # Create a new DataFrame with selected columns
 rep = df[rep_columns]
@@ -113,6 +114,7 @@ for _, row in metrics_df_means.iterrows():
                 if json_list[index]['rep'] == row['rep']:
                     json_list[index]['metric_rows'].append(row.drop('rep').to_dict())
                     # sort by rps
+                    # TODO sort by RPS to deployment
                     json_list[index]['metric_rows'] = sorted(json_list[index]['metric_rows'], key=lambda metric: metric['rps'])
 
 # print(json_list)

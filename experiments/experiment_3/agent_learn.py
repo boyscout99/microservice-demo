@@ -296,8 +296,8 @@ if __name__ == "__main__":
     # Generate workload
     # This signal must be passed to the environment for the observation
     _, rps_signal = WorkloadGenerator.step_function(timesteps=TIMESTEPS, 
-                                                 minRPS=100,
-                                                 maxRPS=350,
+                                                 minRPS=10,
+                                                 maxRPS=1900,
                                                  steps=4)
     plt.plot(_, rps_signal)
     plt.title("Workload signal")

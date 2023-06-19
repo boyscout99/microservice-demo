@@ -74,18 +74,19 @@ class GymEnvironment(gym.Env):
     def step(self, action):
         # Take a step in the environment based on the given action
         # Update the pod states, calculate reward, and return the new observation, reward, done, and info
+
+        # rename variables to have shorter and more practical names
         rep = self.queries["q_pod_replicas"]
         t = self.queries["q_request_duration"]
         rps = self.queries["q_rps"]
         cpu = self.queries["q_cpu_usage"]
         mem = self.queries["q_memory_usage"]
 
-
         print("\n##### NEW ACTION #####")
         # Update the pod states based on the action
         if action == 0:  # No change in replicas
             print("Taking action 0")
-            t = self.data[rep-1]["p95"][0]
+            t = GetMetrics(self.data).get_metrics_approx(1, self.workload[0])
             rps = self.data[rep-1]["rps"][0]
             cpu = self.data[rep-1]["cpu"][0]
             mem = self.data[rep-1]["mem"][0]
