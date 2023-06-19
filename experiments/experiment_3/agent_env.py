@@ -86,11 +86,8 @@ class GymEnvironment(gym.Env):
         # Update the pod states based on the action
         if action == 0:  # No change in replicas
             print("Taking action 0")
-            t = GetMetrics(self.data).get_metrics_approx(1, self.workload[0])
-            rps = self.data[rep-1]["rps"][0]
-            cpu = self.data[rep-1]["cpu"][0]
-            mem = self.data[rep-1]["mem"][0]
-
+            cpu, mem, t = GetMetrics(self.data).get_metrics_approx(rep, self.workload[self.curr_timestep])
+            rps = self.workload[self.curr_timestep]
             # ALL METRICS
             print(f"rep: {rep}, t: {t}, rps: {rps}, cpu: {cpu}, mem: {mem}")
             # NO CPU
@@ -110,10 +107,8 @@ class GymEnvironment(gym.Env):
                 rep = self.maxReplicas
             else:
                 # Consequences of action on environment
-                t = self.data[rep-1]["p95"][0]
-                rps = self.data[rep-1]["rps"][0]
-                cpu = self.data[rep-1]["cpu"][0]
-                mem = self.data[rep-1]["mem"][0]
+                cpu, mem, t = GetMetrics(self.data).get_metrics_approx(rep, self.workload[self.curr_timestep])
+                rps = self.workload[self.curr_timestep]
             # ALL METRICS
             print(f"rep: {rep}, t: {t}, rps: {rps}, cpu: {cpu}, mem: {mem}")
             # NO CPU
@@ -132,10 +127,8 @@ class GymEnvironment(gym.Env):
                 print(f"Cannot have less than minReplicas. Setting to {self.minReplicas}.")
                 rep = self.minReplicas
             else:
-                t = self.data[rep-1]["p95"][0]
-                rps = self.data[rep-1]["rps"][0]
-                cpu = self.data[rep-1]["cpu"][0]
-                mem = self.data[rep-1]["mem"][0]
+                cpu, mem, t = GetMetrics(self.data).get_metrics_approx(rep, self.workload[self.curr_timestep])
+                rps = self.workload[self.curr_timestep]
             # ALL METRICS
             print(f"rep: {rep}, t: {t}, rps: {rps}, cpu: {cpu}, mem: {mem}")
             # NO CPU
@@ -191,8 +184,7 @@ class GymEnvironment(gym.Env):
                 # SLA satisfided, try to optimise number of replicas
                 self.reward = delta_t - self.alpha*self.current_replicas + gamma
         elif self.rew_fun == "linear_1":
-            resp = new_observation[1]
-            delta_t = resp-SLA_RESP_TIME
+            delta_t = resp_time-SLA_RESP_TIME
             perc = delta_t/SLA_RESP_TIME
             if perc>0:
                 self.reward = -100*perc
@@ -228,16 +220,6 @@ class GymEnvironment(gym.Env):
                     # SLA satisfided, try to optimise number of replicas
                     self.reward = 1 - (self.current_replicas/self.maxReplicas)# + (self.maxReplicas - self.current_replicas)
                     print(f"self.reward = 1 - {self.current_replicas/self.maxReplicas} = {self.reward}")
-        elif self.rew_fun == "asarsa-based":
-            p = 0.1
-            rho = 0.8 # self.current_replicas/self.maxReplicas
-            if resp_time>SLA_RESP_TIME:
-                self.reward = (1-np.exp(-p*(1-resp_time/SLA_RESP_TIME)))/(1-rho)
-                print(f"self.reward = {self.reward}")
-            else:
-                # TODO penalise over-provisioning
-                self.reward = (1-np.exp(-p))/(1-rho)
-                print(f"self.reward = {self.reward}")
         else:
             print("ERROR: your reward function selection is not valid.")
             sys.exit(1)
@@ -247,6 +229,7 @@ class GymEnvironment(gym.Env):
 
         # update timestep
         self.curr_timestep += 1
+        print(f"Current timestep: {self.curr_timestep}")
         # update reward
         self.reward_sum += self.reward
         # Set info to an empty dictionary

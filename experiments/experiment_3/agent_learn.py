@@ -297,11 +297,11 @@ if __name__ == "__main__":
     # This signal must be passed to the environment for the observation
     _, rps_signal = WorkloadGenerator.step_function(timesteps=TIMESTEPS, 
                                                  minRPS=10,
-                                                 maxRPS=1900,
+                                                 maxRPS=80,
                                                  steps=4)
-    plt.plot(_, rps_signal)
-    plt.title("Workload signal")
-    plt.show()
+    # plt.plot(_, rps_signal)
+    # plt.title("Workload signal")
+    # plt.show()
 
     # Generate directories
     dirs = create_directories()

@@ -177,6 +177,6 @@ app_cpu, app_mem, app_p95 = approximator.get_metrics_approx(REPLICAS, RPS)
 print(f"app_cpu: {app_cpu}, app_mem: {app_mem}, app_p95: {app_p95}")
 
 # Add legend
-# plt.legend()
+plt.legend()
 # Display the plot
-# plt.show()
+plt.show()

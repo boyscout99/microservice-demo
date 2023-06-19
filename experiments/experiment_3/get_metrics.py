@@ -79,4 +79,4 @@ class GetMetrics:
                             # print(f"Replicas: {replicas}, RPS: {rps}, CPU: {adj_cpu}, memory: {adj_mem}, p95: {adj_p95}")
                             break 
 
-        return [adj_cpu, adj_mem, adj_p95]
+        return adj_cpu, adj_mem, adj_p95

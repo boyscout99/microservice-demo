@@ -12,7 +12,7 @@ class WorkloadGenerator:
     You can generate different types of signals.
     """
     # function for steps
-    def step_function(self, timesteps, minRPS, maxRPS, steps):
+    def step_function(timesteps, minRPS, maxRPS, steps):
         """
         Create an increasing step function, with even spaced intervals.
         """
@@ -32,7 +32,7 @@ class WorkloadGenerator:
 
 
     # function for sin(x)
-    def sin_function(self, timesteps, minRPS, maxRPS, periods):
+    def sin_function(timesteps, minRPS, maxRPS, periods):
         """
         Create a sinusoidal function of length timesteps
         """
@@ -46,7 +46,7 @@ class WorkloadGenerator:
         return x_timesteps, y_rps
 
     # function for random(x)
-    def sin_spikes_function(self, timesteps, minRPS, maxRPS, periods, spike_probability):
+    def sin_spikes_function(timesteps, minRPS, maxRPS, periods, spike_probability):
         """
         Add random spikes to a sinusoidal function.
         """
