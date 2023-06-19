@@ -4,6 +4,7 @@ import json
 import logging
 import importlib
 import numpy as np
+import matplotlib.pyplot as plt
 from agent_env import GymEnvironment
 from datetime import datetime
 from datetime import timedelta
@@ -11,7 +12,8 @@ from settings.Logger import LoggerWriter
 from settings.ArgParser_learn import StringProcessor
 from stable_baselines3.common.monitor import Monitor
 from stable_baselines3.common.callbacks import BaseCallback
-from stable_baselines3.common.callbacks import EvalCallback
+# from stable_baselines3.common.callbacks import EvalCallback
+from workload_patterns_gen import WorkloadGenerator
 
 BEST_MODEL = -np.Inf
 CURRENT_EPISODE = 1
@@ -44,7 +46,7 @@ class TensorboardCallback(BaseCallback):
         self.replicas = 0
         self.t = 0
         self.rps = 0
-        # self.cpu = 0
+        self.cpu = 0
         self.mem = 0
         
     def _on_rollout_start(self) -> None:
@@ -52,7 +54,7 @@ class TensorboardCallback(BaseCallback):
         self.replicas = 0
         self.t = 0
         self.rps = 0
-        # self.cpu = 0
+        self.cpu = 0
         self.mem = 0
         
         print("ON ROLLOUT START")
@@ -67,12 +69,12 @@ class TensorboardCallback(BaseCallback):
         self.replicas = obs[0][0]
         self.t = obs[0][1]
         self.rps = obs[0][2]
-        # self.cpu = obs[0][3] # ! REMEMBER TO CHANGE THE INDEX
-        self.mem = obs[0][3]
+        self.cpu = obs[0][3] # ! REMEMBER TO CHANGE THE INDEX
+        self.mem = obs[0][4]
         self.logger.record("rollout/replicas", self.replicas)
         self.logger.record("rollout/t", self.t)
         self.logger.record("rollout/rps", self.rps)
-        # self.logger.record("rollout/cpu", self.cpu)
+        self.logger.record("rollout/cpu", self.cpu)
         self.logger.record("rollout/mem", self.mem)
         print("ON STEP")
         return True
@@ -159,7 +161,8 @@ def setup_environment(alpha,
                       minReplicas, 
                       maxReplicas,
                       rew_fun,
-                      data):
+                      data,
+                      workload):
 
     # Construct the absolute file path for queries.json
     queries_json_path = os.path.join(script_dir, "queries.json")
@@ -186,7 +189,8 @@ def setup_environment(alpha,
                          minReplicas, 
                          maxReplicas, 
                          rew_fun,
-                         data)
+                         data,
+                         workload)
     # set default state
     env.reset()
 
@@ -289,21 +293,31 @@ if __name__ == "__main__":
     TIMESTEPS = 300
     EPISODES = 300
 
+    # Generate workload
+    # This signal must be passed to the environment for the observation
+    _, rps_signal = WorkloadGenerator.step_function(timesteps=TIMESTEPS, 
+                                                 minRPS=100,
+                                                 maxRPS=350,
+                                                 steps=4)
+    plt.plot(_, rps_signal)
+    plt.title("Workload signal")
+    plt.show()
+
+    # Generate directories
     dirs = create_directories()
     models_dir = dirs[0]
     tf_logs_dir = dirs[1]
     pod_logs_dir = dirs[2]
     logger = enable_logging(pod_logs_dir)
 
-    # copy data
-    data_json_path = os.path.join(script_dir, "exp2_samples.json")
-    # read made up data
+    # Copy samples for synthetic traffic
+    data_json_path = os.path.join(script_dir, "exp3_sorted_samples.json")
     d_file = open(data_json_path, "r")
-    d = json.load(d_file)
-    data = d
-    print(f"data:\n{data}")
+    data = json.load(d_file)
+    print(f"Data samples:\n{data}")
     d_file.close()
 
+    # Generate environment
     env = setup_environment(alpha, 
                             cluster, 
                             url, 
@@ -312,19 +326,13 @@ if __name__ == "__main__":
                             minReplicas, 
                             maxReplicas, 
                             rew_fun,
-                            data)
+                            data,
+                            rps_signal) # adding workload
     env = Monitor(env, tf_logs_dir)
     model = load_model(env, models_dir, tf_logs_dir)
 
     # create callbacks
     rewards_callback = TensorboardCallback()
-    # eval_callback = EvalCallback(env, 
-    #                             best_model_save_path=models_dir,
-    #                             log_path=models_dir, 
-    #                             eval_freq=1,
-    #                             deterministic=True, 
-    #                             render=False,
-    #                             verbose=1)
     callbacks = [rewards_callback]
     # train the model
     train_model(model, 
