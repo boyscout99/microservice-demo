@@ -15,6 +15,6 @@ for namespace in "${namespaces[@]}"; do
         kubectl scale deployment -n $namespace $service --replicas 6
     done
     echo "Deploying loadgenerator in namespace $namespace"
-    kubectl apply -f /home/tommasop/microservice-demo/kubernetes-manifests/$namespace/loadgenerator.yaml -n $namespace
+    kubectl apply -f /mnt/nfs-client/microservice-demo/kubernetes-manifests/$namespace/loadgenerator.yaml -n $namespace
 done
 
