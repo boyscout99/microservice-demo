@@ -61,7 +61,7 @@ for df in metrics_df:
     # plot the mean signal
     axs[metric_idx].plot(timestamps, mean_signal, color='r')
     # save the mean as the new signal
-    df = pd.DataFrame({f'{metrics_df_order[metric_idx]}_mean':mean_signal})
+    df = pd.DataFrame({f'{metrics_df_order[metric_idx]}_mean': mean_signal})
     # print("df", df)
     metrics_df_means[metrics_df_order[metric_idx]] = df
     metric_idx += 1
@@ -125,29 +125,6 @@ with open("exp3_sorted_samples.json", "w") as outfile:
     outfile.write(json_object)
 # check correct indexing
 # print("Data:", json_list[0]["p95"])
-
-# # Search for RPS, given replicas, to set cpu, p95, mem
-# replicas = 10
-# RPS = 300
-# with open("exp3_samples.json", "r") as f_input:
-#     data = json.load(f_input)
-
-# for elem in range(len(data)):
-#     # search for the intended number of replicas
-#     if data[elem]["rep"] == replicas:
-#         # search for the given RPS
-#         print("Element: ", data[elem])
-#         # print(f"elem {data[elem]['rps']} type: {type(data[elem]['rps'])}, elem+1 {data[elem+1]['rps']}")
-#         if (data[elem]["rps"] <= RPS) & (data[elem+1]["rps"] >= RPS):
-#             print("Element: ", data[elem+1])
-#             # take the wighted mean between the two measures and apply the coefficient to the metrics
-#             print("Inside the loop.")
-#             coeff = np.abs((RPS-data[elem]["rps"])/(data[elem+1]["rps"]-data[elem]["rps"])) # relative distance wrt the first element
-#             print(f"coeff: {coeff}")
-#             adj_cpu = data[elem]["cpu"]+coeff*(data[elem+1]["cpu"]-data[elem]["cpu"]) # the adjusted cpu
-#             adj_mem = data[elem]["mem"]+coeff*(data[elem+1]["mem"]-data[elem]["mem"]) # the adjusted mem
-#             adj_p95 = data[elem]["p95"]+coeff*(data[elem+1]["p95"]-data[elem]["p95"]) # the adjusted p95
-#             break
 
 # Generalisation of the algorithm for (replicas, metric) correspondence
 REPLICAS = 1
