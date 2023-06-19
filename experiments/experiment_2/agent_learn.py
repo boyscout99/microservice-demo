@@ -45,16 +45,16 @@ class TensorboardCallback(BaseCallback):
 
         self.replicas = 0
         self.t = 0
-        self.rps = 0
-        self.cpu = 0
+        # self.rps = 0
+        # self.cpu = 0
         self.mem = 0
         
     def _on_rollout_start(self) -> None:
         self.episode_rewards = []
         self.replicas = 0
         self.t = 0
-        self.rps = 0
-        self.cpu = 0
+        # self.rps = 0
+        # self.cpu = 0
         self.mem = 0
         
         print("ON ROLLOUT START")
@@ -68,13 +68,13 @@ class TensorboardCallback(BaseCallback):
         obs = self.training_env.get_attr("current_observation")
         self.replicas = obs[0][0]
         self.t = obs[0][1]
-        self.rps = obs[0][2]
-        self.cpu = obs[0][3] # ! REMEMBER TO CHANGE THE INDEX
-        self.mem = obs[0][4]
+        # self.rps = obs[0][2]
+        # self.cpu = obs[0][3] # ! REMEMBER TO CHANGE THE INDEX
+        self.mem = obs[0][2]
         self.logger.record("rollout/replicas", self.replicas)
         self.logger.record("rollout/t", self.t)
-        self.logger.record("rollout/rps", self.rps)
-        self.logger.record("rollout/cpu", self.cpu)
+        # self.logger.record("rollout/rps", self.rps)
+        # self.logger.record("rollout/cpu", self.cpu)
         self.logger.record("rollout/mem", self.mem)
         print("ON STEP")
         return True
