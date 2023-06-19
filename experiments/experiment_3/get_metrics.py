@@ -19,11 +19,22 @@ class GetMetrics:
                 # print(f"elem {data[elem]['rps']} type: {type(data[elem]['rps'])}, elem+1 {data[elem+1]['rps']}")
                 if (rps<metric_list[0]["rps"]): # case in which RPS is too low
                     # TODO Estimate new coefficient
-                    print("ERROR - RPS too low!")
+                    print("Note - RPS too low!")
+                    coeff = np.abs((rps-0)/(metric_list[0]["rps"]-0)) # relative distance wrt the first element
+                    # print(f"coeff: {coeff}")
+                    adj_cpu = coeff*(metric_list[0]["cpu"]-0) # the adjusted cpu
+                    adj_mem = coeff*(metric_list[0]["mem"]-0) # the adjusted mem
+                    adj_p95 = coeff*(metric_list[0]["p95"]-0) # the adjusted p95
                     break
                 elif (rps>metric_list[-1]["rps"]):
                     # TODO estimate new coefficient
-                    print("ERROR - RPS too high!")
+                    print("Note - RPS too high!")
+                    # do some linear regression to estimate the coefficent
+                    # coeff = np.abs((rps-metric_list[-1]["rps"])/(rps-metric_list[-1]["rps"])) # relative distance wrt the first element
+                    # # print(f"coeff: {coeff}")
+                    # adj_cpu = coeff*(metric_list[0]["cpu"]-metric_list[-1]["cpu"]) # the adjusted cpu
+                    # adj_mem = coeff*(metric_list[0]["mem"]-metric_list[-1]["mem"]) # the adjusted mem
+                    # adj_p95 = coeff*(metric_list[0]["p95"]-metric_list[-1]["p95"]) # the adjusted p95
                     break
                 else:
                     for index in range(len(metric_list)-1):

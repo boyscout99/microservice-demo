@@ -148,8 +148,8 @@ with open("exp3_sorted_samples.json", "w") as outfile:
 #             break
 
 # Generalisation of the algorithm for (replicas, metric) correspondence
-REPLICAS = 10
-RPS = 200
+REPLICAS = 1
+RPS = 10
 with open("exp3_sorted_samples.json", "r") as f_input:
     data = json.load(f_input)
     # print("Data:\n", data)
