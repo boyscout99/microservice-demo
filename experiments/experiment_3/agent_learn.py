@@ -41,7 +41,7 @@ class TensorboardCallback(BaseCallback):
         self.episode_rewards = []
         self.ep_rew_mean = 0
         self.ep_rew_sum = 0
-        self.train_mean_rew = []
+        self.train_all_rew = []
         self.save_path = os.path.join(script_dir, f"models/{NAMESPACE}/{MODEL}/{timestamp}")
 
         self.replicas = 0
@@ -62,9 +62,9 @@ class TensorboardCallback(BaseCallback):
 
     def _on_step(self) -> bool:
         # get current reward
-        rewards = self.training_env.get_attr("reward")
+        reward = self.training_env.get_attr("reward")
         # append reward
-        self.episode_rewards.extend(rewards)
+        self.episode_rewards.extend(reward)
         # get observations to log it at each step
         obs = self.training_env.get_attr("current_observation")
         self.replicas = obs[0][0]
@@ -77,19 +77,20 @@ class TensorboardCallback(BaseCallback):
         self.logger.record("rollout/rps", self.rps)
         self.logger.record("rollout/cpu", self.cpu)
         self.logger.record("rollout/mem", self.mem)
+        self.logger.record("rollout/rewards", reward)
         print("ON STEP")
         return True
 
     def _on_rollout_end(self) -> None:
         # compute mean
         self.ep_rew_mean = np.mean(self.episode_rewards)
-        self.train_mean_rew.append(self.ep_rew_mean)
+        self.train_all_rew.extend(self.episode_rewards)
         # get total reward
         tot_reward = self.training_env.get_attr("reward_sum")
         self.ep_rew_sum = tot_reward[0]
         # log values
-        self.logger.record("rollout/ep_rew_mean", self.ep_rew_mean)
-        print("self.ep_rew_mean: ", self.ep_rew_mean)
+        # self.logger.record("rollout/ep_rew_mean", self.ep_rew_mean)
+        # print("self.ep_rew_mean: ", self.ep_rew_mean)
         self.logger.record("rollout/ep_rew_sum", self.ep_rew_sum)
         print("self.ep_rew_sum: ", self.ep_rew_sum)
         # reset values
@@ -108,12 +109,13 @@ class TensorboardCallback(BaseCallback):
         global MAX_REWARD
         global CURRENT_EPISODE
         print("ON TRAINING END")
-        print(f"self.train_mean_rew[len: {len(self.train_mean_rew)}]: {self.train_mean_rew}")
-        tmp_max_reward = max(self.train_mean_rew)
+        print(f"self.train_all_rew[len: {len(self.train_all_rew)}]: {self.train_all_rew}")
+        tmp_max_reward = max(self.train_all_rew)
+        print(f"tmp_max_reward: {tmp_max_reward}")
         if tmp_max_reward > MAX_REWARD: 
             MAX_REWARD = tmp_max_reward
             print(f"New MAX_REWARD: {MAX_REWARD}")
-        sum_positives = sum(1 for element in self.train_mean_rew if element == MAX_REWARD)
+        sum_positives = sum(1 for element in self.train_all_rew if element == MAX_REWARD)
         print("Number of maximum rewards in the episode: ", sum_positives)
         if sum_positives > BEST_MODEL:
             # update the new best model
@@ -121,7 +123,7 @@ class TensorboardCallback(BaseCallback):
             # save the new best model
             print(f"Saving new best model to {self.save_path}")
             self.model.save(os.path.join(self.save_path, f"best_ep{CURRENT_EPISODE}"))
-        self.train_mean_rew = []
+        self.train_all_rew = []
         pass
 
 def create_directories():
@@ -248,7 +250,7 @@ def load_model(env, models_dir, tf_logs_dir):
                             env, 
                             learning_rate=float(LEARNING_RATE),
                             verbose=1,
-                            n_steps=2, 
+                            n_steps=3, 
                             gamma=0.99, 
                             gae_lambda=1.0, 
                             ent_coef=0.0, 
