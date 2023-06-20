@@ -33,38 +33,32 @@ Takes input data of this format.
 import numpy as np
 
 class GetMetrics:
-    def __init__(self, data):
+    def __init__(self, data, metrics):
         # Reference data from a JSON
         self.data = data
+        # List of metrics of the form ['rps', 'cpu', ...]
+        self.metrics = metrics
 
     def get_metrics_approx(self, replicas, load):
-        # TODO add metric about RPS to deployment and approx RPS to pod
+        results = {'rep': replicas}
         for elem in range(len(self.data)):
             # search for the intended number of replicas
             if self.data[elem]["rep"] == replicas:
-                # search for the given RPS
+                # search for the given RPS (load)
                 metric_list = self.data[elem]["metric_rows"]
                 # print("Metric_list: ", metric_list)
                 # print(f"elem {data[elem]['rps']} type: {type(data[elem]['rps'])}, elem+1 {data[elem+1]['rps']}")
                 if (load<metric_list[0]["load"]): # case in which RPS is too low
-                    # TODO Estimate new coefficient
                     print("Note - Load too low!")
                     coeff = np.abs((load-0)/(metric_list[0]["load"]-0)) # relative distance wrt the first element
                     # print(f"coeff: {coeff}")
-                    adj_rps = coeff*(metric_list[0]["rps"]-0) # the adjusted rps
-                    adj_cpu = coeff*(metric_list[0]["cpu"]-0) # the adjusted cpu
-                    adj_mem = coeff*(metric_list[0]["mem"]-0) # the adjusted mem
-                    adj_p95 = coeff*(metric_list[0]["p95"]-0) # the adjusted p95
+                    for metric in self.metrics:
+                        results.update( {metric: coeff*(metric_list[0][metric]-0)} ) # the adjusted value
                     break
                 elif (load>metric_list[-1]["load"]):
                     # TODO estimate new coefficient
                     print("Note - Load too high!")
                     # do some linear regression to estimate the coefficent
-                    # coeff = np.abs((rps-metric_list[-1]["rps"])/(rps-metric_list[-1]["rps"])) # relative distance wrt the first element
-                    # # print(f"coeff: {coeff}")
-                    # adj_cpu = coeff*(metric_list[0]["cpu"]-metric_list[-1]["cpu"]) # the adjusted cpu
-                    # adj_mem = coeff*(metric_list[0]["mem"]-metric_list[-1]["mem"]) # the adjusted mem
-                    # adj_p95 = coeff*(metric_list[0]["p95"]-metric_list[-1]["p95"]) # the adjusted p95
                     break
                 else:
                     for index in range(len(metric_list)-1):
@@ -77,11 +71,8 @@ class GetMetrics:
                             # print("Inside the loop.")
                             coeff = np.abs((load-prev['load'])/(next['load']-prev['load'])) # relative distance wrt the first element
                             # print(f"coeff: {coeff}")
-                            adj_rps = prev["rps"]+coeff*(next["rps"]-prev["rps"]) # the adjusted rps
-                            adj_cpu = prev["cpu"]+coeff*(next["cpu"]-prev["cpu"]) # the adjusted cpu
-                            adj_mem = prev["mem"]+coeff*(next["mem"]-prev["mem"]) # the adjusted mem
-                            adj_p95 = prev["p95"]+coeff*(next["p95"]-prev["p95"]) # the adjusted p95
-                            # print(f"Replicas: {replicas}, RPS: {rps}, CPU: {adj_cpu}, memory: {adj_mem}, p95: {adj_p95}")
+                            for metric in self.metrics:
+                                results.update( {metric: prev[metric]+coeff*(next[metric]-prev[metric])} ) # the adjusted value
                             break 
 
-        return adj_rps, adj_cpu, adj_mem, adj_p95
+        return results

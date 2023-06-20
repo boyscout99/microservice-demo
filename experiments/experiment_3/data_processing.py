@@ -175,11 +175,11 @@ with open("exp3_sorted_samples.json", "r") as f_input:
     data = json.load(f_input)
     # print("Data:\n", data)
 
-approximator = GetMetrics(data)
-app_rps, app_cpu, app_mem, app_p95 = approximator.get_metrics_approx(10, 1000)
-print(f"app_rps: {app_rps}, app_cpu: {app_cpu}, app_mem: {app_mem}, app_p95: {app_p95}")
+approximator = GetMetrics(data, ['rps', 'cpu', 'mem', 'p95'])
+results = approximator.get_metrics_approx(1, 150)
+print(results)
 
 # Add legend
-plt.legend()
+# plt.legend()
 # Display the plot
-plt.show()
+# plt.show()

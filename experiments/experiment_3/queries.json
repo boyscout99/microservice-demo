@@ -11,10 +11,10 @@
         },
         "productcatalogservice":{
             "rl-agent-2":{
-                "q_request_duration": 258,
-                "q_cpu_usage": 1147,
-                "q_memory_usage": 0.61,
-                "q_pod_replicas": 1,
+                "q_p95": 258,
+                "q_cpu": 1147,
+                "q_mem": 0.61,
+                "q_rep": 1,
                 "q_rps": 2282
             }
         }

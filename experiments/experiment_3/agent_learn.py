@@ -1,3 +1,6 @@
+"""
+This code is to train the agent.
+"""
 import os
 import sys
 import json
@@ -24,10 +27,10 @@ t = datetime.now()
 t = t + timedelta(hours=2) # UTC+2
 timestamp = t.strftime("%Y_%m_%d_%H%M%S")
 
-# Read arguments
+# Read command line arguments
 processor = StringProcessor()
-DEPLOYMENT, NAMESPACE, CLUSTER, MODEL, REWARD_FUNCTION, LEARNING_RATE = processor.parse_args() # read namespace and model
-print(f"deployment {DEPLOYMENT}, namespace {NAMESPACE}, cluster {CLUSTER}, model {MODEL}, reward function {REWARD_FUNCTION}, learning rate {LEARNING_RATE}.")
+DEPLOYMENT, NAMESPACE, CLUSTER, MODEL, REWARD_FUNCTION, LEARNING_RATE, METRICS = processor.parse_args() # read namespace and model
+print(f"deployment {DEPLOYMENT}, namespace {NAMESPACE}, cluster {CLUSTER}, model {MODEL}, reward function {REWARD_FUNCTION}, learning rate {LEARNING_RATE}, metrics {METRICS}.")
 
 module = importlib.import_module(MODULE) # import stable_baselines3
 model_attr = getattr(module, MODEL) # e.g. from stable_baselines3 import A2C
@@ -39,25 +42,12 @@ class TensorboardCallback(BaseCallback):
     def __init__(self, verbose=1):
         super(TensorboardCallback, self).__init__(verbose)
         self.episode_rewards = []
-        self.ep_rew_mean = 0
         self.ep_rew_sum = 0
         self.train_all_rew = []
         self.save_path = os.path.join(script_dir, f"models/{NAMESPACE}/{MODEL}/{timestamp}")
-
-        self.replicas = 0
-        self.t = 0
-        self.rps = 0
-        self.cpu = 0
-        self.mem = 0
         
     def _on_rollout_start(self) -> None:
-        self.episode_rewards = []
-        self.replicas = 0
-        self.t = 0
-        self.rps = 0
-        self.cpu = 0
-        self.mem = 0
-        
+        self.episode_rewards = []       
         print("ON ROLLOUT START")
 
     def _on_step(self) -> bool:
@@ -66,24 +56,20 @@ class TensorboardCallback(BaseCallback):
         # append reward
         self.episode_rewards.extend(reward)
         # get observations to log it at each step
-        obs = self.training_env.get_attr("current_observation")
-        self.replicas = obs[0][0]
-        self.t = obs[0][1]
-        self.rps = obs[0][2]
-        self.cpu = obs[0][3] # ! REMEMBER TO CHANGE THE INDEX
-        self.mem = obs[0][4]
-        self.logger.record("rollout/replicas", self.replicas)
-        self.logger.record("rollout/t", self.t)
-        self.logger.record("rollout/rps", self.rps)
-        self.logger.record("rollout/cpu", self.cpu)
-        self.logger.record("rollout/mem", self.mem)
-        self.logger.record("rollout/rewards", reward)
+        obs = self.training_env.get_attr("obs")
+        print(f"Obs from callback: {obs}")
+        replicas = obs[0]['rep']
+        self.logger.record("rollout/replicas", replicas)
+        self.logger.record("rollout/rewards", reward[0])
+
+        global METRICS
+        for metric in METRICS:
+            self.logger.record(f"rollout/{metric}", obs[0][metric])
+        
         print("ON STEP")
         return True
 
     def _on_rollout_end(self) -> None:
-        # compute mean
-        self.ep_rew_mean = np.mean(self.episode_rewards)
         self.train_all_rew.extend(self.episode_rewards)
         # get total reward
         tot_reward = self.training_env.get_attr("reward_sum")
@@ -173,7 +159,8 @@ def setup_environment(alpha,
                       maxReplicas,
                       rew_fun,
                       data,
-                      workload):
+                      workload,
+                      metrics):
 
     # Construct the absolute file path for queries.json
     queries_json_path = os.path.join(script_dir, "queries.json")
@@ -201,7 +188,8 @@ def setup_environment(alpha,
                          maxReplicas, 
                          rew_fun,
                          data,
-                         workload)
+                         workload,
+                         metrics)
     # set default state
     env.reset()
 
@@ -246,7 +234,7 @@ def load_model(env, models_dir, tf_logs_dir):
     #                         tensorboard_log=tf_logs_dir)
     print("No existing models found. Starting from scratch.")
     logging.info("No existing models found. Starting from scratch.")
-    model = model_attr("MlpPolicy", 
+    model = model_attr("MultiInputPolicy", 
                             env, 
                             learning_rate=float(LEARNING_RATE),
                             verbose=1,
@@ -327,7 +315,7 @@ if __name__ == "__main__":
     data_json_path = os.path.join(script_dir, "exp3_sorted_samples.json")
     d_file = open(data_json_path, "r")
     data = json.load(d_file)
-    print(f"Data samples:\n{data}")
+    # print(f"Data samples:\n{data}")
     d_file.close()
 
     # Generate environment
@@ -340,7 +328,8 @@ if __name__ == "__main__":
                             maxReplicas, 
                             rew_fun,
                             data,
-                            rps_signal) # adding workload
+                            rps_signal,
+                            METRICS) # adding workload
     env = Monitor(env, tf_logs_dir)
     model = load_model(env, models_dir, tf_logs_dir)
 

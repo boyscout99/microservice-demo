@@ -8,6 +8,7 @@ class StringProcessor:
         self.model = None
         self.rew_fun = None
         self.learn_rate = None
+        self.metrics = None
     
     def parse_args(self):
         # Parse arguments
@@ -24,6 +25,8 @@ class StringProcessor:
                             help="The reward function: e.g. indicator or quadratic")
         parser.add_argument("--learn_rate", type=str, required=False, default=0.0007,
                             help="The learning rate: e.g. 0.0007 default or 0.01")
+        parser.add_argument("--metrics", nargs='+', type=str, required=False, default=["rep", "p95", "rps", "cpu", "mem"],
+                            help="The list of metrics for observation: e.g. [\"rps\", \"cpu\"] or [\"mem\", \"cpu\"], defaults to [\"rep\", \"p95\", \"rps\", \"cpu\", \"mem\"]")
         try:
             args = parser.parse_args()
             self.deployment = args.deployment
@@ -32,7 +35,8 @@ class StringProcessor:
             self.model = args.model
             self.rew_fun = args.rew_fun
             self.learn_rate = args.learn_rate
+            self.metrics = args.metrics
         except Exception as e:
             print(f"Unexpected error occurred: {e}\nCheck arguments.")
 
-        return self.deployment, self.namespace, self.cluster, self.model, self.rew_fun, self.learn_rate
+        return self.deployment, self.namespace, self.cluster, self.model, self.rew_fun, self.learn_rate, self.metrics
