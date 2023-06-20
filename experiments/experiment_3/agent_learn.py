@@ -16,6 +16,7 @@ from stable_baselines3.common.callbacks import BaseCallback
 from workload_patterns_gen import WorkloadGenerator
 
 BEST_MODEL = -np.Inf
+MAX_REWARD = -np.Inf
 CURRENT_EPISODE = 1
 
 MODULE = "stable_baselines3"
@@ -100,12 +101,20 @@ class TensorboardCallback(BaseCallback):
         """
         This event is triggered before exiting the `learn()` method.
         """
+        # TODO 
+        # Get best model based on number of maximum rewards.
+        # Get maximum of the episode. Count how many time it was reached.
         global BEST_MODEL
+        global MAX_REWARD
         global CURRENT_EPISODE
         print("ON TRAINING END")
         print(f"self.train_mean_rew[len: {len(self.train_mean_rew)}]: {self.train_mean_rew}")
-        sum_positives = sum(1 for element in self.train_mean_rew if element > 0)
-        print("Positive rewards in the episode: ", sum_positives)
+        tmp_max_reward = max(self.train_mean_rew)
+        if tmp_max_reward > MAX_REWARD: 
+            MAX_REWARD = tmp_max_reward
+            print(f"New MAX_REWARD: {MAX_REWARD}")
+        sum_positives = sum(1 for element in self.train_mean_rew if element == MAX_REWARD)
+        print("Number of maximum rewards in the episode: ", sum_positives)
         if sum_positives > BEST_MODEL:
             # update the new best model
             BEST_MODEL = sum_positives
@@ -288,7 +297,7 @@ if __name__ == "__main__":
     if rew_fun == "indicator": alpha = 100
     elif rew_fun == "quadratic": alpha = 2
     elif rew_fun == "quad_cpu_thr": alpha = 2
-    elif rew_fun == "linear_1": alpha = 0.15
+    elif rew_fun == "linear_1": alpha = 15 # 15% of optimisation gap
     else: alpha = 1
 
     TIMESTEPS = 300
@@ -301,9 +310,9 @@ if __name__ == "__main__":
                                                  minRPS=1500,
                                                  maxRPS=2000,
                                                  steps=1)
-    plt.plot(_, rps_signal)
-    plt.title(f"Workload signal, {len(rps_signal)} timesteps")
-    plt.show()
+    # plt.plot(_, rps_signal)
+    # plt.title(f"Workload signal, {len(rps_signal)} timesteps")
+    # plt.show()
 
     # Generate directories
     dirs = create_directories()

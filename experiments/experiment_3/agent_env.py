@@ -54,7 +54,7 @@ class GymEnvironment(gym.Env):
         # set replicas to 1:
         # self.queries["q_pod_replicas"] = 1
         print("Waiting 1 seconds to stabilise after reset ...")
-        time.sleep(0.5)
+        time.sleep(0.1)
         # reset queries to initial state
         self.curr_timestep = 0
         self.queries["q_pod_replicas"] = 1
@@ -189,8 +189,8 @@ class GymEnvironment(gym.Env):
                 self.reward = -100*perc
                 print(f"self.reward = -100*{perc} = {self.reward}")
             else:
-                self.reward = 10*(self.alpha*perc+1)
-                print(f"self.reward = 100*(10*{perc}+1) = {self.reward}")
+                self.reward = 10*((100/self.alpha) * perc + 1) + (self.maxReplicas/self.current_replicas)
+                print(f"self.reward = 10*({100/self.alpha}*{perc}+1) + ({self.maxReplicas/self.current_replicas}) = {self.reward}")
         elif self.rew_fun == "linear_2":
             delta_t = new_observation[1]-SLA_RESP_TIME
             if delta_t > 0:
