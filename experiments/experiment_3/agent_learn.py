@@ -64,6 +64,8 @@ class TensorboardCallback(BaseCallback):
 
         global METRICS
         for metric in METRICS:
+            print(f"logging to tb {metric}")
+            # TODO fix bug f"rollout/{metric}" not logging metrics on tb
             self.logger.record(f"rollout/{metric}", obs[0][metric])
         
         print("ON STEP")
@@ -290,8 +292,8 @@ if __name__ == "__main__":
     elif rew_fun == "linear_1": alpha = 15 # 15% of optimisation gap
     else: alpha = 1
 
-    TIMESTEPS = 300
-    EPISODES = 300
+    TIMESTEPS = 100
+    EPISODES = 2
 
     # Generate workload
     # This signal must be passed to the environment for the observation
