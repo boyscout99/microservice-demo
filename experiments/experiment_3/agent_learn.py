@@ -288,6 +288,7 @@ if __name__ == "__main__":
     if rew_fun == "indicator": alpha = 100
     elif rew_fun == "quadratic": alpha = 2
     elif rew_fun == "quad_cpu_thr": alpha = 2
+    elif rew_fun == "linear_1": alpha = 0.15
     else: alpha = 1
 
     TIMESTEPS = 300
@@ -295,13 +296,14 @@ if __name__ == "__main__":
 
     # Generate workload
     # This signal must be passed to the environment for the observation
+    # set steps=1 for a constant load of minRPS
     _, rps_signal = WorkloadGenerator.step_function(timesteps=TIMESTEPS, 
-                                                 minRPS=10,
-                                                 maxRPS=80,
-                                                 steps=4)
-    # plt.plot(_, rps_signal)
-    # plt.title("Workload signal")
-    # plt.show()
+                                                 minRPS=1500,
+                                                 maxRPS=2000,
+                                                 steps=1)
+    plt.plot(_, rps_signal)
+    plt.title(f"Workload signal, {len(rps_signal)} timesteps")
+    plt.show()
 
     # Generate directories
     dirs = create_directories()

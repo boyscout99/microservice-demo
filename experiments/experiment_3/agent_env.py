@@ -59,9 +59,9 @@ class GymEnvironment(gym.Env):
         self.curr_timestep = 0
         self.queries["q_pod_replicas"] = 1
         # approximate other data
-        cpu, mem, p95 = GetMetrics(self.data).get_metrics_approx(1, self.workload[0])
+        rps, cpu, mem, p95 = GetMetrics(self.data).get_metrics_approx(1, self.workload[0])
         self.queries["q_request_duration"] = p95
-        self.queries["q_rps"] = self.workload[0]
+        self.queries["q_rps"] = rps
         self.queries["q_cpu_usage"] = cpu
         self.queries["q_memory_usage"] = mem
         # retreive observation
@@ -82,12 +82,12 @@ class GymEnvironment(gym.Env):
         cpu = self.queries["q_cpu_usage"]
         mem = self.queries["q_memory_usage"]
 
-        print("\n##### NEW ACTION #####")
+        print("##### NEW ACTION #####")
         # Update the pod states based on the action
         if action == 0:  # No change in replicas
             print("Taking action 0")
-            cpu, mem, t = GetMetrics(self.data).get_metrics_approx(rep, self.workload[self.curr_timestep])
-            rps = self.workload[self.curr_timestep]
+            print(f"workload[{self.curr_timestep}] = {self.workload[self.curr_timestep]}")
+            rps, cpu, mem, t = GetMetrics(self.data).get_metrics_approx(rep, self.workload[self.curr_timestep])
             # ALL METRICS
             print(f"rep: {rep}, t: {t}, rps: {rps}, cpu: {cpu}, mem: {mem}")
             # NO CPU
@@ -100,6 +100,7 @@ class GymEnvironment(gym.Env):
             pass
         elif action == 1:  # Increase replicas
             print("Taking action +1")
+            print(f"workload[{self.curr_timestep}] = {self.workload[self.curr_timestep]}")
             # self.scale.update_replicas(1)
             rep += 1
             if rep > self.maxReplicas:
@@ -107,8 +108,7 @@ class GymEnvironment(gym.Env):
                 rep = self.maxReplicas
             else:
                 # Consequences of action on environment
-                cpu, mem, t = GetMetrics(self.data).get_metrics_approx(rep, self.workload[self.curr_timestep])
-                rps = self.workload[self.curr_timestep]
+                rps, cpu, mem, t = GetMetrics(self.data).get_metrics_approx(rep, self.workload[self.curr_timestep])
             # ALL METRICS
             print(f"rep: {rep}, t: {t}, rps: {rps}, cpu: {cpu}, mem: {mem}")
             # NO CPU
@@ -121,14 +121,14 @@ class GymEnvironment(gym.Env):
 
         elif action == 2:  # Decrease replicas
             print("Taking action -1")
+            print(f"workload[{self.curr_timestep}] = {self.workload[self.curr_timestep]}")
             # self.scale.update_replicas(-1)
             rep -= 1
             if rep < self.minReplicas:
                 print(f"Cannot have less than minReplicas. Setting to {self.minReplicas}.")
                 rep = self.minReplicas
             else:
-                cpu, mem, t = GetMetrics(self.data).get_metrics_approx(rep, self.workload[self.curr_timestep])
-                rps = self.workload[self.curr_timestep]
+                rps, cpu, mem, t = GetMetrics(self.data).get_metrics_approx(rep, self.workload[self.curr_timestep])
             # ALL METRICS
             print(f"rep: {rep}, t: {t}, rps: {rps}, cpu: {cpu}, mem: {mem}")
             # NO CPU
@@ -141,7 +141,6 @@ class GymEnvironment(gym.Env):
 
         self.current_replicas = rep
         # reassign values
-
         self.queries["q_pod_replicas"] = rep
         self.queries["q_request_duration"] = t
         self.queries["q_rps"] = rps
@@ -152,10 +151,10 @@ class GymEnvironment(gym.Env):
         # time.sleep(1)
         # get new observation
         new_observation = self._get_observation()
-        resp_time = new_observation[1]
 
         # Calculate reward based on the new observation
         SLA_RESP_TIME = 5 # 100 ms
+        resp_time = new_observation[1]
         if self.rew_fun == "indicator":
             self.reward = -(self.alpha * int(new_observation[1] > SLA_RESP_TIME) + self.current_replicas)
         elif self.rew_fun == "quadratic":
@@ -190,7 +189,7 @@ class GymEnvironment(gym.Env):
                 self.reward = -100*perc
                 print(f"self.reward = -100*{perc} = {self.reward}")
             else:
-                self.reward = 10*(10*perc+1)
+                self.reward = 10*(self.alpha*perc+1)
                 print(f"self.reward = 100*(10*{perc}+1) = {self.reward}")
         elif self.rew_fun == "linear_2":
             delta_t = new_observation[1]-SLA_RESP_TIME

@@ -16,10 +16,10 @@ class WorkloadGenerator:
         """
         Create an increasing step function, with even spaced intervals.
         """
-        x_timesteps = list(range(1,timesteps))
+        x_timesteps = list(range(0,timesteps))
         y_rps = []
         # divide timesteps in steps 
-        for i in range(1,timesteps):
+        for i in range(0,timesteps):
             # RPS per interval
             rps_per_interval = (maxRPS-minRPS)/steps
             value = minRPS + rps_per_interval*(np.floor(i/(timesteps/steps)))

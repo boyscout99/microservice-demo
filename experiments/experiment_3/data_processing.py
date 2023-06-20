@@ -13,7 +13,7 @@ import json
 import math
 
 # Read data from DataFrame
-df = pd.read_csv('timeseries/data_sawTooth_1500users_1to15replicas_20230614.csv')
+df = pd.read_csv('timeseries/new_data_sawTooth_1500users_20230620.csv')
 
 # Fill missing values with 0
 df.fillna(0, inplace=True)
@@ -26,6 +26,7 @@ rps_columns = [col for col in df.columns if col.startswith('RPS')]
 p90_columns = [col for col in df.columns if col.startswith('p95')]
 cpu_columns = [col for col in df.columns if col.startswith('CPU')]
 mem_columns = [col for col in df.columns if col.startswith('mem')]
+load_column = [col for col in df.columns if col.startswith('dep')]
 # add one more column for rps to deployment
 
 # Create a new DataFrame with selected columns
@@ -34,13 +35,14 @@ rps = df[rps_columns]
 p90 = df[p90_columns]
 cpu = df[cpu_columns]
 mem = df[mem_columns]
+load = df[load_column]
 
 # define the order of the metrics
-metrics_df = [rep, rps, p90, cpu, mem]
-metrics_df_order = ["rep", "rps", "p95", "cpu", "mem"]
+metrics_df = [rep, load, rps, p90, cpu, mem]
+metrics_df_order = ["rep", "load", "rps", "p95", "cpu", "mem"]
 metrics_df_means = pd.DataFrame()
 
-print("rps df\n", rps)
+print("load df\n", load)
 
 # Create a series of plots for each measurement
 fig, axs = plt.subplots(len(metrics_df), 1)
@@ -115,7 +117,7 @@ for _, row in metrics_df_means.iterrows():
                     json_list[index]['metric_rows'].append(row.drop('rep').to_dict())
                     # sort by rps
                     # TODO sort by RPS to deployment
-                    json_list[index]['metric_rows'] = sorted(json_list[index]['metric_rows'], key=lambda metric: metric['rps'])
+                    json_list[index]['metric_rows'] = sorted(json_list[index]['metric_rows'], key=lambda metric: metric['load'])
 
 # print(json_list)
 
@@ -128,7 +130,7 @@ with open("exp3_sorted_samples.json", "w") as outfile:
 
 # Generalisation of the algorithm for (replicas, metric) correspondence
 REPLICAS = 1
-RPS = 10
+LOAD = 150
 with open("exp3_sorted_samples.json", "r") as f_input:
     data = json.load(f_input)
     # print("Data:\n", data)
@@ -140,11 +142,11 @@ for elem in range(len(data)):
         metric_list = data[elem]["metric_rows"]
         # print("Metric_list: ", metric_list)
         # print(f"elem {data[elem]['rps']} type: {type(data[elem]['rps'])}, elem+1 {data[elem+1]['rps']}")
-        if (RPS<metric_list[0]["rps"]): # case in which RPS is too low
+        if (LOAD<metric_list[0]["load"]): # case in which RPS is too low
             # TODO Estimate new coefficient
             print("ERROR - RPS too low!")
             break
-        elif (RPS>metric_list[-1]["rps"]):
+        elif (LOAD>metric_list[-1]["load"]):
             # TODO estimate new coefficient
             print("ERROR - RPS too high!")
             break
@@ -153,16 +155,17 @@ for elem in range(len(data)):
                 prev = metric_list[index]
                 next = metric_list[index+1]
                 print("Element: ", prev)
-                if (prev["rps"] <= RPS) and (next["rps"] >= RPS):
+                if (prev["load"] <= LOAD) and (next["load"] >= LOAD):
                     print("Element: ", next)
                     # take the wighted mean between the two measures and apply the coefficient to the metrics
                     print("Inside the loop.")
-                    coeff = np.abs((RPS-prev['rps'])/(next['rps']-prev['rps'])) # relative distance wrt the first element
+                    coeff = np.abs((LOAD-prev['load'])/(next['load']-prev['load'])) # relative distance wrt the first element
                     print(f"coeff: {coeff}")
+                    adj_rps = prev["rps"]+coeff*(next["rps"]-prev["rps"]) # the adjusted rps
                     adj_cpu = prev["cpu"]+coeff*(next["cpu"]-prev["cpu"]) # the adjusted cpu
                     adj_mem = prev["mem"]+coeff*(next["mem"]-prev["mem"]) # the adjusted mem
                     adj_p95 = prev["p95"]+coeff*(next["p95"]-prev["p95"]) # the adjusted p95
-                    print(f"Replicas: {REPLICAS}, RPS: {RPS}, CPU: {adj_cpu}, memory: {adj_mem}, p95: {adj_p95}")
+                    print(f"Replicas: {REPLICAS}, load: {LOAD}, RPS: {adj_rps}, CPU: {adj_cpu}, memory: {adj_mem}, p95: {adj_p95}")
                     break 
 
 print("##### Testing new class #####")
@@ -173,8 +176,8 @@ with open("exp3_sorted_samples.json", "r") as f_input:
     # print("Data:\n", data)
 
 approximator = GetMetrics(data)
-app_cpu, app_mem, app_p95 = approximator.get_metrics_approx(REPLICAS, RPS)
-print(f"app_cpu: {app_cpu}, app_mem: {app_mem}, app_p95: {app_p95}")
+app_rps, app_cpu, app_mem, app_p95 = approximator.get_metrics_approx(10, 1000)
+print(f"app_rps: {app_rps}, app_cpu: {app_cpu}, app_mem: {app_mem}, app_p95: {app_p95}")
 
 # Add legend
 plt.legend()
