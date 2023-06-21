@@ -39,7 +39,7 @@ load = df[load_column]
 
 # define the order of the metrics
 metrics_df = [rep, load, rps, p90, cpu, mem]
-metrics_df_order = ["rep", "load", "rps", "p95", "cpu", "mem"]
+metrics_df_order = ["rep", "load", "rps", "p95", "CPU", "mem"]
 metrics_df_means = pd.DataFrame()
 
 print("load df\n", load)
@@ -162,7 +162,7 @@ for elem in range(len(data)):
                     coeff = np.abs((LOAD-prev['load'])/(next['load']-prev['load'])) # relative distance wrt the first element
                     print(f"coeff: {coeff}")
                     adj_rps = prev["rps"]+coeff*(next["rps"]-prev["rps"]) # the adjusted rps
-                    adj_cpu = prev["cpu"]+coeff*(next["cpu"]-prev["cpu"]) # the adjusted cpu
+                    adj_cpu = prev["CPU"]+coeff*(next["CPU"]-prev["CPU"]) # the adjusted cpu
                     adj_mem = prev["mem"]+coeff*(next["mem"]-prev["mem"]) # the adjusted mem
                     adj_p95 = prev["p95"]+coeff*(next["p95"]-prev["p95"]) # the adjusted p95
                     print(f"Replicas: {REPLICAS}, load: {LOAD}, RPS: {adj_rps}, CPU: {adj_cpu}, memory: {adj_mem}, p95: {adj_p95}")
@@ -175,7 +175,7 @@ with open("exp3_sorted_samples.json", "r") as f_input:
     data = json.load(f_input)
     # print("Data:\n", data)
 
-approximator = GetMetrics(data, ['rps', 'cpu', 'mem', 'p95'])
+approximator = GetMetrics(data, ['rps', 'CPU', 'mem', 'p95'])
 results = approximator.get_metrics_approx(1, 150)
 print(results)
 

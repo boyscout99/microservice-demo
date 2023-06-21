@@ -59,14 +59,15 @@ class TensorboardCallback(BaseCallback):
         obs = self.training_env.get_attr("obs")
         print(f"Obs from callback: {obs}")
         replicas = obs[0]['rep']
-        self.logger.record("rollout/replicas", replicas)
+        self.logger.record("rollout/replicas", float(replicas))
         self.logger.record("rollout/rewards", reward[0])
+        print(type(float(replicas)))
 
         global METRICS
         for metric in METRICS:
-            print(f"logging to tb {metric}")
-            # TODO fix bug f"rollout/{metric}" not logging metrics on tb
-            self.logger.record(f"rollout/{metric}", obs[0][metric])
+            print(f"logging to tb {metric}: {obs[0][metric]}")
+            rollout_name = str("rollout/"+metric)
+            self.logger.record(rollout_name, float(obs[0][metric]))
         
         print("ON STEP")
         return True
@@ -292,13 +293,13 @@ if __name__ == "__main__":
     elif rew_fun == "linear_1": alpha = 15 # 15% of optimisation gap
     else: alpha = 1
 
-    TIMESTEPS = 100
-    EPISODES = 2
+    TIMESTEPS = 101
+    EPISODES = 3
 
     # Generate workload
     # This signal must be passed to the environment for the observation
     # set steps=1 for a constant load of minRPS
-    _, rps_signal = WorkloadGenerator.step_function(timesteps=TIMESTEPS, 
+    _, rps_signal = WorkloadGenerator.step_function(timesteps=TIMESTEPS+1, 
                                                  minRPS=1500,
                                                  maxRPS=2000,
                                                  steps=1)

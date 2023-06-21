@@ -99,15 +99,6 @@ class GymEnvironment(gym.Env):
             print(f"workload[{self.curr_timestep}] = {self.workload[self.curr_timestep]}")
             dict_app_metrics = GetMetrics(self.data, self.metrics).get_metrics_approx(rep, self.workload[self.curr_timestep])
             print(dict_app_metrics)
-            # ALL METRICS
-            # print(f"rep: {rep}, t: {t}, rps: {rps}, cpu: {cpu}, mem: {mem}")
-            # NO CPU
-            # print(f"rep: {rep}, t: {t}, rps: {rps}, mem: {mem}")
-            # NO CPU, RPS
-            # print(f"rep: {rep}, t: {t}, mem: {mem}")
-            # print(f"rep: {rep}, t: {t}, rps: {rps}")
-            # print(f"rep: {rep}, t: {t}, cpu: {cpu}")
-            # print(f"rep: {rep}, t: {t}, rps: {rps}, cpu: {cpu}")
             pass
         elif action == 1:  # Increase replicas
             print("Taking action +1")
@@ -124,15 +115,6 @@ class GymEnvironment(gym.Env):
                 # Consequences of action on environment
                 dict_app_metrics = GetMetrics(self.data, self.metrics).get_metrics_approx(rep, self.workload[self.curr_timestep])
                 print(dict_app_metrics)
-            # ALL METRICS
-            # print(f"rep: {rep}, t: {t}, rps: {rps}, cpu: {cpu}, mem: {mem}")
-            # NO CPU
-            # print(f"rep: {rep}, t: {t}, rps: {rps}, mem: {mem}")
-            # NO CPU, RPS
-            # print(f"rep: {rep}, t: {t}, mem: {mem}")
-            # print(f"rep: {rep}, t: {t}, rps: {rps}")
-            # print(f"rep: {rep}, t: {t}, cpu: {cpu}")
-            # print(f"rep: {rep}, t: {t}, rps: {rps}, cpu: {cpu}")
 
         elif action == 2:  # Decrease replicas
             print("Taking action -1")
@@ -149,26 +131,12 @@ class GymEnvironment(gym.Env):
                 # Consequences of action on environment
                 dict_app_metrics = GetMetrics(self.data, self.metrics).get_metrics_approx(rep, self.workload[self.curr_timestep])
                 print(dict_app_metrics)
-            # ALL METRICS
-            # print(f"rep: {rep}, t: {t}, rps: {rps}, cpu: {cpu}, mem: {mem}")
-            # NO CPU
-            # print(f"rep: {rep}, t: {t}, rps: {rps}, mem: {mem}")
-            # NO CPU, RPS
-            # print(f"rep: {rep}, t: {t}, mem: {mem}")
-            # print(f"rep: {rep}, t: {t}, rps: {rps}")
-            # print(f"rep: {rep}, t: {t}, cpu: {cpu}")
-            # print(f"rep: {rep}, t: {t}, rps: {rps}, cpu: {cpu}")
 
         self.current_replicas = rep
         # reassign values
         self.queries[f"q_rep"] = self.current_replicas
         for metric in self.metrics:
             self.queries[f"q_{metric}"] = dict_app_metrics[metric]
-        # self.queries["q_pod_replicas"] = rep
-        # self.queries["q_request_duration"] = t
-        # self.queries["q_rps"] = rps
-        # self.queries["q_cpu_usage"] = cpu
-        # self.queries["q_memory_usage"] = mem
 
         # waiting environment to stabilise
         # time.sleep(1)
@@ -272,18 +240,7 @@ class GymEnvironment(gym.Env):
         observation = {'rep': np.array(self.queries[f"q_rep"], dtype=np.float64)}
         for metric in self.metrics:
             observation.update( {metric: np.array(self.queries[f"q_{metric}"], dtype=np.float64)} )
-            # observation.update( {metric: self.queries[f"q_{metric}"]} )
-            # observation = {
-            #     self.queries[f"q_pod_replicas"],
-            #     self.queries["q_request_duration"],
-            #     self.queries["q_rps"],
-            #     self.queries["q_cpu_usage"],
-            #     self.queries["q_memory_usage"]
-            # }
-        # observation = np.array(observation)
-        # Update the current observation for the next step
-        # self.current_observation = observation
-        # print(f"self.current_observation: {self.current_observation}")
+
         print(f"observation: {observation}")
 
         return observation
