@@ -44,7 +44,10 @@ class TensorboardCallback(BaseCallback):
         self.episode_rewards = []
         self.ep_rew_sum = 0
         self.train_all_rew = []
-        self.save_path = os.path.join(script_dir, f"models/{NAMESPACE}/{MODEL}/{timestamp}")
+        incl_metrics = ""
+        for metric in METRICS:
+            incl_metrics += '_' + metric
+        self.save_path = os.path.join(script_dir, f"models/{NAMESPACE}/{MODEL}/{timestamp}{incl_metrics}")
         
     def _on_rollout_start(self) -> None:
         self.episode_rewards = []       
@@ -57,17 +60,16 @@ class TensorboardCallback(BaseCallback):
         self.episode_rewards.extend(reward)
         # get observations to log it at each step
         obs = self.training_env.get_attr("obs")
-        print(f"Obs from callback: {obs}")
+        # print(f"Obs from callback: {obs}")
         replicas = obs[0]['rep']
         self.logger.record("rollout/replicas", float(replicas))
         self.logger.record("rollout/rewards", reward[0])
-        print(type(float(replicas)))
+        # print(type(float(replicas)))
 
         global METRICS
         for metric in METRICS:
-            print(f"logging to tb {metric}: {obs[0][metric]}")
-            rollout_name = str("rollout/"+metric)
-            self.logger.record(rollout_name, float(obs[0][metric]))
+            # print(f"logging to tb {metric}: {obs[0][metric]}")
+            self.logger.record(f"rollout/{metric}", float(obs[0][metric]))
         
         print("ON STEP")
         return True
@@ -117,8 +119,11 @@ class TensorboardCallback(BaseCallback):
 
 def create_directories():
     # create the necessary directories
-    models_dir = os.path.join(script_dir, f"models/{NAMESPACE}/{MODEL}/{timestamp}")
-    tf_logs_dir = os.path.join(script_dir, f"tf_logs/{NAMESPACE}/{MODEL}/{timestamp}")
+    incl_metrics = ""
+    for metric in METRICS:
+        incl_metrics += '_' + metric
+    models_dir = os.path.join(script_dir, f"models/{NAMESPACE}/{MODEL}/{timestamp}{incl_metrics}")
+    tf_logs_dir = os.path.join(script_dir, f"tf_logs/{NAMESPACE}/{MODEL}/{timestamp}{incl_metrics}")
     pod_logs_dir = os.path.join(script_dir, f"pod_logs/{NAMESPACE}/{MODEL}")
 
     if not os.path.exists(models_dir):
@@ -241,7 +246,7 @@ def load_model(env, models_dir, tf_logs_dir):
                             env, 
                             learning_rate=float(LEARNING_RATE),
                             verbose=1,
-                            n_steps=3, 
+                            n_steps=2, 
                             gamma=0.99, 
                             gae_lambda=1.0, 
                             ent_coef=0.0, 
@@ -293,8 +298,8 @@ if __name__ == "__main__":
     elif rew_fun == "linear_1": alpha = 15 # 15% of optimisation gap
     else: alpha = 1
 
-    TIMESTEPS = 101
-    EPISODES = 3
+    TIMESTEPS = 300
+    EPISODES = 300
 
     # Generate workload
     # This signal must be passed to the environment for the observation
