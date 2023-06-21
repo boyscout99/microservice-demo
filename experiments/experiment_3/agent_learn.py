@@ -47,7 +47,7 @@ class TensorboardCallback(BaseCallback):
         incl_metrics = ""
         for metric in METRICS:
             incl_metrics += '_' + metric
-        self.save_path = os.path.join(script_dir, f"models/{NAMESPACE}/{MODEL}/{timestamp}{incl_metrics}")
+        self.save_path = os.path.join(script_dir, f"models/{NAMESPACE}/{MODEL}/{timestamp}_{incl_metrics}")
         
     def _on_rollout_start(self) -> None:
         self.episode_rewards = []       
@@ -122,8 +122,8 @@ def create_directories():
     incl_metrics = ""
     for metric in METRICS:
         incl_metrics += '_' + metric
-    models_dir = os.path.join(script_dir, f"models/{NAMESPACE}/{MODEL}/{timestamp}{incl_metrics}")
-    tf_logs_dir = os.path.join(script_dir, f"tf_logs/{NAMESPACE}/{MODEL}/{timestamp}{incl_metrics}")
+    models_dir = os.path.join(script_dir, f"models/{NAMESPACE}/{MODEL}/{timestamp}_{incl_metrics}")
+    tf_logs_dir = os.path.join(script_dir, f"tf_logs/{NAMESPACE}/{MODEL}/{timestamp}_{incl_metrics}")
     pod_logs_dir = os.path.join(script_dir, f"pod_logs/{NAMESPACE}/{MODEL}")
 
     if not os.path.exists(models_dir):
@@ -298,7 +298,7 @@ if __name__ == "__main__":
     elif rew_fun == "linear_1": alpha = 15 # 15% of optimisation gap
     else: alpha = 1
 
-    TIMESTEPS = 300
+    TIMESTEPS = 200
     EPISODES = 300
 
     # Generate workload
