@@ -15,6 +15,8 @@ from settings.Logger import LoggerWriter
 from settings.ArgParser_learn import StringProcessor
 from stable_baselines3.common.monitor import Monitor
 from stable_baselines3.common.callbacks import BaseCallback
+# from stable_baselines3.common.buffers import ReplayBuffer
+# from stable_baselines3.common.vec_env import DummyVecEnv
 # from stable_baselines3.common.callbacks import EvalCallback
 from workload_patterns_gen import WorkloadGenerator
 
@@ -70,6 +72,8 @@ class TensorboardCallback(BaseCallback):
         for metric in METRICS:
             # print(f"logging to tb {metric}: {obs[0][metric]}")
             self.logger.record(f"rollout/{metric}", float(obs[0][metric]))
+            print(f"self.logger.record(f\"rollout/{metric}\", {float(obs[0][metric])})")
+            print(type(float(obs[0][metric])))
         
         print("ON STEP")
         return True
@@ -218,42 +222,42 @@ def load_model(env, models_dir, tf_logs_dir):
     #     print("No existing models found. Starting from scratch.")
     #     logging.info("No existing models found. Starting from scratch.")
     #     # Create the model
-    #     if MODEL == "A2C":
-    #         model = model_attr("MlpPolicy", 
-    #                         env, 
-    #                         learning_rate=float(LEARNING_RATE),
-    #                         verbose=1,
-    #                         n_steps=5, 
-    #                         gamma=0.99, 
-    #                         gae_lambda=1.0, 
-    #                         ent_coef=0.0, 
-    #                         vf_coef=0.5, 
-    #                         max_grad_norm=0.5, 
-    #                         rms_prop_eps=1e-05,
-    #                         tensorboard_log=tf_logs_dir)
-    #     elif MODEL == "DQN":
-    #         model = model_attr("MlpPolicy", 
-    #                         env, 
-    #                         learning_rate=float(LEARNING_RATE),
-    #                         learning_starts=0,
-    #                         target_update_interval=2,
-    #                         train_freq=1,
-    #                         verbose=2, 
-    #                         tensorboard_log=tf_logs_dir)
-    print("No existing models found. Starting from scratch.")
-    logging.info("No existing models found. Starting from scratch.")
-    model = model_attr("MultiInputPolicy", 
-                            env, 
-                            learning_rate=float(LEARNING_RATE),
-                            verbose=1,
-                            n_steps=2, 
-                            gamma=0.99, 
-                            gae_lambda=1.0, 
-                            ent_coef=0.0, 
-                            vf_coef=0.5, 
-                            max_grad_norm=0.5, 
-                            rms_prop_eps=1e-05,
-                            tensorboard_log=tf_logs_dir)
+    if MODEL == "A2C":
+        model = model_attr(
+            "MultiInputPolicy", 
+            env, 
+            learning_rate=float(LEARNING_RATE),
+            verbose=1,
+            n_steps=2, 
+            gamma=0.90, 
+            gae_lambda=1.0, 
+            ent_coef=0.0, 
+            vf_coef=0.5, 
+            max_grad_norm=0.5, 
+            rms_prop_eps=1e-05,
+            tensorboard_log=tf_logs_dir
+            )
+    elif MODEL == "DQN":
+        model = model_attr(
+            "MultiInputPolicy", 
+            env, 
+            learning_rate=float(LEARNING_RATE),
+            learning_starts=0,
+            target_update_interval=2,
+            train_freq=1,
+            verbose=1, 
+            tensorboard_log=tf_logs_dir
+            )
+    elif MODEL == "DDPG":
+        model = model_attr(
+            "MultiInputPolicy",
+            env,
+            verbose=2,
+            learning_rate=float(LEARNING_RATE),
+            tensorboard_log=tf_logs_dir
+        )
+    # print("No existing models found. Starting from scratch.")
+    # logging.info("No existing models found. Starting from scratch.")
 
     return model
 
@@ -304,9 +308,9 @@ if __name__ == "__main__":
     # Generate workload
     # This signal must be passed to the environment for the observation
     # set steps=1 for a constant load of minRPS
-    _, rps_signal = WorkloadGenerator.step_function(timesteps=TIMESTEPS+1, 
+    _, rps_signal = WorkloadGenerator.decr_step_function(timesteps=TIMESTEPS+1, 
                                                  minRPS=150,
-                                                 maxRPS=2000,
+                                                 maxRPS=1500,
                                                  steps=3)
     # plt.plot(_, rps_signal)
     # plt.title(f"Workload signal, {len(rps_signal)} timesteps")
@@ -340,10 +344,15 @@ if __name__ == "__main__":
                             METRICS) # adding workload
     env = Monitor(env, tf_logs_dir)
     model = load_model(env, models_dir, tf_logs_dir)
+    print(f"Model policy: {model.policy}")
 
     # create callbacks
     rewards_callback = TensorboardCallback()
     callbacks = [rewards_callback]
+
+    # Create a replay buffer
+    # replay_buffer = ReplayBuffer(buffer_size, obs_space, action_space)
+    # model.collect_rollouts(env, callbacks, train_freq=5, replay_buffer=replay_buffer)
     # train the model
     train_model(model, 
                 models_dir, 

@@ -29,6 +29,25 @@ class WorkloadGenerator:
         # plt.show()
         
         return x_timesteps, y_rps
+    
+    # function for steps
+    def decr_step_function(timesteps, minRPS, maxRPS, steps):
+        """
+        Create an increasing step function, with even spaced intervals.
+        """
+        x_timesteps = list(range(0,timesteps))
+        y_rps = []
+        # divide timesteps in steps 
+        for i in range(0,timesteps):
+            # RPS per interval
+            rps_per_interval = (maxRPS-minRPS)/steps
+            value = maxRPS - rps_per_interval*(np.floor(i/(timesteps/steps)))
+            y_rps.append(value)
+        
+        # plt.plot(x_timesteps, y_rps)
+        # plt.show()
+        
+        return x_timesteps, y_rps
 
 
     # function for sin(x)
