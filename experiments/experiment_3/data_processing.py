@@ -88,96 +88,92 @@ print(metrics_df_means)
     }
 ]
 """
+
 # json_list = []
+# json_dict = {}
 # for _, row in metrics_df_means.iterrows():
-#     json_dict = row.to_dict()
-#     json_list.append(json_dict)
+#     # if list is empty
+#     if not json_list:
+#         d = {'rep': row['rep'], 'metric_rows':[row.drop('rep').to_dict()]}
+#         # print(d)
+#         # append that dictionary to the list
+#         json_list.append(d)
+#     else:
+#         # check if dicitonary for that replica is already present in the list
+#         if not any(d['rep'] == row['rep'] for d in json_list):
+#             # create a new dictionary for the number of replicas
+#             d = {'rep': row['rep'], 'metric_rows':[row.drop('rep').to_dict()]}
+#             # print(d)
+#             # append that dictionary to the list
+#             json_list.append(d)
+#         else:
+#             # add metrics for that replica
+#             for index in range(len(json_list)):
+#                 if json_list[index]['rep'] == row['rep']:
+#                     json_list[index]['metric_rows'].append(row.drop('rep').to_dict())
+#                     # sort by rps
+#                     # TODO sort by RPS to deployment
+#                     json_list[index]['metric_rows'] = sorted(json_list[index]['metric_rows'], key=lambda metric: metric['load'])
 
-json_list = []
-json_dict = {}
-for _, row in metrics_df_means.iterrows():
-    # if list is empty
-    if not json_list:
-        d = {'rep': row['rep'], 'metric_rows':[row.drop('rep').to_dict()]}
-        # print(d)
-        # append that dictionary to the list
-        json_list.append(d)
-    else:
-        # check if dicitonary for that replica is already present in the list
-        if not any(d['rep'] == row['rep'] for d in json_list):
-            # create a new dictionary for the number of replicas
-            d = {'rep': row['rep'], 'metric_rows':[row.drop('rep').to_dict()]}
-            # print(d)
-            # append that dictionary to the list
-            json_list.append(d)
-        else:
-            # add metrics for that replica
-            for index in range(len(json_list)):
-                if json_list[index]['rep'] == row['rep']:
-                    json_list[index]['metric_rows'].append(row.drop('rep').to_dict())
-                    # sort by rps
-                    # TODO sort by RPS to deployment
-                    json_list[index]['metric_rows'] = sorted(json_list[index]['metric_rows'], key=lambda metric: metric['load'])
+# # print(json_list)
 
-# print(json_list)
+# # Save file to json
+# json_object = json.dumps(json_list, indent=4, separators=(',', ':'))
+# with open("exp3_sorted_samples.json", "w") as outfile:
+#     outfile.write(json_object)
+# # check correct indexing
+# # print("Data:", json_list[0]["p95"])
 
-# Save file to json
-json_object = json.dumps(json_list, indent=4, separators=(',', ':'))
-with open("exp3_sorted_samples.json", "w") as outfile:
-    outfile.write(json_object)
-# check correct indexing
-# print("Data:", json_list[0]["p95"])
+# # Generalisation of the algorithm for (replicas, metric) correspondence
+# REPLICAS = 1
+# LOAD = 150
+# with open("exp3_sorted_samples.json", "r") as f_input:
+#     data = json.load(f_input)
+#     # print("Data:\n", data)
 
-# Generalisation of the algorithm for (replicas, metric) correspondence
-REPLICAS = 1
-LOAD = 150
-with open("exp3_sorted_samples.json", "r") as f_input:
-    data = json.load(f_input)
-    # print("Data:\n", data)
+# for elem in range(len(data)):
+#     # search for the intended number of replicas
+#     if data[elem]["rep"] == REPLICAS:
+#         # search for the given RPS
+#         metric_list = data[elem]["metric_rows"]
+#         # print("Metric_list: ", metric_list)
+#         # print(f"elem {data[elem]['rps']} type: {type(data[elem]['rps'])}, elem+1 {data[elem+1]['rps']}")
+#         if (LOAD<metric_list[0]["load"]): # case in which RPS is too low
+#             # TODO Estimate new coefficient
+#             print("ERROR - RPS too low!")
+#             break
+#         elif (LOAD>metric_list[-1]["load"]):
+#             # TODO estimate new coefficient
+#             print("ERROR - RPS too high!")
+#             break
+#         else:
+#             for index in range(len(metric_list)-1):
+#                 prev = metric_list[index]
+#                 next = metric_list[index+1]
+#                 print("Element: ", prev)
+#                 if (prev["load"] <= LOAD) and (next["load"] >= LOAD):
+#                     print("Element: ", next)
+#                     # take the wighted mean between the two measures and apply the coefficient to the metrics
+#                     print("Inside the loop.")
+#                     coeff = np.abs((LOAD-prev['load'])/(next['load']-prev['load'])) # relative distance wrt the first element
+#                     print(f"coeff: {coeff}")
+#                     adj_rps = prev["rps"]+coeff*(next["rps"]-prev["rps"]) # the adjusted rps
+#                     adj_cpu = prev["CPU"]+coeff*(next["CPU"]-prev["CPU"]) # the adjusted cpu
+#                     adj_mem = prev["mem"]+coeff*(next["mem"]-prev["mem"]) # the adjusted mem
+#                     adj_p95 = prev["p95"]+coeff*(next["p95"]-prev["p95"]) # the adjusted p95
+#                     print(f"Replicas: {REPLICAS}, load: {LOAD}, RPS: {adj_rps}, CPU: {adj_cpu}, memory: {adj_mem}, p95: {adj_p95}")
+#                     break 
 
-for elem in range(len(data)):
-    # search for the intended number of replicas
-    if data[elem]["rep"] == REPLICAS:
-        # search for the given RPS
-        metric_list = data[elem]["metric_rows"]
-        # print("Metric_list: ", metric_list)
-        # print(f"elem {data[elem]['rps']} type: {type(data[elem]['rps'])}, elem+1 {data[elem+1]['rps']}")
-        if (LOAD<metric_list[0]["load"]): # case in which RPS is too low
-            # TODO Estimate new coefficient
-            print("ERROR - RPS too low!")
-            break
-        elif (LOAD>metric_list[-1]["load"]):
-            # TODO estimate new coefficient
-            print("ERROR - RPS too high!")
-            break
-        else:
-            for index in range(len(metric_list)-1):
-                prev = metric_list[index]
-                next = metric_list[index+1]
-                print("Element: ", prev)
-                if (prev["load"] <= LOAD) and (next["load"] >= LOAD):
-                    print("Element: ", next)
-                    # take the wighted mean between the two measures and apply the coefficient to the metrics
-                    print("Inside the loop.")
-                    coeff = np.abs((LOAD-prev['load'])/(next['load']-prev['load'])) # relative distance wrt the first element
-                    print(f"coeff: {coeff}")
-                    adj_rps = prev["rps"]+coeff*(next["rps"]-prev["rps"]) # the adjusted rps
-                    adj_cpu = prev["CPU"]+coeff*(next["CPU"]-prev["CPU"]) # the adjusted cpu
-                    adj_mem = prev["mem"]+coeff*(next["mem"]-prev["mem"]) # the adjusted mem
-                    adj_p95 = prev["p95"]+coeff*(next["p95"]-prev["p95"]) # the adjusted p95
-                    print(f"Replicas: {REPLICAS}, load: {LOAD}, RPS: {adj_rps}, CPU: {adj_cpu}, memory: {adj_mem}, p95: {adj_p95}")
-                    break 
+# print("##### Testing new class #####")
+# from get_metrics import GetMetrics
 
-print("##### Testing new class #####")
-from get_metrics import GetMetrics
+# with open("exp3_sorted_samples.json", "r") as f_input:
+#     data = json.load(f_input)
+#     # print("Data:\n", data)
 
-with open("exp3_sorted_samples.json", "r") as f_input:
-    data = json.load(f_input)
-    # print("Data:\n", data)
-
-approximator = GetMetrics(data, ['rps', 'CPU', 'mem', 'p95'])
-results = approximator.get_metrics_approx(1, 150)
-print(results)
+# approximator = GetMetrics(data, ['rps', 'CPU', 'mem', 'p95'])
+# results = approximator.get_metrics_approx(1, 150)
+# print(results)
 
 # Add legend
 # plt.legend()

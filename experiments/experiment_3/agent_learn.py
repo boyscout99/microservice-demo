@@ -302,16 +302,16 @@ if __name__ == "__main__":
     elif rew_fun == "linear_1": alpha = 15 # 15% of optimisation gap
     else: alpha = 1
 
-    TIMESTEPS = 1000
-    EPISODES = 100
+    TIMESTEPS = 300
+    EPISODES = 300
 
     # Generate workload
     # This signal must be passed to the environment for the observation
     # set steps=1 for a constant load of minRPS
-    _, rps_signal = WorkloadGenerator.decr_step_function(timesteps=TIMESTEPS+1, 
-                                                 minRPS=150,
+    _, rps_signal = WorkloadGenerator.step_function(timesteps=TIMESTEPS+1, 
+                                                 minRPS=1500,
                                                  maxRPS=1500,
-                                                 steps=3)
+                                                 steps=1)
     # plt.plot(_, rps_signal)
     # plt.title(f"Workload signal, {len(rps_signal)} timesteps")
     # plt.show()
