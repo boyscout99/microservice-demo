@@ -92,7 +92,23 @@ class WorkloadGenerator:
         return x_timesteps, y_rps
 
 # if __name__ == '__main__':
-    # y_rps = step_function(81, 52.5, 1250, 15)
-    # y_rps = sin_function(300, 50, 750, 2)
-    # print(f"y_rps: {y_rps}")
-    # y = sin_spikes_function(300, 50, 100, 3, 0.05)
+
+#     _, y_rps = WorkloadGenerator.step_function(300, 150, 1500, 3)
+#     plt.plot(_, y_rps)
+#     plt.savefig('load_plt/step_func.png')
+#     plt.show()
+
+#     _, y_rps = WorkloadGenerator.decr_step_function(300, 150, 1500, 3)
+#     plt.plot(_, y_rps)
+#     plt.savefig('load_plt/decr_step_func.png')
+#     plt.show()
+
+#     _, y_rps = WorkloadGenerator.sin_function(300, 50, 750, 2)
+#     plt.plot(_, y_rps)
+#     plt.savefig('load_plt/sin_func.png')
+#     plt.show()
+
+#     _, y_rps = WorkloadGenerator.sin_spikes_function(300, 50, 100, 3, 0.05)
+#     plt.plot(_, y_rps)
+#     plt.savefig('load_plt/rndm_sin_func.png')
+#     plt.show()
