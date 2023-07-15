@@ -30,12 +30,13 @@ mem = df[mem_columns]
 # define the order of the metrics
 # metrics_df = [rep, rps, p90, cpu, mem]
 metrics_df = [rps, p95, cpu, mem]
-metrics_df_order = ["rps", "p95", "cpu", "mem"]
-# metrics_df_order = ["RPS [req/s]", "p95 latency [ms]", "CPU [%]", "Memory [%]"]
+# metrics_df = [rps, p95]
+# metrics_df_order = ["rps", "p95", "cpu", "mem"]
+metrics_df_order = ["RPS [req/s]", "p95 latency [ms]", "CPU [%]", "Memory [%]"]
 
 # Create a series of plots for each measurement
 # fig, axs = plt.subplots(len(metrics_df), 1)
-fig, axs = plt.subplots(len(metrics_df), 1)
+fig, axs = plt.subplots(len(metrics_df), 1, figsize=(5, 8))
 metric_idx = 0
 for df in metrics_df:
     axs[metric_idx].set_title(metrics_df_order[metric_idx])
@@ -113,4 +114,6 @@ with open("exp1_samples.json", "w") as outfile:
 # Add legend
 # plt.legend()
 # Display the plot
+plt.tight_layout()
+plt.savefig('figure.png', dpi=300)
 plt.show()

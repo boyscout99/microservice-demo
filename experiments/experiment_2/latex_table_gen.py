@@ -37,7 +37,7 @@ table_header += '\\hline\n'
 # Generate the table rows
 table_rows = ''
 for item in data:
-    row = ' & '.join([f'{item[column][0]}' for column in columns])
+    row = ' & '.join([f'${item[column][0]}$' for column in columns])
     table_rows += f'{row} \\\\\n'
     table_rows += '\\hline\n'
 

@@ -72,8 +72,8 @@ class TensorboardCallback(BaseCallback):
         for metric in METRICS:
             # print(f"logging to tb {metric}: {obs[0][metric]}")
             self.logger.record(f"rollout/{metric}", float(obs[0][metric]))
-            print(f"self.logger.record(f\"rollout/{metric}\", {float(obs[0][metric])})")
-            print(type(float(obs[0][metric])))
+            # print(f"self.logger.record(f\"rollout/{metric}\", {float(obs[0][metric])})")
+            # print(type(float(obs[0][metric])))
         
         print("ON STEP")
         return True
@@ -87,7 +87,7 @@ class TensorboardCallback(BaseCallback):
         # self.logger.record("rollout/ep_rew_mean", self.ep_rew_mean)
         # print("self.ep_rew_mean: ", self.ep_rew_mean)
         self.logger.record("rollout/ep_rew_sum", self.ep_rew_sum)
-        print("self.ep_rew_sum: ", self.ep_rew_sum)
+        # print("self.ep_rew_sum: ", self.ep_rew_sum)
         # reset values
         self.ep_rew_sum = 0
         self.episode_rewards = []
@@ -263,7 +263,7 @@ def load_model(env, models_dir, tf_logs_dir):
 
 def train_model(model, models_dir, timesteps, episodes, callbacks):
     # training
-    for i in range(1,episodes):
+    for i in range(0,episodes):
         print("Learning. Iteration: ", timesteps*i)
         # model.learn(total_timesteps=TIMESTEPS, reset_num_timesteps=False, tb_log_name=MODEL, log_interval=2, callback=rewards_callback)
         model.learn(total_timesteps=timesteps, 
@@ -303,7 +303,7 @@ if __name__ == "__main__":
     else: alpha = 1
 
     TIMESTEPS = 300
-    EPISODES = 300
+    EPISODES = 500
 
     # Generate workload
     # This signal must be passed to the environment for the observation

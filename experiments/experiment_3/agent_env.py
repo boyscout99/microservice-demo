@@ -45,8 +45,8 @@ class GymEnvironment(gym.Env):
         self.reward_sum = 0
         self.curr_timestep = 0
         self.obs = {}
-        # self.action_space = spaces.Discrete(3)  # Action space with 3 discrete actions: 1, 0, -1
-        self.action_space = spaces.Box(low=-1.0, high=1.0, shape=(1,))
+        self.action_space = spaces.Discrete(3)  # Action space with 3 discrete actions: 1, 0, -1
+        # self.action_space = spaces.Box(low=-1.0, high=1.0, shape=(1,)) # Continuous action space 
         # self.observation_space = spaces.Box(low=0, high=np.inf, shape=(5,), dtype=np.float64)  # Observation space with 5 continuous elements: replicas, p90 latency, response time, CPU usage, memory usage
         # Create a Dict observation space
         dict_obs = {}
@@ -92,11 +92,11 @@ class GymEnvironment(gym.Env):
         # mem = self.queries["q_memory_usage"]
         rep = self.current_replicas
 
-        print(f"action: {action}")
-        thresholds = [-0.33, 0.33]
-        if action < thresholds[0]: action = 0
-        elif action > thresholds[1]: action = 1
-        else: action = 2
+        # print(f"action: {action}")
+        # thresholds = [-0.33, 0.33]
+        # if action < thresholds[0]: action = 0
+        # elif action > thresholds[1]: action = 1
+        # else: action = 2
 
         print("##### NEW ACTION #####")
         # Update the pod states based on the action
