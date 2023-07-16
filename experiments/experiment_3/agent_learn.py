@@ -74,7 +74,6 @@ class TensorboardCallback(BaseCallback):
             self.logger.record(f"rollout/{metric}", float(obs[0][metric]))
             # print(f"self.logger.record(f\"rollout/{metric}\", {float(obs[0][metric])})")
             # print(type(float(obs[0][metric])))
-        
         print("ON STEP")
         return True
 
@@ -105,19 +104,23 @@ class TensorboardCallback(BaseCallback):
         global CURRENT_EPISODE
         print("ON TRAINING END")
         print(f"self.train_all_rew[len: {len(self.train_all_rew)}]: {self.train_all_rew}")
-        tmp_max_reward = max(self.train_all_rew)
+        # tmp_max_reward = max(self.train_all_rew)
+        # Take Gt, the sum of all rewards in the episode
+        tmp_max_reward = sum(self.train_all_rew)
         print(f"tmp_max_reward: {tmp_max_reward}")
         if tmp_max_reward > MAX_REWARD: 
             MAX_REWARD = tmp_max_reward
             print(f"New MAX_REWARD: {MAX_REWARD}")
-        sum_positives = sum(1 for element in self.train_all_rew if element == MAX_REWARD)
-        print("Number of maximum rewards in the episode: ", sum_positives)
-        if sum_positives > BEST_MODEL:
-            # update the new best model
-            BEST_MODEL = sum_positives
-            # save the new best model
             print(f"Saving new best model to {self.save_path}")
             self.model.save(os.path.join(self.save_path, f"best_ep{CURRENT_EPISODE}"))
+        # sum_positives = sum(1 for element in self.train_all_rew if element == MAX_REWARD)
+        # print("Number of maximum rewards in the episode: ", sum_positives)
+        # if sum_positives > BEST_MODEL:
+        #     # update the new best model
+        #     BEST_MODEL = sum_positives
+        #     # save the new best model
+        #     print(f"Saving new best model to {self.save_path}")
+        #     self.model.save(os.path.join(self.save_path, f"best_ep{CURRENT_EPISODE}"))
         self.train_all_rew = []
         pass
 
@@ -228,8 +231,8 @@ def load_model(env, models_dir, tf_logs_dir):
             env, 
             learning_rate=float(LEARNING_RATE),
             verbose=1,
-            n_steps=2, 
-            gamma=0.90, 
+            n_steps=3, 
+            gamma=0.95,
             gae_lambda=1.0, 
             ent_coef=0.0, 
             vf_coef=0.5, 
@@ -303,15 +306,15 @@ if __name__ == "__main__":
     else: alpha = 1
 
     TIMESTEPS = 300
-    EPISODES = 500
+    EPISODES = 300
 
     # Generate workload
     # This signal must be passed to the environment for the observation
     # set steps=1 for a constant load of minRPS
-    _, rps_signal = WorkloadGenerator.step_function(timesteps=TIMESTEPS+1, 
-                                                 minRPS=1500,
+    _, rps_signal = WorkloadGenerator.decr_step_function(timesteps=TIMESTEPS+1, 
+                                                 minRPS=150,
                                                  maxRPS=1500,
-                                                 steps=1)
+                                                 steps=4)
     # plt.plot(_, rps_signal)
     # plt.title(f"Workload signal, {len(rps_signal)} timesteps")
     # plt.show()
