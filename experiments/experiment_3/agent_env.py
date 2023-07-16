@@ -50,9 +50,11 @@ class GymEnvironment(gym.Env):
         # self.observation_space = spaces.Box(low=0, high=np.inf, shape=(5,), dtype=np.float64)  # Observation space with 5 continuous elements: replicas, p90 latency, response time, CPU usage, memory usage
         # Create a Dict observation space
         dict_obs = {}
+        dict_obs.update({'rep': gym.spaces.Box(low=0, high=np.Inf, shape=(1,), dtype=np.float64)})
         for metric in self.metrics:
             dict_obs.update({metric: gym.spaces.Box(low=0, high=np.Inf, shape=(1,), dtype=np.float64)})
         self.observation_space = gym.spaces.Dict(dict_obs)
+        print(f"### shape: {self.observation_space.shape} obs_space: {self.observation_space}")
         # self.observation_space = spaces.Box(low=0, high=np.inf, shape=(4,), dtype=np.float64)
         # self.observation_space = spaces.Box(low=0, high=np.inf, shape=(3,), dtype=np.float64)  # Observation space with 3 continuous elements: replicas, p90 latency, response time
         
@@ -77,7 +79,6 @@ class GymEnvironment(gym.Env):
         self.obs = self._get_observation()
         self.current_replicas = self.obs['rep']
         self.reward_sum = 0
-        # self.previous_response_time = self.current_observation[1]  # Initialize previous response time
         return self.obs
 
     def step(self, action):
