@@ -280,7 +280,7 @@ if __name__ == "__main__":
     rewards_callback = TensorboardCallback()
     callbacks = [rewards_callback]
 
-    MODEL_DIR = 'models/rl-agent-2/A2C/2023_07_17_190302__p95_CPU_rps_mem/best_ep73.zip'
+    MODEL_DIR = 'models/rl-agent-2/A2C/2023_07_17_191146__p95_CPU_rps_mem/best_ep32.zip'
     MODEL_DIR = os.path.join(script_dir, MODEL_DIR)
     print(f"model dir: {MODEL_DIR}")
     model = load_selected_model(env, MODEL_DIR, tf_logs_dir)
@@ -318,8 +318,8 @@ if __name__ == "__main__":
     violations = sum(i>5 for i in logs['p95'])/len(logs['p95']) # df_p95[df_p95['Value']>5]['Value'].count()/df_p95['Value'].count()
     # print(f"logs: {logs}")
     Gt = info['total_reward']
-    print(f"Total reward: {Gt}")
-    print(f"Replicas: mean: {mean_rep}, std: {std_rep}")
-    print(f"SLA violations: {violations*100}%")
+    print(f"Total reward: {round(Gt,2)}")
+    print(f"Replicas: mean: {round(mean_rep,2)}, std: {round(std_rep,2)}")
+    print(f"SLA violations: {round(violations,2)*100}%")
     # close the environment on completion
     env.close()

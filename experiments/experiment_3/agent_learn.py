@@ -232,7 +232,7 @@ def load_model(env, models_dir, tf_logs_dir):
             env, 
             learning_rate=float(LEARNING_RATE),
             verbose=1,
-            n_steps=3, 
+            n_steps=2,
             gamma=0.95,
             gae_lambda=1.0, 
             ent_coef=0.0, 
