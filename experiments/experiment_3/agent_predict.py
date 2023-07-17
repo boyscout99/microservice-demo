@@ -241,9 +241,9 @@ if __name__ == "__main__":
     # This signal must be passed to the environment for the observation
     # set steps=1 for a constant load of minRPS
     _, rps_signal = WorkloadGenerator.decr_step_function(timesteps=TIMESTEPS+1, 
-                                                 minRPS=150,
+                                                 minRPS=1500,
                                                  maxRPS=1500,
-                                                 steps=4)
+                                                 steps=1)
     # plt.plot(_, rps_signal)
     # plt.title(f"Workload signal, {len(rps_signal)} timesteps")
     # plt.show()
@@ -280,7 +280,7 @@ if __name__ == "__main__":
     rewards_callback = TensorboardCallback()
     callbacks = [rewards_callback]
 
-    MODEL_DIR = 'models/rl-agent-2/A2C/2023_07_16_215541__p95_CPU_rps_mem/best_ep165.zip'
+    MODEL_DIR = 'models/rl-agent-2/A2C/2023_07_17_190302__p95_CPU_rps_mem/best_ep73.zip'
     MODEL_DIR = os.path.join(script_dir, MODEL_DIR)
     print(f"model dir: {MODEL_DIR}")
     model = load_selected_model(env, MODEL_DIR, tf_logs_dir)
