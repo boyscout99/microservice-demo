@@ -49,12 +49,16 @@ class GymEnvironment(gym.Env):
         # self.action_space = spaces.Box(low=-1.0, high=1.0, shape=(1,)) # Continuous action space 
         # self.observation_space = spaces.Box(low=0, high=np.inf, shape=(5,), dtype=np.float64)  # Observation space with 5 continuous elements: replicas, p90 latency, response time, CPU usage, memory usage
         # Create a Dict observation space
+        # Needed because in this way we can easily select the metrics
+        # in the state space from the command line when executing
         dict_obs = {}
         dict_obs.update({'rep': gym.spaces.Box(low=0, high=np.Inf, shape=(1,), dtype=np.float64)})
         for metric in self.metrics:
             dict_obs.update({metric: gym.spaces.Box(low=0, high=np.Inf, shape=(1,), dtype=np.float64)})
         self.observation_space = gym.spaces.Dict(dict_obs)
-        print(f"### shape: {self.observation_space.shape} obs_space: {self.observation_space}")
+        shapes = [self.observation_space[key].shape for key in self.observation_space.keys()]
+        print(f"### shapes: {shapes}, obs_space: {self.observation_space}")
+        print(f"Sample: {self.observation_space.sample()}")
         # self.observation_space = spaces.Box(low=0, high=np.inf, shape=(4,), dtype=np.float64)
         # self.observation_space = spaces.Box(low=0, high=np.inf, shape=(3,), dtype=np.float64)  # Observation space with 3 continuous elements: replicas, p90 latency, response time
         
@@ -75,10 +79,22 @@ class GymEnvironment(gym.Env):
         dict_app_metrics = GetMetrics(self.data, self.metrics).get_metrics_approx(1, self.workload[self.curr_timestep])
         for metric in self.metrics:
             self.queries[f"q_{metric}"] = dict_app_metrics[metric]
+            print(f"self.queries[f\"q_{metric}\"]: ", self.queries[f"q_{metric}"])
         # retreive observation
         self.obs = self._get_observation()
+        # self._get_observation()
+        print(f"Observation from inside reset(): {self.obs}")
         self.current_replicas = self.obs['rep']
         self.reward_sum = 0
+
+        # TODO remove the following
+        # shapes = [self.observation_space[key].shape for key in self.observation_space.keys()]
+        # print(f"### shapes from reset(): {shapes}")
+        # Check if obs is a dictionary
+        # new_observation_space = {}
+        # for key, value in self.observation_space.items():
+        #     new_observation_space[key] = np.array(value[0], dtype=np.float64)
+        # print(new_observation_space)
         return self.obs
 
     def step(self, action):
@@ -150,6 +166,7 @@ class GymEnvironment(gym.Env):
         # time.sleep(1)
         # get new observation
         # new_observation = self._get_observation()
+        # self.observation_space = self._get_observation()
         self.obs = self._get_observation()
 
         # Calculate reward based on the new observation
@@ -245,10 +262,16 @@ class GymEnvironment(gym.Env):
     def _get_observation(self):
         # Retrieve observation from Prometheus API, e.g., query response time, CPU usage, memory usage, and replicas
         # observation = self.prom.get_results(self.queries)
-        observation = {'rep': np.array(self.queries[f"q_rep"], dtype=np.float64)}
+        observation = {'rep': np.array(self.queries[f"q_rep"], dtype=np.float64).reshape(1,)}
         for metric in self.metrics:
-            observation.update( {metric: np.array(self.queries[f"q_{metric}"], dtype=np.float64)} )
+            observation.update( {metric: np.array(self.queries[f"q_{metric}"], dtype=np.float64).reshape(1,)} )
 
-        print(f"observation: {observation}")
+        # self.observation_space['rep'] = np.array(self.queries[f"q_rep"], dtype=np.float64).reshape(1,)
+        # for metric in self.metrics:
+        #     self.observation_space[metric] = np.array(self.queries[f"q_{metric}"], dtype=np.float64).reshape(1,)
 
+        # print(f"self.observation_space: {self.observation_space}")
+        # shapes = [self.observation_space[key].shape for key in self.observation_space.keys()]
+        # print(f"### shapes: {shapes} ###")
         return observation
+        # return self.observation_space

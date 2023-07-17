@@ -19,6 +19,7 @@ from stable_baselines3.common.callbacks import BaseCallback
 # from stable_baselines3.common.vec_env import DummyVecEnv
 # from stable_baselines3.common.callbacks import EvalCallback
 from workload_patterns_gen import WorkloadGenerator
+from stable_baselines3.common.env_checker import check_env
 
 BEST_MODEL = -np.Inf
 MAX_REWARD = -np.Inf
@@ -345,14 +346,18 @@ if __name__ == "__main__":
                             data,
                             rps_signal,
                             METRICS) # adding workload
+    
+    print("Checking the environment ...")
+    # check_env(env)
+
     env = Monitor(env, tf_logs_dir)
     model = load_model(env, models_dir, tf_logs_dir)
+    print(f"Model prameters: {model.get_parameters}")
     print(f"Model policy: {model.policy}")
 
     # create callbacks
     rewards_callback = TensorboardCallback()
     callbacks = [rewards_callback]
-
     # Create a replay buffer
     # replay_buffer = ReplayBuffer(buffer_size, obs_space, action_space)
     # model.collect_rollouts(env, callbacks, train_freq=5, replay_buffer=replay_buffer)
