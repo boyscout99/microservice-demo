@@ -56,9 +56,9 @@ class GymEnvironment(gym.Env):
         for metric in self.metrics:
             dict_obs.update({metric: gym.spaces.Box(low=0, high=np.Inf, shape=(1,), dtype=np.float64)})
         self.observation_space = gym.spaces.Dict(dict_obs)
-        shapes = [self.observation_space[key].shape for key in self.observation_space.keys()]
-        print(f"### shapes: {shapes}, obs_space: {self.observation_space}")
-        print(f"Sample: {self.observation_space.sample()}")
+        # shapes = [self.observation_space[key].shape for key in self.observation_space.keys()]
+        # print(f"### shapes: {shapes}, obs_space: {self.observation_space}")
+        # print(f"Sample: {self.observation_space.sample()}")
         # self.observation_space = spaces.Box(low=0, high=np.inf, shape=(4,), dtype=np.float64)
         # self.observation_space = spaces.Box(low=0, high=np.inf, shape=(3,), dtype=np.float64)  # Observation space with 3 continuous elements: replicas, p90 latency, response time
         
@@ -83,7 +83,7 @@ class GymEnvironment(gym.Env):
         # retreive observation
         self.obs = self._get_observation()
         # self._get_observation()
-        print(f"Observation from inside reset(): {self.obs}")
+        # print(f"Observation from inside reset(): {self.obs}")
         self.current_replicas = self.obs['rep']
         self.reward_sum = 0
 

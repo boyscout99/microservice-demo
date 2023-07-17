@@ -66,7 +66,7 @@ class TensorboardCallback(BaseCallback):
         # print(f"Obs from callback: {obs}")
         replicas = obs[0]['rep']
         self.logger.record("rollout/replicas", float(replicas))
-        self.logger.record("rollout/rewards", reward[0])
+        self.logger.record("rollout/rewards", float(reward[0]))
         # print(type(float(replicas)))
 
         global METRICS
@@ -86,7 +86,7 @@ class TensorboardCallback(BaseCallback):
         # log values
         # self.logger.record("rollout/ep_rew_mean", self.ep_rew_mean)
         # print("self.ep_rew_mean: ", self.ep_rew_mean)
-        self.logger.record("rollout/ep_rew_sum", self.ep_rew_sum)
+        self.logger.record("rollout/ep_rew_sum", float(self.ep_rew_sum))
         # print("self.ep_rew_sum: ", self.ep_rew_sum)
         # reset values
         self.ep_rew_sum = 0
@@ -313,9 +313,9 @@ if __name__ == "__main__":
     # This signal must be passed to the environment for the observation
     # set steps=1 for a constant load of minRPS
     _, rps_signal = WorkloadGenerator.decr_step_function(timesteps=TIMESTEPS+1, 
-                                                 minRPS=150,
+                                                 minRPS=1500,
                                                  maxRPS=1500,
-                                                 steps=4)
+                                                 steps=1)
     # plt.plot(_, rps_signal)
     # plt.title(f"Workload signal, {len(rps_signal)} timesteps")
     # plt.show()
