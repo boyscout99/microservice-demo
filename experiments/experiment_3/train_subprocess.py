@@ -68,7 +68,7 @@ for state in states:
         folders = sorted(os.listdir(tf_logs_path))
         last_tf_folder = os.path.join(tf_logs_path, folders[-1])
         # print(f"Last tf folder: {last_tf_folder}")
-
+        os.remove(last_tf_folder+'/monitor.csv')
         best_tf_log = "A2C_" + best_model_number
         for log in os.listdir(last_tf_folder):
             file_path = last_tf_folder + '/' + log
