@@ -113,7 +113,7 @@ class TensorboardCallback(BaseCallback):
             MAX_REWARD = tmp_max_reward
             print(f"New MAX_REWARD: {MAX_REWARD}")
             print(f"Saving new best model to {self.save_path}")
-            self.model.save(os.path.join(self.save_path, f"best_ep{CURRENT_EPISODE}"))
+            self.model.save(os.path.join(self.save_path, f"{CURRENT_EPISODE}"))
         # sum_positives = sum(1 for element in self.train_all_rew if element == MAX_REWARD)
         # print("Number of maximum rewards in the episode: ", sum_positives)
         # if sum_positives > BEST_MODEL:
