@@ -1,5 +1,6 @@
 import subprocess as sub
 import shutil 
+from shlex import quote
 import os
 
 # Get the absolute path of the script directory
@@ -11,7 +12,7 @@ tf_logs_path = os.path.join(script_dir, 'tf_logs/rl-agent-2/A2C/')
 folders = sorted(os.listdir(models_path))
 # print(f"folders: {folders}")
 
-S2=["CPU", "p95", "mem"]
+S2=['CPU', 'p95', 'mem']
 S3=["CPU", "p95"]
 S4=["p95", "mem"]
 S5=["rps", "p95"]
@@ -25,6 +26,9 @@ for state in states:
     # Perform 5 runs for each state
     for i in range(0,5):
         print(f"Run number {i}")
+        # print(f"{type(' '.join([quote(metric) for metric in state]))}")\
+        result = ' '.join(f'{s}' for s in state)
+        print(result)
         c_agent_learn = [
             "python3", "agent_learn.py",
             "--deployment", "productcatalogservice",
@@ -32,7 +36,7 @@ for state in states:
             "--cluster", "local",
             "--model", "A2C",
             "--rew_fun", "linear_1",
-            "--learn_rate", "0.0007"
+            "--learn_rate", "0.0007",
             "--metrics"
         ]
         c_agent_learn.extend(state)  # Append the elements of state to the command list

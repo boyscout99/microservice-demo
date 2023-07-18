@@ -352,7 +352,6 @@ if __name__ == "__main__":
 
     env = Monitor(env, tf_logs_dir)
     model = load_model(env, models_dir, tf_logs_dir)
-    print(f"Model prameters: {model.get_parameters}")
     print(f"Model policy: {model.policy}")
 
     # create callbacks
