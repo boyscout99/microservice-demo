@@ -312,13 +312,15 @@ if __name__ == "__main__":
     # Generate workload
     # This signal must be passed to the environment for the observation
     # set steps=1 for a constant load of minRPS
-    _, rps_signal = WorkloadGenerator.decr_step_function(timesteps=TIMESTEPS+1, 
-                                                 minRPS=1500,
-                                                 maxRPS=1500,
-                                                 steps=1)
-    # plt.plot(_, rps_signal)
-    # plt.title(f"Workload signal, {len(rps_signal)} timesteps")
-    # plt.show()
+    _, rps_signal = WorkloadGenerator.step_function(timesteps=TIMESTEPS+1, 
+                                                 minRPS=150,
+                                                 maxRPS=1700,
+                                                 steps=4)
+    plt.plot(_, rps_signal)
+    plt.xlabel("Timesteps")
+    plt.ylabel("Load to deployment [req/s]")
+    plt.title(f"Workload signal, {len(rps_signal)-1} timesteps")
+    plt.show()
 
     # Generate directories
     dirs = create_directories()

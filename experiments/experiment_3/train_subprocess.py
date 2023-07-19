@@ -12,13 +12,14 @@ tf_logs_path = os.path.join(script_dir, 'tf_logs/rl-agent-2/A2C/')
 folders = sorted(os.listdir(models_path))
 # print(f"folders: {folders}")
 
-S2=['CPU', 'p95', 'mem']
-S3=["CPU", "p95"]
-S4=["p95", "mem"]
-S5=["rps", "p95"]
-S6=["p95"]
+S1 = ['CPU', 'p95', 'mem', 'rps']
+S2 = ['CPU', 'p95', 'mem']
+S3 = ['CPU', 'p95']
+S4 = ['p95', 'mem']
+S5 = ['rps', 'p95']
+S6 = ['p95']
 
-states = [S2, S3, S4, S5, S6]
+states = [S1, S2, S3, S4, S5, S6]
 # states = [S2]
 
 for state in states:
