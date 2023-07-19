@@ -312,10 +312,29 @@ if __name__ == "__main__":
     # Generate workload
     # This signal must be passed to the environment for the observation
     # set steps=1 for a constant load of minRPS
-    _, rps_signal = WorkloadGenerator.step_function(timesteps=TIMESTEPS+1, 
+    _, rps_signal = WorkloadGenerator.sin_function(timesteps=TIMESTEPS+1, 
                                                  minRPS=150,
                                                  maxRPS=2000,
-                                                 steps=5)
+                                                 periods=4)
+    # Save signal in CSV file
+    # json_list = {
+    #     'workload': 'steps',
+    #     'timesteps': list(_),
+    #     'rps_signal': list(rps_signal)
+    # }
+
+    # with open("signals.json", "r") as infile:
+    #     existing_data = json.load(infile)
+    #     print(existing_data)
+
+    # existing_data.append(json_list)
+    # print(existing_data)
+
+    # json_object = json.dumps(existing_data, indent=4, separators=(',', ':'))
+    # with open("signals.json", "w") as outfile:
+    #     outfile.write(json_object)
+    # create timesteps
+    # _ = [i for i in range(0,TIMESTEPS+1)]
     # plt.plot(_, rps_signal)
     # plt.xlabel("Timesteps")
     # plt.ylabel("Load to deployment [req/s]")
