@@ -314,13 +314,13 @@ if __name__ == "__main__":
     # set steps=1 for a constant load of minRPS
     _, rps_signal = WorkloadGenerator.step_function(timesteps=TIMESTEPS+1, 
                                                  minRPS=150,
-                                                 maxRPS=1700,
-                                                 steps=4)
-    plt.plot(_, rps_signal)
-    plt.xlabel("Timesteps")
-    plt.ylabel("Load to deployment [req/s]")
-    plt.title(f"Workload signal, {len(rps_signal)-1} timesteps")
-    plt.show()
+                                                 maxRPS=2000,
+                                                 steps=5)
+    # plt.plot(_, rps_signal)
+    # plt.xlabel("Timesteps")
+    # plt.ylabel("Load to deployment [req/s]")
+    # plt.title(f"Workload signal, {len(rps_signal)-1} timesteps")
+    # plt.show()
 
     # Generate directories
     dirs = create_directories()
