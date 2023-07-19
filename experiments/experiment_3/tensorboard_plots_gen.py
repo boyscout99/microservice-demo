@@ -36,10 +36,10 @@ def get_mean_Gt(folder: str) -> tuple[float, float, dict]:
     std_Gt = round(np.std(Gt),2)
     return mean_Gt, std_Gt, abs_best
 
-mean_Gt, std_Gt, abs_best = get_mean_Gt('timeseries/tensorboard/S1')
-print(f"mean Gt: {mean_Gt}, std: {std_Gt}")
-best_ep = [32, 37, 73, 115, 149]
+mean_Gt, std_Gt, abs_best = get_mean_Gt('timeseries/tensorboard/S6')
+print(f"mean Gt: {mean_Gt}, std Gt: {std_Gt}")
+best_ep = [15, 18, 20, 26, 31]
 mean_ep = round(np.mean(best_ep),2)
 std_ep = round(np.std(best_ep),2)
-print(f"mean Gt: {mean_ep}, std: {std_ep}, abs_best: {abs_best}")
+print(f"mean ep: {mean_ep}, std ep: {std_ep}, abs_best: {abs_best}")
 

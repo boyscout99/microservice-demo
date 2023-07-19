@@ -15,10 +15,8 @@ from settings.Logger import LoggerWriter
 from settings.ArgParser_learn import StringProcessor
 from stable_baselines3.common.monitor import Monitor
 from stable_baselines3.common.callbacks import BaseCallback
-# from stable_baselines3.common.buffers import ReplayBuffer
-# from stable_baselines3.common.vec_env import DummyVecEnv
-# from stable_baselines3.common.callbacks import EvalCallback
 from workload_patterns_gen import WorkloadGenerator
+from gym.wrappers import FlattenObservation
 from stable_baselines3.common.env_checker import check_env
 
 BEST_MODEL = -np.Inf
@@ -66,7 +64,7 @@ class TensorboardCallback(BaseCallback):
         # print(f"Obs from callback: {obs}")
         replicas = obs[0]['rep']
         self.logger.record("rollout/replicas", float(replicas))
-        self.logger.record("rollout/rewards", float(reward[0]))
+        self.logger.record("rollout/rewards", reward[0])
         # print(type(float(replicas)))
 
         global METRICS
@@ -86,7 +84,7 @@ class TensorboardCallback(BaseCallback):
         # log values
         # self.logger.record("rollout/ep_rew_mean", self.ep_rew_mean)
         # print("self.ep_rew_mean: ", self.ep_rew_mean)
-        self.logger.record("rollout/ep_rew_sum", float(self.ep_rew_sum))
+        self.logger.record("rollout/ep_rew_sum", self.ep_rew_sum)
         # print("self.ep_rew_sum: ", self.ep_rew_sum)
         # reset values
         self.ep_rew_sum = 0
@@ -113,15 +111,8 @@ class TensorboardCallback(BaseCallback):
             MAX_REWARD = tmp_max_reward
             print(f"New MAX_REWARD: {MAX_REWARD}")
             print(f"Saving new best model to {self.save_path}")
-            self.model.save(os.path.join(self.save_path, f"{CURRENT_EPISODE}"))
-        # sum_positives = sum(1 for element in self.train_all_rew if element == MAX_REWARD)
-        # print("Number of maximum rewards in the episode: ", sum_positives)
-        # if sum_positives > BEST_MODEL:
-        #     # update the new best model
-        #     BEST_MODEL = sum_positives
-        #     # save the new best model
-        #     print(f"Saving new best model to {self.save_path}")
-        #     self.model.save(os.path.join(self.save_path, f"best_ep{CURRENT_EPISODE}"))
+            self.model.save(os.path.join(self.save_path, f"best_ep{CURRENT_EPISODE}"))
+
         self.train_all_rew = []
         pass
 
@@ -130,12 +121,9 @@ def create_directories():
     incl_metrics = ""
     for metric in METRICS:
         incl_metrics += '_' + metric
-    models_dir = os.path.join(script_dir, f"models/{NAMESPACE}/{MODEL}/{timestamp}_{incl_metrics}")
-    tf_logs_dir = os.path.join(script_dir, f"tf_logs/{NAMESPACE}/{MODEL}/{timestamp}_{incl_metrics}")
-    pod_logs_dir = os.path.join(script_dir, f"pod_logs/{NAMESPACE}/{MODEL}")
 
-    if not os.path.exists(models_dir):
-        os.makedirs(models_dir)
+    tf_logs_dir = os.path.join(script_dir, f"tf_logs/{NAMESPACE}/{MODEL}/predict/{timestamp}_{incl_metrics}")
+    pod_logs_dir = os.path.join(script_dir, f"pod_logs/{NAMESPACE}/{MODEL}/predict/")
 
     if not os.path.exists(tf_logs_dir):
         os.makedirs(tf_logs_dir)
@@ -143,12 +131,12 @@ def create_directories():
     if not os.path.exists(pod_logs_dir):
         os.makedirs(pod_logs_dir)
 
-    dirs = [models_dir, tf_logs_dir, pod_logs_dir]
+    dirs = [tf_logs_dir, pod_logs_dir]
 
     return dirs
 
 def enable_logging(pod_logs_dir):
-    pod_log_file = os.path.join(pod_logs_dir, f"{MODEL}_learn_{timestamp}.log")
+    pod_log_file = os.path.join(pod_logs_dir, f"{MODEL}_predict_{timestamp}.log")
     # logging.basicConfig(filename=pod_log_file, level=logging.DEBUG)  # Initialize logging
     logging.basicConfig(
         level=logging.INFO,
@@ -182,16 +170,7 @@ def setup_environment(alpha,
     queries_json_path = os.path.join(script_dir, "queries.json")
     q_file = open(queries_json_path, "r")
     q = json.load(q_file)
-    # QUERIES FOR FRONTEND DEPLOYMENT
-    # _queries = data[cluster][name][namespace]
     queries = q[cluster][name][namespace]
-    # queries = [
-    #     _queries["q_pod_replicas"],
-    #     _queries["q_request_duration"],
-    #     _queries["q_cpu_usage"],
-    #     _queries["q_memory_usage"],
-    #     _queries["q_rps"]
-    # ]
     q_file.close()
 
     # Create an instance of GymEnvironment
@@ -211,90 +190,40 @@ def setup_environment(alpha,
 
     return env
 
-def load_model(env, models_dir, tf_logs_dir):
-    # Check for existing models and load the last saved model if available
-    # existing_models = [f for f in os.listdir(models_dir)]
-    # if existing_models:
-    #     # Sort models by their names to get the last saved model
-    #     existing_models.sort()
-    #     last_saved_model = existing_models[-1]
-    #     model_path = os.path.join(models_dir, last_saved_model)
-    #     print(f"Loading last saved model: {model_path}")
-    #     logging.info(f"Loading last saved model: {model_path}")
-    #     model = model_attr.load(model_path, env=env, tensorboard_log=tf_logs_dir)
-    # else:
-    #     print("No existing models found. Starting from scratch.")
-    #     logging.info("No existing models found. Starting from scratch.")
-    #     # Create the model
-    if MODEL == "A2C":
-        model = model_attr(
-            "MultiInputPolicy", 
-            env, 
-            learning_rate=float(LEARNING_RATE),
-            verbose=1,
-            n_steps=2,
-            gamma=0.95,
-            gae_lambda=1.0, 
-            ent_coef=0.0, 
-            vf_coef=0.5, 
-            max_grad_norm=0.5, 
-            rms_prop_eps=1e-05,
-            tensorboard_log=tf_logs_dir
-            )
-    elif MODEL == "DQN":
-        model = model_attr(
-            "MultiInputPolicy", 
-            env, 
-            learning_rate=float(LEARNING_RATE),
-            learning_starts=0,
-            target_update_interval=2,
-            train_freq=1,
-            verbose=1, 
-            tensorboard_log=tf_logs_dir
-            )
-    elif MODEL == "DDPG":
-        model = model_attr(
-            "MultiInputPolicy",
-            env,
-            verbose=2,
-            learning_rate=float(LEARNING_RATE),
-            tensorboard_log=tf_logs_dir
-        )
-    # print("No existing models found. Starting from scratch.")
-    # logging.info("No existing models found. Starting from scratch.")
+def load_selected_model(env, model_path, tf_logs_dir):
+    # Load the selected model
+    print(f"model_path: {model_path}")
+    try:
+        model = model_attr.load(model_path, env=env, tensorboard_log=tf_logs_dir)
+        logging.info(f"Loading selected model: {model_path}")
+    except Exception as e:
+        logging.info(f"Error: {e}")
+        return None
 
     return model
 
-def train_model(model, models_dir, timesteps, episodes, callbacks):
-    # training
-    for i in range(0,episodes):
-        print("Learning. Iteration: ", timesteps*i)
-        # model.learn(total_timesteps=TIMESTEPS, reset_num_timesteps=False, tb_log_name=MODEL, log_interval=2, callback=rewards_callback)
-        model.learn(total_timesteps=timesteps, 
-                    tb_log_name=MODEL, 
-                    log_interval=1, 
-                    callback=callbacks)
-        # model.learn(total_timesteps=TIMESTEPS, reset_num_timesteps=False)
-        logging.info(f"Training iteration {i}, total_timesteps={TIMESTEPS*i}, saving model ...")
-        global CURRENT_EPISODE 
-        CURRENT_EPISODE += 1
-        # print("Saving model ...")
-        # model.save(f"{models_dir}/{TIMESTEPS*i}")
-        # env.reset()
+def flatten_observation(observation):
+    if isinstance(observation, dict):
+        # If observation is a dictionary, flatten its values recursively
+        print("A dictionary!")
+        flattened = [flatten_observation(value) for value in observation.values()]
+        print(f"flattened: {flattened}")
+        return flattened #np.array([element.item() for element in flattened])
+    elif isinstance(observation, tuple):
+        # If observation is a tuple, flatten its elements recursively
+        flattened = [flatten_observation(element) for element in observation]
+        return np.concatenate(flattened)
+    else:
+        # If observation is a ndarray, return it as is
+        return np.asarray(observation)
 
-    print("Training completed. Check performance on Tensorboard.")
-    logging.info("Training completed. Check performance on Tensorboard.")
-
-    return
 
 if __name__ == "__main__":
 
     # cluster = "minikube"
     cluster = CLUSTER
     url = 'http://prometheus.istio-system.svc.cluster.local:9090'  # URL for Prometheus API
-    # name = "frontend" # deployment name
     name = DEPLOYMENT
-    #  namespace = "rl-agent" # namespace
     namespace = NAMESPACE
     minReplicas = 1
     maxReplicas = 15
@@ -307,7 +236,6 @@ if __name__ == "__main__":
     else: alpha = 1
 
     TIMESTEPS = 300
-    EPISODES = 300
 
     # Generate workload
     # This signal must be passed to the environment for the observation
@@ -322,9 +250,8 @@ if __name__ == "__main__":
 
     # Generate directories
     dirs = create_directories()
-    models_dir = dirs[0]
-    tf_logs_dir = dirs[1]
-    pod_logs_dir = dirs[2]
+    tf_logs_dir = dirs[0]
+    pod_logs_dir = dirs[1]
     logger = enable_logging(pod_logs_dir)
 
     # Copy samples for synthetic traffic
@@ -346,25 +273,53 @@ if __name__ == "__main__":
                             data,
                             rps_signal,
                             METRICS) # adding workload
-    
     print("Checking the environment ...")
     # check_env(env)
-
     env = Monitor(env, tf_logs_dir)
-    model = load_model(env, models_dir, tf_logs_dir)
-    print(f"Model policy: {model.policy}")
-
     # create callbacks
     rewards_callback = TensorboardCallback()
     callbacks = [rewards_callback]
-    # Create a replay buffer
-    # replay_buffer = ReplayBuffer(buffer_size, obs_space, action_space)
-    # model.collect_rollouts(env, callbacks, train_freq=5, replay_buffer=replay_buffer)
-    # train the model
-    train_model(model, 
-                models_dir, 
-                TIMESTEPS,
-                EPISODES,
-                callbacks)
+
+    MODEL_DIR = 'models/rl-agent-2/A2C/2023_07_17_191146__p95_CPU_rps_mem/best_ep32.zip'
+    MODEL_DIR = os.path.join(script_dir, MODEL_DIR)
+    print(f"model dir: {MODEL_DIR}")
+    model = load_selected_model(env, MODEL_DIR, tf_logs_dir)
+    # model.set_callback(rewards_callback)
+
+    obs = env.reset()
+    # initialise logs
+    logs = {'rep' : [0]}
+    for metric in METRICS:
+        logs[metric] = [0]
+    # obs = flatten_observation(obs)
+    # print(f"Flattened observation: {obs}")
+    # Take actions in a loop
+    # while True:
+    for i in range(1, TIMESTEPS):
+        # Get the recommended action from the model
+        # print(f"Timestep: {i}")
+        # print(obs)
+        action, _states = model.predict(obs, deterministic=True)
+        # Take the recommended action in the environment
+        obs, reward, done, info = env.step(action)
+        # print(f"obs: {obs}, reward: {reward}, done: {done}, info: {info}")
+        for key in obs.keys():
+            logs[key].append(round(float(obs[key]),2))
+        if done:
+            break
+
+    # Remove first element from each key
+    for key in logs.keys(): 
+        logs[key].pop(0)
+    # Compute mean and std of replicas
+    mean_rep = np.mean(logs['rep'])
+    std_rep = np.std(logs['rep'])
+    # Compute number of SLA violations
+    violations = sum(i>5 for i in logs['p95'])/len(logs['p95']) # df_p95[df_p95['Value']>5]['Value'].count()/df_p95['Value'].count()
+    # print(f"logs: {logs}")
+    Gt = info['total_reward']
+    print(f"Total reward: {round(Gt,2)}")
+    print(f"Replicas: mean: {round(mean_rep,2)}, std: {round(std_rep,2)}")
+    print(f"SLA violations: {round(violations,2)*100}%")
     # close the environment on completion
     env.close()

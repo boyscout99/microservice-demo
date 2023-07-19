@@ -7,6 +7,7 @@ from gym import spaces
 import numpy as np
 import time
 import sys
+from get_metrics import GetMetrics
 
 class GymEnvironment(gym.Env):
 
@@ -19,7 +20,9 @@ class GymEnvironment(gym.Env):
                  minReplicas, 
                  maxReplicas,
                  rew_fun,
-                 data):
+                 data,
+                 workload,
+                 metrics):
         
         super(GymEnvironment, self).__init__()
         
@@ -35,13 +38,28 @@ class GymEnvironment(gym.Env):
         self.maxReplicas = maxReplicas
         self.rew_fun = rew_fun
         self.data = data
+        self.metrics = metrics
         # self.scale = KubernetesEnvironment(self.name, self.namespace, self.minReplicas, self.maxReplicas)
-
+        self.workload = workload
         self.reward = 0
         self.reward_sum = 0
+        self.curr_timestep = 0
+        self.obs = {}
         self.action_space = spaces.Discrete(3)  # Action space with 3 discrete actions: 1, 0, -1
+        # self.action_space = spaces.Box(low=-1.0, high=1.0, shape=(1,)) # Continuous action space 
         # self.observation_space = spaces.Box(low=0, high=np.inf, shape=(5,), dtype=np.float64)  # Observation space with 5 continuous elements: replicas, p90 latency, response time, CPU usage, memory usage
-        self.observation_space = spaces.Box(low=0, high=np.inf, shape=(4,), dtype=np.float64)
+        # Create a Dict observation space
+        # Needed because in this way we can easily select the metrics
+        # in the state space from the command line when executing
+        dict_obs = {}
+        dict_obs.update({'rep': gym.spaces.Box(low=0, high=np.Inf, shape=(1,), dtype=np.float64)})
+        for metric in self.metrics:
+            dict_obs.update({metric: gym.spaces.Box(low=0, high=np.Inf, shape=(1,), dtype=np.float64)})
+        self.observation_space = gym.spaces.Dict(dict_obs)
+        # shapes = [self.observation_space[key].shape for key in self.observation_space.keys()]
+        # print(f"### shapes: {shapes}, obs_space: {self.observation_space}")
+        # print(f"Sample: {self.observation_space.sample()}")
+        # self.observation_space = spaces.Box(low=0, high=np.inf, shape=(4,), dtype=np.float64)
         # self.observation_space = spaces.Box(low=0, high=np.inf, shape=(3,), dtype=np.float64)  # Observation space with 3 continuous elements: replicas, p90 latency, response time
         
     def reset(self):
@@ -51,113 +69,114 @@ class GymEnvironment(gym.Env):
         # set replicas to 1:
         # self.queries["q_pod_replicas"] = 1
         print("Waiting 1 seconds to stabilise after reset ...")
-        time.sleep(0.5)
+        time.sleep(0.1)
         # reset queries to initial state
-        self.queries["q_pod_replicas"] = 1
-        self.queries["q_request_duration"] = self.data[0]["p95"][0]
-        self.queries["q_rps"] = self.data[0]["rps"][0]
-        # self.queries["q_cpu_usage"] = self.data[0]["cpu"][0]
-        self.queries["q_memory_usage"] = self.data[0]["mem"][0]
+        # set current timestep to 0
+        self.curr_timestep = 0
+        # set number of replicas to 1
+        self.queries["q_rep"] = 1
+        # get value of workload at t_0 self.workload[0] and approximate other data
+        dict_app_metrics = GetMetrics(self.data, self.metrics).get_metrics_approx(1, self.workload[self.curr_timestep])
+        for metric in self.metrics:
+            self.queries[f"q_{metric}"] = dict_app_metrics[metric]
+            print(f"self.queries[f\"q_{metric}\"]: ", self.queries[f"q_{metric}"])
         # retreive observation
-        self.current_observation = self._get_observation()
-        self.current_replicas = self.current_observation[0]
+        self.obs = self._get_observation()
+        # self._get_observation()
+        # print(f"Observation from inside reset(): {self.obs}")
+        self.current_replicas = self.obs['rep']
         self.reward_sum = 0
-        # self.previous_response_time = self.current_observation[1]  # Initialize previous response time
-        return self.current_observation
+
+        # TODO remove the following
+        # shapes = [self.observation_space[key].shape for key in self.observation_space.keys()]
+        # print(f"### shapes from reset(): {shapes}")
+        # Check if obs is a dictionary
+        # new_observation_space = {}
+        # for key, value in self.observation_space.items():
+        #     new_observation_space[key] = np.array(value[0], dtype=np.float64)
+        # print(new_observation_space)
+        return self.obs
 
     def step(self, action):
         # Take a step in the environment based on the given action
         # Update the pod states, calculate reward, and return the new observation, reward, done, and info
-        rep = self.queries["q_pod_replicas"]
-        t = self.queries["q_request_duration"]
-        rps = self.queries["q_rps"]
-        # cpu = self.queries["q_cpu_usage"]
-        mem = self.queries["q_memory_usage"]
 
-        print("\n##### NEW ACTION #####")
+        # rename variables to have shorter and more practical names
+        # rep = self.queries["q_pod_replicas"]
+        # t = self.queries["q_request_duration"]
+        # rps = self.queries["q_rps"]
+        # cpu = self.queries["q_cpu_usage"]
+        # mem = self.queries["q_memory_usage"]
+        rep = self.current_replicas
+
+        # print(f"action: {action}")
+        # thresholds = [-0.33, 0.33]
+        # if action < thresholds[0]: action = 0
+        # elif action > thresholds[1]: action = 1
+        # else: action = 2
+
+        print("##### NEW ACTION #####")
         # Update the pod states based on the action
         if action == 0:  # No change in replicas
+            
             print("Taking action 0")
-            t = self.data[rep-1]["p95"][0]
-            rps = self.data[rep-1]["rps"][0]
-            # cpu = self.data[rep-1]["cpu"][0]
-            mem = self.data[rep-1]["mem"][0]
-            # ALL METRICS
-            # print(f"rep: {rep}, t: {t}, rps: {rps}, cpu: {cpu}, mem: {mem}")
-            # NO CPU
-            print(f"rep: {rep}, t: {t}, rps: {rps}, mem: {mem}")
-            # NO CPU, RPS
-            # print(f"rep: {rep}, t: {t}, mem: {mem}")
-            # print(f"rep: {rep}, t: {t}, rps: {rps}")
-            # print(f"rep: {rep}, t: {t}, cpu: {cpu}")
-            # print(f"rep: {rep}, t: {t}, rps: {rps}, cpu: {cpu}")
+            print(f"workload[{self.curr_timestep}] = {self.workload[self.curr_timestep]}")
+            dict_app_metrics = GetMetrics(self.data, self.metrics).get_metrics_approx(rep, self.workload[self.curr_timestep])
+            print(dict_app_metrics)
             pass
         elif action == 1:  # Increase replicas
             print("Taking action +1")
+            print(f"workload[{self.curr_timestep}] = {self.workload[self.curr_timestep]}")
             # self.scale.update_replicas(1)
             rep += 1
             if rep > self.maxReplicas:
                 print(f"Cannot have more than maxReplicas. Setting to {self.maxReplicas}.")
                 rep = self.maxReplicas
+                # Consequences of action on environment
+                dict_app_metrics = GetMetrics(self.data, self.metrics).get_metrics_approx(rep, self.workload[self.curr_timestep])
+                print(dict_app_metrics)
             else:
                 # Consequences of action on environment
-                t = self.data[rep-1]["p95"][0]
-                rps = self.data[rep-1]["rps"][0]
-                # cpu = self.data[rep-1]["cpu"][0]
-                mem = self.data[rep-1]["mem"][0]
-            # ALL METRICS
-            # print(f"rep: {rep}, t: {t}, rps: {rps}, cpu: {cpu}, mem: {mem}")
-            # NO CPU
-            print(f"rep: {rep}, t: {t}, rps: {rps}, mem: {mem}")
-            # NO CPU, RPS
-            # print(f"rep: {rep}, t: {t}, mem: {mem}")
-            # print(f"rep: {rep}, t: {t}, rps: {rps}")
-            # print(f"rep: {rep}, t: {t}, cpu: {cpu}")
-            # print(f"rep: {rep}, t: {t}, rps: {rps}, cpu: {cpu}")
+                dict_app_metrics = GetMetrics(self.data, self.metrics).get_metrics_approx(rep, self.workload[self.curr_timestep])
+                print(dict_app_metrics)
 
         elif action == 2:  # Decrease replicas
             print("Taking action -1")
+            print(f"workload[{self.curr_timestep}] = {self.workload[self.curr_timestep]}")
             # self.scale.update_replicas(-1)
             rep -= 1
             if rep < self.minReplicas:
                 print(f"Cannot have less than minReplicas. Setting to {self.minReplicas}.")
                 rep = self.minReplicas
+                # Consequences of action on environment
+                dict_app_metrics = GetMetrics(self.data, self.metrics).get_metrics_approx(rep, self.workload[self.curr_timestep])
+                print(dict_app_metrics)
             else:
-                t = self.data[rep-1]["p95"][0]
-                rps = self.data[rep-1]["rps"][0]
-                # cpu = self.data[rep-1]["cpu"][0]
-                mem = self.data[rep-1]["mem"][0]
-            # ALL METRICS
-            # print(f"rep: {rep}, t: {t}, rps: {rps}, cpu: {cpu}, mem: {mem}")
-            # NO CPU
-            print(f"rep: {rep}, t: {t}, rps: {rps}, mem: {mem}")
-            # NO CPU, RPS
-            # print(f"rep: {rep}, t: {t}, mem: {mem}")
-            # print(f"rep: {rep}, t: {t}, rps: {rps}")
-            # print(f"rep: {rep}, t: {t}, cpu: {cpu}")
-            # print(f"rep: {rep}, t: {t}, rps: {rps}, cpu: {cpu}")
+                # Consequences of action on environment
+                dict_app_metrics = GetMetrics(self.data, self.metrics).get_metrics_approx(rep, self.workload[self.curr_timestep])
+                print(dict_app_metrics)
 
         self.current_replicas = rep
         # reassign values
-        self.queries["q_pod_replicas"] = rep
-        self.queries["q_request_duration"] = t
-        self.queries["q_rps"] = rps
-        # self.queries["q_cpu_usage"] = cpu
-        self.queries["q_memory_usage"] = mem
+        self.queries[f"q_rep"] = self.current_replicas
+        for metric in self.metrics:
+            self.queries[f"q_{metric}"] = dict_app_metrics[metric]
 
         # waiting environment to stabilise
         # time.sleep(1)
         # get new observation
-        new_observation = self._get_observation()
-        resp_time = new_observation[1]
+        # new_observation = self._get_observation()
+        # self.observation_space = self._get_observation()
+        self.obs = self._get_observation()
 
         # Calculate reward based on the new observation
         SLA_RESP_TIME = 5 # 100 ms
+        resp_time = self.obs['p95']
         if self.rew_fun == "indicator":
-            self.reward = -(self.alpha * int(new_observation[1] > SLA_RESP_TIME) + self.current_replicas)
+            self.reward = -(self.alpha * int(self.obs['p95'] > SLA_RESP_TIME) + self.current_replicas)
         elif self.rew_fun == "quadratic":
             # Quadratic reward function on exceeded time constraint
-            delta_t = new_observation[1]-SLA_RESP_TIME
+            delta_t = self.obs['p95']-SLA_RESP_TIME
             if delta_t > 0:
                 # SLA violated, penalise a lot time exceeded
                 # e.g. delta_t = 5ms, replicas = 30, reward = +5
@@ -169,9 +188,9 @@ class GymEnvironment(gym.Env):
                 self.reward = -self.alpha*self.current_replicas
         elif self.rew_fun == "quad_cpu_thr":
             # Quadratic reward function on exceeded time constraint
-            delta_t = new_observation[1]-SLA_RESP_TIME
+            delta_t = self.obs['p95']-SLA_RESP_TIME
             # penalise CPU throttling
-            gamma = (new_observation[2]>100)*(100 - new_observation[2])
+            gamma = (self.obs['cpu']>100)*(100 - self.obs['cpu'])
             if delta_t > 0:
                 # SLA violated, penalise a lot time exceeded
                 # e.g. delta_t = 5ms, replicas = 30, reward = +5
@@ -181,17 +200,16 @@ class GymEnvironment(gym.Env):
                 # SLA satisfided, try to optimise number of replicas
                 self.reward = delta_t - self.alpha*self.current_replicas + gamma
         elif self.rew_fun == "linear_1":
-            resp = new_observation[1]
-            delta_t = resp-SLA_RESP_TIME
+            delta_t = resp_time-SLA_RESP_TIME
             perc = delta_t/SLA_RESP_TIME
             if perc>0:
                 self.reward = -100*perc
                 print(f"self.reward = -100*{perc} = {self.reward}")
             else:
-                self.reward = 10*(10*perc+1)
-                print(f"self.reward = 100*(10*{perc}+1) = {self.reward}")
+                self.reward = 10*((100/self.alpha) * perc + 1) + (self.maxReplicas/self.current_replicas)
+                print(f"self.reward = 10*({100/self.alpha}*{perc}+1) + ({self.maxReplicas/self.current_replicas}) = {self.reward}")
         elif self.rew_fun == "linear_2":
-            delta_t = new_observation[1]-SLA_RESP_TIME
+            delta_t = self.obs['p95']-SLA_RESP_TIME
             if delta_t > 0:
                 # SLA violated, penalise a lot time exceeded
                 self.reward = -delta_t
@@ -209,7 +227,7 @@ class GymEnvironment(gym.Env):
             #     self.reward = -10000
             #     print(f"self.reward = {self.reward}")
             # else:
-                delta_t = new_observation[1]-SLA_RESP_TIME
+                delta_t = self.obs['p95']-SLA_RESP_TIME
                 if delta_t > 0:
                     # SLA violated, penalise a lot time exceeded
                     self.reward = -delta_t**2
@@ -218,16 +236,6 @@ class GymEnvironment(gym.Env):
                     # SLA satisfided, try to optimise number of replicas
                     self.reward = 1 - (self.current_replicas/self.maxReplicas)# + (self.maxReplicas - self.current_replicas)
                     print(f"self.reward = 1 - {self.current_replicas/self.maxReplicas} = {self.reward}")
-        elif self.rew_fun == "asarsa-based":
-            p = 0.1
-            rho = 0.8 # self.current_replicas/self.maxReplicas
-            if resp_time>SLA_RESP_TIME:
-                self.reward = (1-np.exp(-p*(1-resp_time/SLA_RESP_TIME)))/(1-rho)
-                print(f"self.reward = {self.reward}")
-            else:
-                # TODO penalise over-provisioning
-                self.reward = (1-np.exp(-p))/(1-rho)
-                print(f"self.reward = {self.reward}")
         else:
             print("ERROR: your reward function selection is not valid.")
             sys.exit(1)
@@ -235,6 +243,10 @@ class GymEnvironment(gym.Env):
         # Set done to False as the environment is not terminated in this example
         done = False
 
+        # update timestep
+        self.curr_timestep += 1
+        print(f"Current timestep: {self.curr_timestep}")
+        # update reward
         self.reward_sum += self.reward
         # Set info to an empty dictionary
         info = {
@@ -245,21 +257,21 @@ class GymEnvironment(gym.Env):
         # print("Waiting 30 seconds before taking next scaling action ...")
         # time.sleep(30)
 
-        return new_observation, self.reward, done, info
+        return self.obs, self.reward, done, info
 
     def _get_observation(self):
         # Retrieve observation from Prometheus API, e.g., query response time, CPU usage, memory usage, and replicas
         # observation = self.prom.get_results(self.queries)
-        observation = [
-            self.queries["q_pod_replicas"],
-            self.queries["q_request_duration"],
-            self.queries["q_rps"],
-            # self.queries["q_cpu_usage"],
-            self.queries["q_memory_usage"]
-        ]
-        observation = np.array(observation)
-        # Update the current observation for the next step
-        self.current_observation = observation
-        print(f"self.current_observation: {self.current_observation}")
+        observation = {'rep': np.array(self.queries[f"q_rep"], dtype=np.float64).reshape(1,)}
+        for metric in self.metrics:
+            observation.update( {metric: np.array(self.queries[f"q_{metric}"], dtype=np.float64).reshape(1,)} )
 
+        # self.observation_space['rep'] = np.array(self.queries[f"q_rep"], dtype=np.float64).reshape(1,)
+        # for metric in self.metrics:
+        #     self.observation_space[metric] = np.array(self.queries[f"q_{metric}"], dtype=np.float64).reshape(1,)
+
+        # print(f"self.observation_space: {self.observation_space}")
+        # shapes = [self.observation_space[key].shape for key in self.observation_space.keys()]
+        # print(f"### shapes: {shapes} ###")
         return observation
+        # return self.observation_space
