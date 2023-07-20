@@ -31,6 +31,8 @@ Takes input data of this format.
 """
 # Generalisation of the algorithm for (replicas, metric) correspondence
 import numpy as np
+import matplotlib.pyplot as plt
+from scipy.stats import linregress
 
 class GetMetrics:
     def __init__(self, data, metrics):
@@ -56,9 +58,41 @@ class GetMetrics:
                         results.update( {metric: coeff*(metric_list[0][metric]-0)} ) # the adjusted value
                     break
                 elif (load>metric_list[-1]["load"]):
-                    # TODO estimate new coefficient
                     print("Note - Load too high!")
                     # do some linear regression to estimate the coefficent
+                    # perform linear regression for each metric on the last 10 values
+                    # take last 20 elements to perform linear regression
+                    d = metric_list[-20:] # list of dictionaries
+                    # create array of 10 elements for x
+                    x = []
+                    for i in range(len(d)):
+                        x.append(d[i]['load'])
+                    # print(f"metric: load, x: {x}")
+                    x2 = [i for i in x] # add last element for plotting
+                    x2.append(load)
+                    # loop each metric
+                    for m in self.metrics:
+                        # take last 10 values for one metric
+                        y = []
+                        for i in range(len(d)):
+                            y.append(d[i][m])
+                        # print(f"metric: {m}, y: {y}")
+                        # compute linear regression
+                        res = linregress(x,y)
+                        # y = ax + b -> metric = res.slope*load + res.intercept
+                        y_final = res.slope*load + res.intercept
+                        results.update({m: y_final}) # the adjusted value
+                        # print(f"results: {results}")
+                        # plot results
+                        # y.append(y_final)
+                        # plt.plot(x2, y, 'o', label='Original data')
+                        # x_np = np.array(x)
+                        # plt.plot(x_np, res.slope*x_np + res.intercept, label='Fitted line')
+                        # plt.title(f"{m}")
+                        # plt.xlabel('load')
+                        # plt.ylabel(f"{m}")
+                        # plt.legend()
+                        # plt.show()
                     break
                 else:
                     for index in range(len(metric_list)-1):
@@ -76,3 +110,56 @@ class GetMetrics:
                             break 
 
         return results
+    
+    def plot_data(self):
+        # For each number of replicas
+        for elem in self.data:
+            rep = elem['rep']
+            # skip first 10 elements
+            d = elem['metric_rows'][5:]
+            # create x-axis, common to all metrics
+            x = []
+            # iterate over every sample in the list of dicts
+            for sample in d:
+                # create x axis with load
+                x.append(sample['load'])
+            # Create y-axis for each metric and plot
+            for m in self.metrics:
+                y = []
+                for sample in d:
+                    # create x axis with load
+                    y.append(sample[m])
+                # Plot each metric in the same graph
+                # Do a linear regression to show the trend
+                res = linregress(x,y)
+                plt.plot(x, y, 'o', label=f'Original data {m}')
+                x_np = np.array(x)
+                plt.plot(x_np, res.slope*x_np + res.intercept, label=f'Fitted line {m}')
+                
+            # Show all metrics for the same replica number
+            plt.xlabel('load')
+            # plt.ylabel(f"{m}")
+            plt.legend()
+            plt.title(f"Replicas: {rep}")
+            plt.show()
+
+    def optimal_rep_given_workload(self, load):
+        """
+        Based on the data, plot the optimal number of
+        replicas for each load.
+        Inputs: 
+            - workload -> list
+            - data -> sorted list of dict
+        """
+        # For each replica, workload, get metric approximation for p95
+        all_rep = [] 
+        for rep in range(1,16):
+            all_rep.append(self.get_metrics_approx(rep, load))
+        # print(f"all_rep: {all_rep}")
+        for i in range(len(all_rep)):
+            if all_rep[i]['p95']<5:
+                return all_rep[i]['rep'], all_rep[i]['p95']
+        print('Error - no optimal replica found')
+        return
+    
+                
