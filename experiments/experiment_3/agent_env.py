@@ -206,8 +206,10 @@ class GymEnvironment(gym.Env):
                 self.reward = -100*perc
                 print(f"self.reward = -100*{perc} = {self.reward}")
             else:
-                self.reward = 10*((100/self.alpha) * perc + 1) + (self.maxReplicas/self.current_replicas)
-                print(f"self.reward = 10*({100/self.alpha}*{perc}+1) + ({self.maxReplicas/self.current_replicas}) = {self.reward}")
+                # self.reward = 10*((100/self.alpha) * perc + 1) + (self.maxReplicas/self.current_replicas)
+                self.reward = 1 + 100*(self.maxReplicas - self.current_replicas)
+                # print(f"self.reward = 10*({100/self.alpha}*{perc}+1) + ({self.maxReplicas/self.current_replicas}) = {self.reward}")
+                print(f"self.reward = 1 + 100*({self.maxReplicas - self.current_replicas}) = {self.reward}")
         elif self.rew_fun == "linear_2":
             delta_t = self.obs['p95']-SLA_RESP_TIME
             if delta_t > 0:

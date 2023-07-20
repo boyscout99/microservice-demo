@@ -33,6 +33,7 @@ Takes input data of this format.
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.stats import linregress
+from rewardFunction import reward_function as rf
 
 class GetMetrics:
     def __init__(self, data, metrics):
@@ -51,14 +52,14 @@ class GetMetrics:
                 # print("Metric_list: ", metric_list)
                 # print(f"elem {data[elem]['rps']} type: {type(data[elem]['rps'])}, elem+1 {data[elem+1]['rps']}")
                 if (load<metric_list[0]["load"]): # case in which RPS is too low
-                    print("Note - Load too low!")
+                    # print("Note - Load too low!")
                     coeff = np.abs((load-0)/(metric_list[0]["load"]-0)) # relative distance wrt the first element
                     # print(f"coeff: {coeff}")
                     for metric in self.metrics:
                         results.update( {metric: coeff*(metric_list[0][metric]-0)} ) # the adjusted value
                     break
                 elif (load>metric_list[-1]["load"]):
-                    print("Note - Load too high!")
+                    # print("Note - Load too high!")
                     # do some linear regression to estimate the coefficent
                     # perform linear regression for each metric on the last 10 values
                     # take last 20 elements to perform linear regression
@@ -114,6 +115,7 @@ class GetMetrics:
     def plot_data(self):
         # For each number of replicas
         for elem in self.data:
+            # get current replicas
             rep = elem['rep']
             # skip first 10 elements
             d = elem['metric_rows'][5:]
@@ -126,16 +128,27 @@ class GetMetrics:
             # Create y-axis for each metric and plot
             for m in self.metrics:
                 y = []
-                for sample in d:
-                    # create x axis with load
-                    y.append(sample[m])
+                if m == 'p95':
+                    rewards = []
+                    for sample in d:
+                        # create y axis with metric value
+                        y.append(sample[m])
+                        # compute reward
+                        rew = rf.rew_fun(sample[m], 5, 5, 15, rep)
+                        rewards.append(rew)
+                else:
+                    for sample in d:
+                        # create y axis with metric value
+                        y.append(sample[m])
                 # Plot each metric in the same graph
                 # Do a linear regression to show the trend
                 res = linregress(x,y)
                 plt.plot(x, y, 'o', label=f'Original data {m}')
                 x_np = np.array(x)
                 plt.plot(x_np, res.slope*x_np + res.intercept, label=f'Fitted line {m}')
-                
+
+            # plt.plot(x, [i/100 for i in rewards], label='rewards/100')  
+            plt.plot(x,rewards, label='rewards')  
             # Show all metrics for the same replica number
             plt.xlabel('load')
             # plt.ylabel(f"{m}")

@@ -9,6 +9,8 @@ class reward_function:
             reward = -100 * perc
             # print(f"reward = -100 * {perc} = {reward}")
         else:
-            reward = 10 * ((100 / alpha) * perc + 1) + (maxReplicas / current_replicas)
+            # reward = 10 * ((100 / alpha) * perc + 1) #+ (maxReplicas / current_replicas)
+            # reward = 10 + 100/(1+math.exp(-2*(perc*100+alpha)))
+            reward = 1 + 100*(maxReplicas - current_replicas)
             # print(f"reward = 10 * ({100 / alpha} * {perc} + 1) + ({maxReplicas / current_replicas}) = {reward}")
         return reward

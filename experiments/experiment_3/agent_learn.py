@@ -237,7 +237,7 @@ def load_model(env, models_dir, tf_logs_dir):
             n_steps=2,
             gamma=0.95,
             gae_lambda=1.0, 
-            ent_coef=0.0, 
+            ent_coef=0.5, 
             vf_coef=0.5, 
             max_grad_norm=0.5, 
             rms_prop_eps=1e-05,
@@ -289,6 +289,7 @@ def train_model(model, models_dir, timesteps, episodes, callbacks):
 
     return
 
+
 if __name__ == "__main__":
 
     # cluster = "minikube"
@@ -308,7 +309,7 @@ if __name__ == "__main__":
     elif rew_fun == "linear_1": alpha = 15 # 15% of optimisation gap
     else: alpha = 1
 
-    TIMESTEPS = 150
+    TIMESTEPS = 20160
     EPISODES = 1
 
     # Generate directories
@@ -328,10 +329,11 @@ if __name__ == "__main__":
     # Generate workload
     # This signal must be passed to the environment for the observation
     # set steps=1 for a constant load of minRPS
-    _, rps_signal = WorkloadGenerator.sin_function(timesteps=TIMESTEPS+1, 
-                                                 minRPS=250,
-                                                 maxRPS=3000,
+    _, rps_signal = WorkloadGenerator.sin_spikes_function(timesteps=TIMESTEPS+1, 
+                                                 minRPS=150,
+                                                 maxRPS=4000,
                                                  periods=7,
+                                                 spike_probability=0.01
                                                  )
     # Save signal in CSV file
     # json_list = {
@@ -355,29 +357,30 @@ if __name__ == "__main__":
     # with open("signals.json", "w") as outfile:
     #     outfile.write(json_object)
     # create timesteps
-    _ = [i for i in range(0,TIMESTEPS+1)]
-    # get optimal replicas
-    opt_rep = []
-    opt_p95 = []
-    # get reward
-    reward = []
-    for sample in rps_signal:
-        _rep = GetMetrics(data, METRICS).optimal_rep_given_workload(sample)[0]
-        _p95 = GetMetrics(data, METRICS).optimal_rep_given_workload(sample)[1]
-        _rew = rf.rew_fun(_p95, 5, alpha, 15, _rep)
-        opt_rep.append(_rep)
-        opt_p95.append(_p95)
-        reward.append(_rew)
+    plot = False
+    if plot:
+        _ = [i for i in range(0,TIMESTEPS+1)]
+        # get optimal replicas
+        opt_rep = []
+        opt_p95 = []
+        # get reward
+        reward = []
+        for sample in rps_signal:
+            _rep, _p95 = GetMetrics(data, METRICS).optimal_rep_given_workload(sample)
+            _rew = rf.rew_fun(_p95, 5, 10, 15, _rep)
+            opt_rep.append(_rep)
+            opt_p95.append(_p95)
+            reward.append(_rew)
 
-    plt.plot(_, rps_signal/1000, label='Load/1000')
-    plt.plot(_, opt_rep, label='Optimal replicas')
-    plt.plot(_, reward, label='reward')
-    plt.plot(_, opt_p95, label='p95')
-    plt.xlabel("Timesteps")
-    plt.ylabel("Load to deployment [req/s]")
-    plt.legend()
-    plt.title(f"Workload signal, {len(rps_signal)-1} timesteps")
-    plt.show()
+        plt.plot(_, rps_signal/1000, label='Load/1000')
+        plt.plot(_, opt_rep, label='Optimal replicas')
+        # plt.plot(_, reward, label='reward')
+        plt.plot(_, opt_p95, label='p95')
+        plt.xlabel("Timesteps")
+        plt.ylabel("Load to deployment [req/s]")
+        plt.legend()
+        plt.title(f"Workload signal, {len(rps_signal)-1} timesteps")
+        plt.show()
 
     # Generate environment
     env = setup_environment(alpha, 
@@ -406,10 +409,10 @@ if __name__ == "__main__":
     # replay_buffer = ReplayBuffer(buffer_size, obs_space, action_space)
     # model.collect_rollouts(env, callbacks, train_freq=5, replay_buffer=replay_buffer)
     # train the model
-    # train_model(model, 
-    #             models_dir, 
-    #             TIMESTEPS,
-    #             EPISODES,
-    #             callbacks)
+    train_model(model, 
+                models_dir, 
+                TIMESTEPS,
+                EPISODES,
+                callbacks)
     # close the environment on completion
     env.close()
