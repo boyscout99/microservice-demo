@@ -312,20 +312,25 @@ if __name__ == "__main__":
     # Generate workload
     # This signal must be passed to the environment for the observation
     # set steps=1 for a constant load of minRPS
-    _, rps_signal = WorkloadGenerator.sin_function(timesteps=TIMESTEPS+1, 
-                                                 minRPS=150,
-                                                 maxRPS=2000,
-                                                 periods=4)
+    # _, rps_signal = WorkloadGenerator.sin_spikes_function(timesteps=TIMESTEPS+1, 
+    #                                              minRPS=200,
+    #                                              maxRPS=1700,
+    #                                              periods=4,
+    #                                              spike_probability=0.03)
     # Save signal in CSV file
     # json_list = {
-    #     'workload': 'steps',
+    #     'workload': 'rnd_sin',
     #     'timesteps': list(_),
     #     'rps_signal': list(rps_signal)
     # }
 
-    # with open("signals.json", "r") as infile:
-    #     existing_data = json.load(infile)
-    #     print(existing_data)
+    with open("signals.json", "r") as infile:
+        existing_data = json.load(infile)
+        # print(existing_data)
+
+    rps_signal = existing_data[2]['rps_signal']
+    # print(f"existing_data[2]: {existing_data[2]}")
+    # print(f"rps_signal: {rps_signal}")
 
     # existing_data.append(json_list)
     # print(existing_data)
