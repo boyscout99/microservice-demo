@@ -8,6 +8,7 @@ import numpy as np
 import time
 import sys
 from get_metrics import GetMetrics
+import random
 
 class GymEnvironment(gym.Env):
 
@@ -115,6 +116,16 @@ class GymEnvironment(gym.Env):
         # elif action > thresholds[1]: action = 1
         # else: action = 2
 
+        # Test, every 1000 timesteps, take random action
+        if self.curr_timestep%1000 == 0:
+            c = random.random()
+            if c<=0.5: 
+                action=1
+                print(f"random selected action {action}")
+            else: 
+                action=2
+                print(f"random selected action {action}")
+
         print("##### NEW ACTION #####")
         # Update the pod states based on the action
         if action == 0:  # No change in replicas
@@ -206,10 +217,10 @@ class GymEnvironment(gym.Env):
                 self.reward = -100*perc
                 print(f"self.reward = -100*{perc} = {self.reward}")
             else:
-                # self.reward = 10*((100/self.alpha) * perc + 1) + (self.maxReplicas/self.current_replicas)
-                self.reward = 1 + 100*(self.maxReplicas - self.current_replicas)
-                # print(f"self.reward = 10*({100/self.alpha}*{perc}+1) + ({self.maxReplicas/self.current_replicas}) = {self.reward}")
-                print(f"self.reward = 1 + 100*({self.maxReplicas - self.current_replicas}) = {self.reward}")
+                self.reward = 10*(10*((100/self.alpha) * perc + 1) + (self.maxReplicas/self.current_replicas))
+                # self.reward = 1 + 100*(self.maxReplicas - self.current_replicas)
+                print(f"self.reward = 10*({100/self.alpha}*{perc}+1) + ({self.maxReplicas/self.current_replicas}) = {self.reward}")
+                # print(f"self.reward = 1 + 100*({self.maxReplicas - self.current_replicas}) = {self.reward}")
         elif self.rew_fun == "linear_2":
             delta_t = self.obs['p95']-SLA_RESP_TIME
             if delta_t > 0:

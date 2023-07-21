@@ -309,7 +309,7 @@ if __name__ == "__main__":
     elif rew_fun == "linear_1": alpha = 15 # 15% of optimisation gap
     else: alpha = 1
 
-    TIMESTEPS = 20160
+    TIMESTEPS = 3*20160
     EPISODES = 1
 
     # Generate directories
@@ -329,12 +329,22 @@ if __name__ == "__main__":
     # Generate workload
     # This signal must be passed to the environment for the observation
     # set steps=1 for a constant load of minRPS
-    _, rps_signal = WorkloadGenerator.sin_spikes_function(timesteps=TIMESTEPS+1, 
+    # _, rps_signal = WorkloadGenerator.sin_spikes_function(timesteps=TIMESTEPS+1, 
+    #                                              minRPS=150,
+    #                                              maxRPS=4000,
+    #                                              periods=14,
+    #                                              spike_probability=0.01
+    #                                              )
+    _, rps_signal = WorkloadGenerator.sin_function(timesteps=TIMESTEPS+1, 
                                                  minRPS=150,
                                                  maxRPS=4000,
-                                                 periods=7,
-                                                 spike_probability=0.01
+                                                 periods=21
                                                  )
+    # _, rps_signal = WorkloadGenerator.step_function(timesteps=TIMESTEPS+1, 
+    #                                              minRPS=150,
+    #                                              maxRPS=4000,
+    #                                              steps=8
+    #                                              )
     # Save signal in CSV file
     # json_list = {
     #     'workload': 'rnd_sin',
@@ -372,9 +382,9 @@ if __name__ == "__main__":
             opt_p95.append(_p95)
             reward.append(_rew)
 
-        plt.plot(_, rps_signal/1000, label='Load/1000')
+        plt.plot(_, [i/1000 for i in rps_signal], label='Load/1000')
         plt.plot(_, opt_rep, label='Optimal replicas')
-        # plt.plot(_, reward, label='reward')
+        plt.plot(_, [i/100 for i in reward], label='reward')
         plt.plot(_, opt_p95, label='p95')
         plt.xlabel("Timesteps")
         plt.ylabel("Load to deployment [req/s]")

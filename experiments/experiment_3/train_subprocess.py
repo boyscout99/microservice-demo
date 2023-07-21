@@ -25,7 +25,7 @@ states = [S1, S2, S3, S4, S5, S6]
 for state in states:
     print(f"State {state}")
     # Perform 5 runs for each state
-    for i in range(0,5):
+    for i in range(0,10):
         print(f"Run number {i}")
         # print(f"{type(' '.join([quote(metric) for metric in state]))}")\
         result = ' '.join(f'{s}' for s in state)

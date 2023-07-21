@@ -36,6 +36,8 @@ def get_mean_Gt(folder: str) -> tuple[float, float, dict]:
     std_Gt = round(np.std(Gt),2)
     return mean_Gt, std_Gt, abs_best
 
+def get_means(folder:str) -> 
+
 mean_Gt, std_Gt, abs_best = get_mean_Gt('timeseries/tensorboard/rnd_load/S6')
 print(f"mean Gt: {mean_Gt}, std Gt: {std_Gt}")
 best_ep = [4, 15, 16, 20, 105]
