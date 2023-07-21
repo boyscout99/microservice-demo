@@ -370,7 +370,7 @@ if __name__ == "__main__":
     # 1 step
     # 2 sin
     # 3 rnd_sin
-    rps_signal = existing_data[0]['rps_signal']
+    rps_signal = existing_data[3]['rps_signal']
     # print(f"existing_data[2]: {existing_data[2]}")
     # print(f"rps_signal: {rps_signal}")
 
