@@ -23,6 +23,14 @@ from stable_baselines3.common.env_checker import check_env
 from get_metrics import GetMetrics
 from rewardFunction import reward_function as rf
 
+plt.rcParams.update({
+    "text.usetex": True,
+    "font.family": "sans-serif",
+    "font.sans-serif": "Georgia",
+    "font.size": 14,
+    "figure.dpi": 300
+})
+
 BEST_MODEL = -np.Inf
 MAX_REWARD = -np.Inf
 CURRENT_EPISODE = 1
@@ -309,7 +317,7 @@ if __name__ == "__main__":
     elif rew_fun == "linear_1": alpha = 15 # 15% of optimisation gap
     else: alpha = 1
 
-    TIMESTEPS = 3*20160
+    TIMESTEPS = 2*20160
     EPISODES = 1
 
     # Generate directories
@@ -329,34 +337,40 @@ if __name__ == "__main__":
     # Generate workload
     # This signal must be passed to the environment for the observation
     # set steps=1 for a constant load of minRPS
+    # _, rps_signal = WorkloadGenerator.step_function(timesteps=TIMESTEPS+1, 
+    #                                              minRPS=150,
+    #                                              maxRPS=4000,
+    #                                              steps=8
+    #                                              )
+    # _, rps_signal = WorkloadGenerator.sin_function(timesteps=TIMESTEPS+1, 
+    #                                              minRPS=150,
+    #                                              maxRPS=4000,
+    #                                              periods=14
+    #                                              )
     # _, rps_signal = WorkloadGenerator.sin_spikes_function(timesteps=TIMESTEPS+1, 
     #                                              minRPS=150,
     #                                              maxRPS=4000,
     #                                              periods=14,
     #                                              spike_probability=0.01
     #                                              )
-    _, rps_signal = WorkloadGenerator.sin_function(timesteps=TIMESTEPS+1, 
-                                                 minRPS=150,
-                                                 maxRPS=4000,
-                                                 periods=21
-                                                 )
-    # _, rps_signal = WorkloadGenerator.step_function(timesteps=TIMESTEPS+1, 
-    #                                              minRPS=150,
-    #                                              maxRPS=4000,
-    #                                              steps=8
-    #                                              )
-    # Save signal in CSV file
+
+    # Save signal in JSON file
     # json_list = {
     #     'workload': 'rnd_sin',
     #     'timesteps': list(_),
     #     'rps_signal': list(rps_signal)
     # }
 
-    # with open("signals.json", "r") as infile:
-    #     existing_data = json.load(infile)
+    # Take saved signal from JSON file
+    with open("signals.json", "r") as infile:
+        existing_data = json.load(infile)
         # print(existing_data)
 
-    # rps_signal = existing_data[2]['rps_signal']
+    # 0 constant
+    # 1 step
+    # 2 sin
+    # 3 rnd_sin
+    rps_signal = existing_data[0]['rps_signal']
     # print(f"existing_data[2]: {existing_data[2]}")
     # print(f"rps_signal: {rps_signal}")
 
@@ -366,7 +380,8 @@ if __name__ == "__main__":
     # json_object = json.dumps(existing_data, indent=4, separators=(',', ':'))
     # with open("signals.json", "w") as outfile:
     #     outfile.write(json_object)
-    # create timesteps
+
+    # Plot signals
     plot = False
     if plot:
         _ = [i for i in range(0,TIMESTEPS+1)]
@@ -377,20 +392,21 @@ if __name__ == "__main__":
         reward = []
         for sample in rps_signal:
             _rep, _p95 = GetMetrics(data, METRICS).optimal_rep_given_workload(sample)
-            _rew = rf.rew_fun(_p95, 5, 10, 15, _rep)
+            # _rew = rf.rew_fun(_p95, 5, 15, 15, _rep)
             opt_rep.append(_rep)
-            opt_p95.append(_p95)
-            reward.append(_rew)
+            # opt_p95.append(_p95)
+            # reward.append(_rew)
 
         plt.plot(_, [i/1000 for i in rps_signal], label='Load/1000')
-        plt.plot(_, opt_rep, label='Optimal replicas')
-        plt.plot(_, [i/100 for i in reward], label='reward')
-        plt.plot(_, opt_p95, label='p95')
+        plt.plot(_, opt_rep, label='Expected optimal $N_{s,t}$')
+        # plt.plot(_, [i/100 for i in reward], label='$E[R_{t}]/100$')
+        # plt.plot(_, opt_p95, label='Optimal $L_{s,t}$')
         plt.xlabel("Timesteps")
-        plt.ylabel("Load to deployment [req/s]")
-        plt.legend()
-        plt.title(f"Workload signal, {len(rps_signal)-1} timesteps")
-        plt.show()
+        # plt.ylabel("Load to deployment [req/s]")
+        plt.title(f"Periodic with random spikes workload signal")
+        plt.grid()
+        plt.legend(loc='upper right', fontsize='x-small')
+        plt.savefig('rnd_sin_load.png')
 
     # Generate environment
     env = setup_environment(alpha, 

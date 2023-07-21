@@ -19,6 +19,13 @@ from workload_patterns_gen import WorkloadGenerator
 from gym.wrappers import FlattenObservation
 from stable_baselines3.common.env_checker import check_env
 
+plt.rcParams.update({
+    "text.usetex": True,
+    "font.family": "sans-serif",
+    "font.sans-serif": "Georgia",
+    "font.size": 14
+})
+
 BEST_MODEL = -np.Inf
 MAX_REWARD = -np.Inf
 CURRENT_EPISODE = 1
@@ -235,15 +242,20 @@ if __name__ == "__main__":
     elif rew_fun == "linear_1": alpha = 15 # 15% of optimisation gap
     else: alpha = 1
 
-    TIMESTEPS = 300
+    TIMESTEPS = 3*20160
 
     # Generate workload
     # This signal must be passed to the environment for the observation
     # set steps=1 for a constant load of minRPS
-    _, rps_signal = WorkloadGenerator.decr_step_function(timesteps=TIMESTEPS+1, 
-                                                 minRPS=1500,
-                                                 maxRPS=1500,
-                                                 steps=1)
+    # _, rps_signal = WorkloadGenerator.decr_step_function(timesteps=TIMESTEPS+1, 
+    #                                              minRPS=1500,
+    #                                              maxRPS=1500,
+    #                                              steps=1)
+    _, rps_signal = WorkloadGenerator.sin_function(timesteps=TIMESTEPS+1, 
+                                                 minRPS=150,
+                                                 maxRPS=4000,
+                                                 periods=21
+                                                 )
     # plt.plot(_, rps_signal)
     # plt.title(f"Workload signal, {len(rps_signal)} timesteps")
     # plt.show()
@@ -280,14 +292,14 @@ if __name__ == "__main__":
     rewards_callback = TensorboardCallback()
     callbacks = [rewards_callback]
 
-    MODEL_DIR = 'models/rl-agent-2/A2C/2023_07_17_191146__p95_CPU_rps_mem/best_ep32.zip'
+    MODEL_DIR = 'models/rl-agent-2/A2C/2023_07_21_130443__p95/1.zip'
     MODEL_DIR = os.path.join(script_dir, MODEL_DIR)
     print(f"model dir: {MODEL_DIR}")
     model = load_selected_model(env, MODEL_DIR, tf_logs_dir)
     # model.set_callback(rewards_callback)
 
     obs = env.reset()
-    # initialise logs
+    # initialise logs to store replicas, tot_rew, p95
     logs = {'rep' : [0]}
     for metric in METRICS:
         logs[metric] = [0]
@@ -302,7 +314,7 @@ if __name__ == "__main__":
         action, _states = model.predict(obs, deterministic=True)
         # Take the recommended action in the environment
         obs, reward, done, info = env.step(action)
-        # print(f"obs: {obs}, reward: {reward}, done: {done}, info: {info}")
+        print(f"obs: {obs}, reward: {reward}, done: {done}, info: {info}")
         for key in obs.keys():
             logs[key].append(round(float(obs[key]),2))
         if done:
@@ -317,7 +329,7 @@ if __name__ == "__main__":
     # Compute number of SLA violations
     violations = sum(i>5 for i in logs['p95'])/len(logs['p95']) # df_p95[df_p95['Value']>5]['Value'].count()/df_p95['Value'].count()
     # print(f"logs: {logs}")
-    Gt = info['total_reward']
+    Gt = info['total_reward'][0]
     print(f"Total reward: {round(Gt,2)}")
     print(f"Replicas: mean: {round(mean_rep,2)}, std: {round(std_rep,2)}")
     print(f"SLA violations: {round(violations,2)*100}%")
