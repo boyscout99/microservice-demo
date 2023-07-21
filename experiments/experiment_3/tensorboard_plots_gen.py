@@ -77,7 +77,7 @@ def get_means(folder:str):
 # mean_ep = round(np.mean(best_ep),2)
 # std_ep = round(np.std(best_ep),2)
 # print(f"mean ep: {mean_ep}, std ep: {std_ep}, abs_best: {abs_best}")
-mean_Gt = get_means('timeseries/tensorboard/14days_steps/rnd_sin_load/S2')
+mean_Gt = get_means('timeseries/tensorboard/14days_steps/rnd_sin_load/S3')
 steps = np.arange(0,len(mean_Gt))*((2*20160)/1000)
 
 plt.rcParams.update({
@@ -89,10 +89,10 @@ plt.rcParams.update({
 })
 
 plt.plot(steps, mean_Gt, label='$\mu_{G_{T}}$')
-plt.title('Training with ${S}_{2}$, periodic with random spikes workload')
+plt.title('Training with ${S}_{3}$, periodic with random spikes workload')
 plt.xlabel('steps')
 plt.ylabel('$\mu_{G_{T}}$')
 plt.grid()
 plt.legend(loc='upper right', fontsize='x-small')
-plt.savefig('rnd_sin_train_S2.png')
+plt.savefig('rnd_sin_train_S3.png')
 

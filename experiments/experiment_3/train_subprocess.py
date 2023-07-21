@@ -19,8 +19,8 @@ S4 = ['p95', 'mem']
 S5 = ['rps', 'p95']
 S6 = ['p95']
 
-states = [S1, S2, S3, S4, S5, S6]
-# states = [S2, S3, S4, S5, S6]
+# states = [S1, S2, S3, S4, S5, S6]
+states = [S4, S5, S6]
 # states = [S2]
 
 for state in states:
