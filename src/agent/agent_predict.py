@@ -14,10 +14,10 @@ t = datetime.now()
 t = t + timedelta(hours=2) # UTC+2
 timestamp = t.strftime("%Y_%m_%d_%H%M%S")
 
-# Read arguments
+# read command line arguments
 processor = StringProcessor()
-DEPLOYMENT, NAMESPACE, CLUSTER, MODEL, REWARD_FUN, MODEL_DIR = processor.parse_args() # read namespace and model
-print(f"deployment {DEPLOYMENT}, namespace {NAMESPACE}, cluster {CLUSTER}, model {MODEL}, reward function {REWARD_FUN}, model_dir {MODEL_DIR}")
+DEPLOYMENT, NAMESPACE, CLUSTER, MODEL, REWARD_FUNCTION, LEARNING_RATE, METRICS, MODEL_DIR = processor.parse_args() # read namespace and model
+print(f"deployment {DEPLOYMENT}, namespace {NAMESPACE}, cluster {CLUSTER}, model {MODEL}, reward function {REWARD_FUNCTION}, learning rate {LEARNING_RATE}, metrics {METRICS}, model_dir {MODEL_DIR}.")
 
 # Get the absolute path of the script directory
 script_dir = os.path.dirname(os.path.abspath(__file__))
@@ -65,7 +65,8 @@ def setup_environment(alpha,
                       namespace, 
                       minReplicas, 
                       maxReplicas,
-                      rew_fun):
+                      rew_fun,
+                      metrics):
 
     # Construct the absolute file path for queries.json
     queries_json_path = os.path.join(script_dir, "queries.json")
@@ -91,7 +92,8 @@ def setup_environment(alpha,
                          namespace, 
                          minReplicas, 
                          maxReplicas, 
-                         rew_fun)
+                         rew_fun,
+                         metrics)
     # set default state
     env.reset()
 
@@ -100,12 +102,11 @@ def setup_environment(alpha,
 def load_selected_model(env, model_path, tf_logs_dir):
     # Load the selected model
     try:
-        print(f"Loading selected model: {model_path}")
         logging.info(f"Loading selected model: {model_path}")
         model = model_attr.load(model_path, env=env, tensorboard_log=tf_logs_dir)
-    except:
-        print("No existing models found. Please load a valid model.")
-        logging.info("No existing models found. Please load a valid model.")
+    except Exception as e:
+        logging.info(f"Error {e}")
+        return None
 
     return model
 
@@ -121,17 +122,20 @@ if __name__ == "__main__":
     namespace = NAMESPACE
     minReplicas = 1
     maxReplicas = 15
-    rew_fun = REWARD_FUN
+    rew_fun = REWARD_FUNCTION
     # define alpha based on the selected reward function
     if rew_fun == "indicator": alpha = 100
     elif rew_fun == "quadratic": alpha = 2
-    
+    elif rew_fun == "linear_1": alpha = 15 # 15% of optimisation gap
     else: alpha = 1
+
+    TIMESTEPS = 2*20160
 
     dirs = create_directories()
     tf_logs_dir = dirs[0]
     pod_logs_dir = dirs[1]
     logger = enable_logging(pod_logs_dir)
+
     env = setup_environment(alpha, 
                             cluster, 
                             url, 
@@ -139,7 +143,8 @@ if __name__ == "__main__":
                             namespace, 
                             minReplicas, 
                             maxReplicas, 
-                            rew_fun)
+                            rew_fun,
+                            METRICS)
     env = Monitor(env, tf_logs_dir)
     MODEL_DIR = os.path.join(script_dir, MODEL_DIR)
     model = load_selected_model(env, MODEL_DIR, tf_logs_dir)
@@ -148,7 +153,7 @@ if __name__ == "__main__":
     # Take actions in a loop
     while True:
         # Get the recommended action from the model
-        action, _states = model.predict(obs)
+        action, _states = model.predict(obs, deterministic=True)
         # Take the recommended action in the environment
         obs, reward, done, info = env.step(action)
         if done:
