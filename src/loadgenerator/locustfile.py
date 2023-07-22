@@ -122,11 +122,11 @@ class SinLoadShape(LoadTestShape):
         sin_sig = data[2]['rps_signal']
         # take two days of timesteps
         steps = 2*2880
-        sin_sig = sin_sig[:steps]
+        self.sin_sig = sin_sig[:steps]
         # convert RPS to Locust users
         # alpha = 50/70 # conversion factor, 50 users : 70 RPS
-        # self.users_sig = [math.ceil(rps*50/70) for rps in sin_sig]
-        self.users_sig = [i for i in range(10,1000,5)]
+        self.users_sig = [math.ceil(rps*50/70) for rps in sin_sig]
+        # self.users_sig = [i for i in range(10,1000,5)]
         self.time_limit = steps*30 # 2 days in seconds
 
     def tick(self):
@@ -136,4 +136,5 @@ class SinLoadShape(LoadTestShape):
 
         current_step = math.floor(run_time / 1) + 1
         users = self.users_sig[current_step]
+        print(f"Users: {users}, load: {self.sin_sig[current_step]}")
         return (users, users)
