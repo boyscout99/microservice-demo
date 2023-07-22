@@ -18,6 +18,8 @@ import random
 from locust import HttpUser, TaskSet, between
 from locust import LoadTestShape
 import math
+import os
+import json
 
 products = [
     '0PUK6V6EV0',
@@ -84,26 +86,52 @@ class WebsiteUser(HttpUser):
     tasks = [UserBehavior]
     wait_time = between(1, 10)
 
-class StepLoadShape(LoadTestShape):
-    """
-    A step load shape
-    Keyword arguments:
-        step_time -- Time between steps
-        step_load -- User increase amount at each step
-        spawn_rate -- Users to stop/start per second at every step
-        time_limit -- Time limit in seconds
-    """
+# class StepLoadShape(LoadTestShape):
+#     """
+#     A step load shape
+#     Keyword arguments:
+#         step_time -- Time between steps
+#         step_load -- User increase amount at each step
+#         spawn_rate -- Users to stop/start per second at every step
+#         time_limit -- Time limit in seconds
+#     """
 
-    step_time = 20
-    step_load = 50
-    spawn_rate = 50
-    time_limit = 600 # reach 1500 users
+#     step_time = 20
+#     step_load = 50
+#     spawn_rate = 50
+#     time_limit = 600 # reach 1500 users
+
+#     def tick(self):
+#         run_time = self.get_run_time()
+
+#         if run_time > self.time_limit:
+#             return None
+
+#         current_step = math.floor(run_time / self.step_time) + 1
+#         return (current_step * self.step_load, self.spawn_rate)
+
+class SinLoadShape(LoadTestShape):
+    """
+    A sinusoidal load shape
+    """
+    def __init__(self):
+        # Open JSON signal
+        with open('signals.json') as f_in:
+            data = json.load(f_in)
+
+        sin_sig = data[2]['rps_signal']
+        # take two days of timesteps
+        steps = 2*2880
+        sin_sig = sin_sig[:steps]
+        # convert RPS to Locust users
+        # alpha = 50/70 # conversion factor, 50 users : 70 RPS
+        self.users_sig = [math.ceil(rps*50/70) for rps in sin_sig]
 
     def tick(self):
         run_time = self.get_run_time()
-
         if run_time > self.time_limit:
             return None
 
         current_step = math.floor(run_time / self.step_time) + 1
-        return (current_step * self.step_load, self.spawn_rate)
+        users = self.users_sig[current_step]
+        return (users, users)
