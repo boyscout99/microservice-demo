@@ -242,7 +242,7 @@ if __name__ == "__main__":
     elif rew_fun == "linear_1": alpha = 15 # 15% of optimisation gap
     else: alpha = 1
 
-    TIMESTEPS = 3*20160
+    TIMESTEPS = 2*20160
 
     # Generate workload
     # This signal must be passed to the environment for the observation
@@ -251,11 +251,11 @@ if __name__ == "__main__":
     #                                              minRPS=1500,
     #                                              maxRPS=1500,
     #                                              steps=1)
-    _, rps_signal = WorkloadGenerator.sin_function(timesteps=TIMESTEPS+1, 
-                                                 minRPS=150,
-                                                 maxRPS=4000,
-                                                 periods=21
-                                                 )
+    # _, rps_signal = WorkloadGenerator.sin_function(timesteps=TIMESTEPS+1, 
+    #                                              minRPS=150,
+    #                                              maxRPS=4000,
+    #                                              periods=21
+    #                                              )
     # plt.plot(_, rps_signal)
     # plt.title(f"Workload signal, {len(rps_signal)} timesteps")
     # plt.show()
@@ -264,7 +264,7 @@ if __name__ == "__main__":
     dirs = create_directories()
     tf_logs_dir = dirs[0]
     pod_logs_dir = dirs[1]
-    logger = enable_logging(pod_logs_dir)
+    # logger = enable_logging(pod_logs_dir)
 
     # Copy samples for synthetic traffic
     data_json_path = os.path.join(script_dir, "exp3_sorted_samples.json")
@@ -272,6 +272,17 @@ if __name__ == "__main__":
     data = json.load(d_file)
     # print(f"Data samples:\n{data}")
     d_file.close()
+
+    # Take saved signal from JSON file
+    with open("signals.json", "r") as infile:
+        existing_data = json.load(infile)
+        # print(existing_data)
+
+    # 0 constant
+    # 1 step
+    # 2 sin
+    # 3 rnd_sin
+    rps_signal = existing_data[3]['rps_signal']
 
     # Generate environment
     env = setup_environment(alpha, 
@@ -292,7 +303,7 @@ if __name__ == "__main__":
     rewards_callback = TensorboardCallback()
     callbacks = [rewards_callback]
 
-    MODEL_DIR = 'models/rl-agent-2/A2C/2023_07_21_130443__p95/1.zip'
+    MODEL_DIR = 'models/rl-agent-2/A2C/2023_07_21_235314__p95/1.zip'
     MODEL_DIR = os.path.join(script_dir, MODEL_DIR)
     print(f"model dir: {MODEL_DIR}")
     model = load_selected_model(env, MODEL_DIR, tf_logs_dir)
