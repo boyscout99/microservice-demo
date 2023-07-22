@@ -205,11 +205,15 @@ class GymEnvironment(gym.Env):
 
     def _get_observation(self):
         # Retrieve observation from Prometheus API, e.g., query response time, CPU usage, memory usage, and replicas
-        observation = self.prom.get_results(self.queries)
+        # observation = self.prom.get_results(self.queries, self.metrics)
         # print(f"\nObservation:\n{self.queries[0]}: {observation[0]};\n{self.queries[1]}: {observation[1]};\n{self.queries[2]}: {observation[2]};\n{self.queries[3]}: {observation[3]};\n{self.queries[4]}: {observation[4]};")
-        observation = {'rep': np.array(self.queries[f"q_rep"], dtype=np.float64).reshape(1,)}
+        # observation = {'rep': np.array(self.queries[f"q_rep"], dtype=np.float64).reshape(1,)}
+        res = self.prom.query(self.queries['q_rep'])
+        observation = {'rep': np.array(res, dtype=np.float64).reshape(1,)}
+        
         for metric in self.metrics:
-            observation.update( {metric: np.array(self.queries[f"q_{metric}"], dtype=np.float64).reshape(1,)} )
+            res = self.prom.query(self.queries[f'q_{metric}'])
+            observation.update( {metric: np.array(res, dtype=np.float64).reshape(1,)} )
 
         # Check for missing values in the observation
         for key in observation.keys():
@@ -220,4 +224,5 @@ class GymEnvironment(gym.Env):
 
         # Update the current observation for the next step
         # self.current_observation = observation
+        print(f"Observation: {observation}")
         return observation

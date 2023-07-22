@@ -74,14 +74,15 @@ def setup_environment(alpha,
     q_file = open(queries_json_path, "r")
     data = json.load(q_file)
     # QUERIES FOR FRONTEND DEPLOYMENT
-    _queries = data[cluster][name][namespace]
-    queries = [
-        _queries["q_pod_replicas"],
-        _queries["q_request_duration"],
-        _queries["q_rps"],
-        _queries["q_cpu_usage"],
-        _queries["q_memory_usage"]
-    ]
+    # _queries = data[cluster][name][namespace]
+    queries = data[cluster][name][namespace]
+    # queries = [
+    #     _queries["q_rep"],
+    #     _queries["q_p95"],
+    #     _queries["q_rps"],
+    #     _queries["q_cpu"],
+    #     _queries["q_mem"]
+    # ]
     q_file.close()
 
     # Create an instance of GymEnvironment

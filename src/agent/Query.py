@@ -41,7 +41,7 @@ class PrometheusClient:
             print(f"Unexpected error occurred: {e}")
             sys.exit(1)
 
-    def get_results(self, queries):
+    def get_results(self, queries, metric):
         '''
         Given a list of promQL, append the results given by the function
         query() in a list called results[].
@@ -55,12 +55,14 @@ class PrometheusClient:
 
             if result is not None:
                 results.append(result)
+                # results.update({key: result})
             else:
                 # retake the query
                 while(tentatives < 3 or found):
                     result = self.query(query = query)
                     if result is not None:
                         results.append(result)
+                        # results.update({key: result})
                         found = 1
                     else:
                         tentatives += 1

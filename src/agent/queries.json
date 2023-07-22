@@ -77,10 +77,10 @@
         },
         "productcatalogservice": {
             "testing": {
-                "q_request_duration": "histogram_quantile(0.90,sum by (le) (rate(istio_request_duration_milliseconds_bucket{reporter=\"destination\",destination_service_namespace=\"testing\",response_code=\"200\",pod=~\"productcatalogservice-.*\"}[1m])))",
-                "q_cpu_usage": "sum by (pod) (rate(container_cpu_usage_seconds_total{namespace=\"testing\", pod=~\"product.*\", image!=\"\"}[2m])) /sum by (pod) (kube_pod_container_resource_requests{namespace=\"testing\", unit=\"core\", pod=~\"product.*\"}) * 100",
-                "q_memory_usage": "sum by (pod) (rate(container_memory_usage_bytes{namespace=\"testing\", pod=~\"product.*\", image!=\"\"}[2m])) /sum by (pod) (kube_pod_container_resource_requests{namespace=\"testing\", unit=\"byte\", pod=~\"product.*\"}) * 100",
-                "q_pod_replicas": "count(kube_pod_info{pod=~\"productcatalogservice-.*\", namespace=\"testing\"})",
+                "q_p95": "histogram_quantile(0.90,sum by (le) (rate(istio_request_duration_milliseconds_bucket{reporter=\"destination\",destination_service_namespace=\"testing\",response_code=\"200\",pod=~\"productcatalogservice-.*\"}[1m])))",
+                "q_cpu": "sum by (pod) (rate(container_cpu_usage_seconds_total{namespace=\"testing\", pod=~\"product.*\", image!=\"\"}[2m])) /sum by (pod) (kube_pod_container_resource_requests{namespace=\"testing\", unit=\"core\", pod=~\"product.*\"}) * 100",
+                "q_mem": "sum by (pod) (rate(container_memory_usage_bytes{namespace=\"testing\", pod=~\"product.*\", image!=\"\"}[2m])) /sum by (pod) (kube_pod_container_resource_requests{namespace=\"testing\", unit=\"byte\", pod=~\"product.*\"}) * 100",
+                "q_rep": "count(kube_pod_info{pod=~\"productcatalogservice-.*\", namespace=\"testing\"})",
                 "q_rps": "avg by (pod) (sum by (pod) (rate(istio_requests_total{reporter=\"destination\", namespace=\"testing\", destination_workload=\"productcatalogservice\"}[1m])))"
             }
         }

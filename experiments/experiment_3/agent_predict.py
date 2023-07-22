@@ -178,6 +178,7 @@ def setup_environment(alpha,
     q_file = open(queries_json_path, "r")
     q = json.load(q_file)
     queries = q[cluster][name][namespace]
+    print(f"queries: {queries}")
     q_file.close()
 
     # Create an instance of GymEnvironment
@@ -311,38 +312,38 @@ if __name__ == "__main__":
 
     obs = env.reset()
     # initialise logs to store replicas, tot_rew, p95
-    logs = {'rep' : [0]}
-    for metric in METRICS:
-        logs[metric] = [0]
-    # obs = flatten_observation(obs)
-    # print(f"Flattened observation: {obs}")
-    # Take actions in a loop
-    # while True:
-    for i in range(1, TIMESTEPS):
-        # Get the recommended action from the model
-        # print(f"Timestep: {i}")
-        # print(obs)
-        action, _states = model.predict(obs, deterministic=True)
-        # Take the recommended action in the environment
-        obs, reward, done, info = env.step(action)
-        print(f"obs: {obs}, reward: {reward}, done: {done}, info: {info}")
-        for key in obs.keys():
-            logs[key].append(round(float(obs[key]),2))
-        if done:
-            break
+    # logs = {'rep' : [0]}
+    # for metric in METRICS:
+    #     logs[metric] = [0]
+    # # obs = flatten_observation(obs)
+    # # print(f"Flattened observation: {obs}")
+    # # Take actions in a loop
+    # # while True:
+    # for i in range(1, TIMESTEPS):
+    #     # Get the recommended action from the model
+    #     # print(f"Timestep: {i}")
+    #     # print(obs)
+    #     action, _states = model.predict(obs, deterministic=True)
+    #     # Take the recommended action in the environment
+    #     obs, reward, done, info = env.step(action)
+    #     print(f"obs: {obs}, reward: {reward}, done: {done}, info: {info}")
+    #     for key in obs.keys():
+    #         logs[key].append(round(float(obs[key]),2))
+    #     if done:
+    #         break
 
-    # Remove first element from each key
-    for key in logs.keys(): 
-        logs[key].pop(0)
-    # Compute mean and std of replicas
-    mean_rep = np.mean(logs['rep'])
-    std_rep = np.std(logs['rep'])
-    # Compute number of SLA violations
-    violations = sum(i>5 for i in logs['p95'])/len(logs['p95']) # df_p95[df_p95['Value']>5]['Value'].count()/df_p95['Value'].count()
-    # print(f"logs: {logs}")
-    Gt = info['total_reward'][0]
-    print(f"Total reward: {round(Gt,2)}")
-    print(f"Replicas: mean: {round(mean_rep,2)}, std: {round(std_rep,2)}")
-    print(f"SLA violations: {round(violations,2)*100}%")
+    # # Remove first element from each key
+    # for key in logs.keys(): 
+    #     logs[key].pop(0)
+    # # Compute mean and std of replicas
+    # mean_rep = np.mean(logs['rep'])
+    # std_rep = np.std(logs['rep'])
+    # # Compute number of SLA violations
+    # violations = sum(i>5 for i in logs['p95'])/len(logs['p95']) # df_p95[df_p95['Value']>5]['Value'].count()/df_p95['Value'].count()
+    # # print(f"logs: {logs}")
+    # Gt = info['total_reward'][0]
+    # print(f"Total reward: {round(Gt,2)}")
+    # print(f"Replicas: mean: {round(mean_rep,2)}, std: {round(std_rep,2)}")
+    # print(f"SLA violations: {round(violations,2)*100}%")
     # close the environment on completion
     env.close()
