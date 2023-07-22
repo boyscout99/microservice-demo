@@ -20,7 +20,6 @@ from locust import LoadTestShape
 import math
 import os
 import json
-import numpy as np
 
 products = [
     '0PUK6V6EV0',
@@ -127,7 +126,7 @@ class SinLoadShape(LoadTestShape):
         # convert RPS to Locust users
         # alpha = 50/70 # conversion factor, 50 users : 70 RPS
         # self.users_sig = [math.ceil(rps*50/70) for rps in sin_sig]
-        self.users_sig = np.arange(10,1000,5)
+        self.users_sig = [i for i in range(10,1000,5)]
         self.time_limit = steps*30 # 2 days in seconds
 
     def tick(self):

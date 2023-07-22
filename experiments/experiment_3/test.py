@@ -73,5 +73,5 @@ time = np.arange(0, len(users_sig))*30/60
 #     print(users)
 
 plt.plot(time, users_sig, label='users')
-plt.plot(time, sin_sig, label='load')
+# plt.plot(time, sin_sig, label='load')
 plt.show()
