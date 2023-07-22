@@ -63,6 +63,9 @@ def get_means(folder:str):
         df_tot_rew = pd.DataFrame(tot_rew_dict)
         df_tot_rew['mean Gt'] = df_tot_rew.mean(axis=1)
         df_tot_rew['std Gt'] = df_tot_rew.std(axis=1)
+        # You can compute the p-value for statistical significance
+        # by sampling randomly 5 values from the 10 samples in the last row
+        # if p<alpha, it is statistically significant
         # print(f"dataframe: {df_tot_rew.tail(1).values.tolist()}")
         print(f"mean_gt_end: {df_tot_rew['mean Gt'].tail(1).iloc[0]}, std: {df_tot_rew['std Gt'].tail(1).iloc[0]}")
     else:
@@ -77,7 +80,7 @@ def get_means(folder:str):
 # mean_ep = round(np.mean(best_ep),2)
 # std_ep = round(np.std(best_ep),2)
 # print(f"mean ep: {mean_ep}, std ep: {std_ep}, abs_best: {abs_best}")
-mean_Gt = get_means('timeseries/tensorboard/14days_steps/step_load/S3')
+mean_Gt = get_means('timeseries/tensorboard/14days_steps/step_load/S6')
 steps = np.arange(0,len(mean_Gt))*((2*20160)/1000)
 
 plt.rcParams.update({
@@ -89,10 +92,10 @@ plt.rcParams.update({
 })
 
 plt.plot(steps, mean_Gt, label='$\mu_{G_{T}}$')
-plt.title('Training with ${S}_{3}$, step workload')
+plt.title('Training with ${S}_{6}$, step workload')
 plt.xlabel('steps')
 plt.ylabel('$\mu_{G_{T}}$')
 plt.grid()
 plt.legend(loc='upper right', fontsize='x-small')
-plt.savefig('step_train_S3.png')
+plt.savefig('step_train_S6.png')
 
