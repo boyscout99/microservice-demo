@@ -7,6 +7,7 @@ class StringProcessor:
         self.cluster = None
         self.model = None
         self.rew_fun = None
+        self.learn_rate = None
         self.model_dir = None
     
     def parse_args(self):
@@ -26,6 +27,9 @@ class StringProcessor:
                             help="The list of metrics for observation: e.g. [\"rps\", \"cpu\"] or [\"mem\", \"cpu\"], defaults to [\"rep\", \"p95\", \"rps\", \"cpu\", \"mem\"]")
         parser.add_argument("--model_dir", type=str, required=True,
                             help="The model position: e.g. models/rl-agent-e1-ppo/A2C/400.zip")
+        parser.add_argument("--learn_rate", type=str, required=False, default=0.0007,
+                            help="The learning rate: e.g. 0.0007 default or 0.01")
+        
         
         try:
             args = parser.parse_args()
@@ -34,9 +38,10 @@ class StringProcessor:
             self.cluster = args.cluster
             self.model = args.model
             self.rew_fun = args.rew_fun
+            self.learn_rate = args.learn_rate
             self.metrics = args.metrics
             self.model_dir = args.model_dir
         except Exception as e:
             print(f"Unexpected error occurred: {e}\nCheck arguments.")
 
-        return self.deployment, self.namespace, self.cluster, self.model, self.rew_fun, self.metrics, self.model_dir
+        return self.deployment, self.namespace, self.cluster, self.model, self.rew_fun, self.learn_rate, self.metrics, self.model_dir
