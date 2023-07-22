@@ -78,10 +78,45 @@
         "productcatalogservice": {
             "testing": {
                 "q_p95": "histogram_quantile(0.95, sum by (le) (rate(istio_request_duration_milliseconds_bucket{reporter=\"destination\",destination_service_namespace=\"testing\",response_code=\"200\",pod=~\"productcatalogservice-.*\"}[1m])))",
-                "q_cpu": "avg(sum by (pod) (rate(container_cpu_usage_seconds_total{namespace=\"testing\", pod=~\"product.*\", image!=\"\"}[2m])) / sum by (pod) (kube_pod_container_resource_requests{namespace=\"testing\", unit=\"core\", pod=~\"product.*\"}) * 100)",
+                "q_CPU": "avg(sum by (pod) (rate(container_cpu_usage_seconds_total{namespace=\"testing\", pod=~\"product.*\", image!=\"\"}[2m])) / sum by (pod) (kube_pod_container_resource_requests{namespace=\"testing\", unit=\"core\", pod=~\"product.*\"}) * 100)",
                 "q_mem": "avg(sum by (pod) (rate(container_memory_usage_bytes{namespace=\"testing\", pod=~\"product.*\", image!=\"\"}[2m])) / sum by (pod) (kube_pod_container_resource_requests{namespace=\"testing\", unit=\"byte\", pod=~\"product.*\"}) * 100)",
                 "q_rep": "count(kube_pod_info{pod=~\"productcatalogservice-.*\", namespace=\"testing\"})",
                 "q_rps": "avg(sum by (pod) (rate(istio_requests_total{reporter=\"destination\", namespace=\"testing\", destination_workload=\"productcatalogservice\"}[1m])))"
+            },
+            "default": {
+                "q_p95": "histogram_quantile(0.95, sum by (le) (rate(istio_request_duration_milliseconds_bucket{reporter=\"destination\",destination_service_namespace=\"default\",response_code=\"200\",pod=~\"productcatalogservice-.*\"}[1m])))",
+                "q_CPU": "avg(sum by (pod) (rate(container_cpu_usage_seconds_total{namespace=\"default\", pod=~\"product.*\", image!=\"\"}[2m])) / sum by (pod) (kube_pod_container_resource_requests{namespace=\"default\", unit=\"core\", pod=~\"product.*\"}) * 100)",
+                "q_mem": "avg(sum by (pod) (rate(container_memory_usage_bytes{namespace=\"default\", pod=~\"product.*\", image!=\"\"}[2m])) / sum by (pod) (kube_pod_container_resource_requests{namespace=\"default\", unit=\"byte\", pod=~\"product.*\"}) * 100)",
+                "q_rep": "count(kube_pod_info{pod=~\"productcatalogservice-.*\", namespace=\"default\"})",
+                "q_rps": "avg(sum by (pod) (rate(istio_requests_total{reporter=\"destination\", namespace=\"default\", destination_workload=\"productcatalogservice\"}[1m])))"
+            },
+            "rl-agent-e1-a2c": {
+                "q_p95": "histogram_quantile(0.95, sum by (le) (rate(istio_request_duration_milliseconds_bucket{reporter=\"destination\",destination_service_namespace=\"rl-agent-e1-a2c\",response_code=\"200\",pod=~\"productcatalogservice-.*\"}[1m])))",
+                "q_CPU": "avg(sum by (pod) (rate(container_cpu_usage_seconds_total{namespace=\"rl-agent-e1-a2c\", pod=~\"product.*\", image!=\"\"}[2m])) / sum by (pod) (kube_pod_container_resource_requests{namespace=\"rl-agent-e1-a2c\", unit=\"core\", pod=~\"product.*\"}) * 100)",
+                "q_mem": "avg(sum by (pod) (rate(container_memory_usage_bytes{namespace=\"rl-agent-e1-a2c\", pod=~\"product.*\", image!=\"\"}[2m])) / sum by (pod) (kube_pod_container_resource_requests{namespace=\"rl-agent-e1-a2c\", unit=\"byte\", pod=~\"product.*\"}) * 100)",
+                "q_rep": "count(kube_pod_info{pod=~\"productcatalogservice-.*\", namespace=\"rl-agent-e1-a2c\"})",
+                "q_rps": "avg(sum by (pod) (rate(istio_requests_total{reporter=\"destination\", namespace=\"rl-agent-e1-a2c\", destination_workload=\"productcatalogservice\"}[1m])))"
+            },
+            "rl-agent-e1-ppo": {
+                "q_p95": "histogram_quantile(0.95, sum by (le) (rate(istio_request_duration_milliseconds_bucket{reporter=\"destination\",destination_service_namespace=\"rl-agent-e1-ppo\",response_code=\"200\",pod=~\"productcatalogservice-.*\"}[1m])))",
+                "q_CPU": "avg(sum by (pod) (rate(container_cpu_usage_seconds_total{namespace=\"rl-agent-e1-ppo\", pod=~\"product.*\", image!=\"\"}[2m])) / sum by (pod) (kube_pod_container_resource_requests{namespace=\"rl-agent-e1-ppo\", unit=\"core\", pod=~\"product.*\"}) * 100)",
+                "q_mem": "avg(sum by (pod) (rate(container_memory_usage_bytes{namespace=\"rl-agent-e1-ppo\", pod=~\"product.*\", image!=\"\"}[2m])) / sum by (pod) (kube_pod_container_resource_requests{namespace=\"rl-agent-e1-ppo\", unit=\"byte\", pod=~\"product.*\"}) * 100)",
+                "q_rep": "count(kube_pod_info{pod=~\"productcatalogservice-.*\", namespace=\"rl-agent-e1-ppo\"})",
+                "q_rps": "avg(sum by (pod) (rate(istio_requests_total{reporter=\"destination\", namespace=\"rl-agent-e1-ppo\", destination_workload=\"productcatalogservice\"}[1m])))"
+            },
+            "rl-agent-e3-1": {
+                "q_p95": "histogram_quantile(0.95, sum by (le) (rate(istio_request_duration_milliseconds_bucket{reporter=\"destination\",destination_service_namespace=\"rl-agent-e3-1\",response_code=\"200\",pod=~\"productcatalogservice-.*\"}[1m])))",
+                "q_CPU": "avg(sum by (pod) (rate(container_cpu_usage_seconds_total{namespace=\"rl-agent-e3-1\", pod=~\"product.*\", image!=\"\"}[2m])) / sum by (pod) (kube_pod_container_resource_requests{namespace=\"rl-agent-e3-1\", unit=\"core\", pod=~\"product.*\"}) * 100)",
+                "q_mem": "avg(sum by (pod) (rate(container_memory_usage_bytes{namespace=\"rl-agent-e3-1\", pod=~\"product.*\", image!=\"\"}[2m])) / sum by (pod) (kube_pod_container_resource_requests{namespace=\"rl-agent-e3-1\", unit=\"byte\", pod=~\"product.*\"}) * 100)",
+                "q_rep": "count(kube_pod_info{pod=~\"productcatalogservice-.*\", namespace=\"rl-agent-e3-1\"})",
+                "q_rps": "avg(sum by (pod) (rate(istio_requests_total{reporter=\"destination\", namespace=\"rl-agent-e3-1\", destination_workload=\"productcatalogservice\"}[1m])))"
+            },
+            "rl-agent-e3-2": {
+                "q_p95": "histogram_quantile(0.95, sum by (le) (rate(istio_request_duration_milliseconds_bucket{reporter=\"destination\",destination_service_namespace=\"rl-agent-e3-2\",response_code=\"200\",pod=~\"productcatalogservice-.*\"}[1m])))",
+                "q_CPU": "avg(sum by (pod) (rate(container_cpu_usage_seconds_total{namespace=\"rl-agent-e3-2\", pod=~\"product.*\", image!=\"\"}[2m])) / sum by (pod) (kube_pod_container_resource_requests{namespace=\"rl-agent-e3-2\", unit=\"core\", pod=~\"product.*\"}) * 100)",
+                "q_mem": "avg(sum by (pod) (rate(container_memory_usage_bytes{namespace=\"rl-agent-e3-2\", pod=~\"product.*\", image!=\"\"}[2m])) / sum by (pod) (kube_pod_container_resource_requests{namespace=\"rl-agent-e3-2\", unit=\"byte\", pod=~\"product.*\"}) * 100)",
+                "q_rep": "count(kube_pod_info{pod=~\"productcatalogservice-.*\", namespace=\"rl-agent-e3-2\"})",
+                "q_rps": "avg(sum by (pod) (rate(istio_requests_total{reporter=\"destination\", namespace=\"rl-agent-e3-2\", destination_workload=\"productcatalogservice\"}[1m])))"
             }
         }
     }
