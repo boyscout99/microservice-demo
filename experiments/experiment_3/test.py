@@ -1,6 +1,8 @@
 import os
 import json
 from get_metrics import GetMetrics
+import math
+import matplotlib.pyplot as plt
 
 # d_file = open('exp3_sorted_samples.json', 'r')
 # data = json.load(d_file)
@@ -13,37 +15,56 @@ from get_metrics import GetMetrics
 
 # opt_rep = GetMetrics(data, ['CPU', 'p95', 'rps', 'mem']).optimal_rep_given_workload(5000)
 # print(f"opt_rep: {opt_rep}")
-import scipy.stats as stats
 
-# Given data
-sample_mean = -3782956
-sample_std = 1223759
-sample_size = 10
 
-# Hypothesized population mean (Null Hypothesis)
-population_mean = -4552630
+# import scipy.stats as stats
 
-# Calculate the t-statistic
-t_statistic = (sample_mean - population_mean) / (sample_std / (sample_size ** 0.5))
+# # Given data
+# sample_mean = -3782956
+# sample_std = 1223759
+# sample_size = 10
 
-# Calculate the degrees of freedom
-degrees_of_freedom = sample_size - 1
+# # Hypothesized population mean (Null Hypothesis)
+# population_mean = -4552630
 
-# Set the significance level (alpha)
-alpha = 0.10
+# # Calculate the t-statistic
+# t_statistic = (sample_mean - population_mean) / (sample_std / (sample_size ** 0.5))
 
-# Find the critical value from the t-distribution table (two-tailed test)
-critical_value = stats.t.ppf(1 - alpha / 2, df=degrees_of_freedom)
+# # Calculate the degrees of freedom
+# degrees_of_freedom = sample_size - 1
 
-# Calculate the p-value (two-tailed test)
-p_value = 2 * (1 - stats.t.cdf(abs(t_statistic), df=degrees_of_freedom))
+# # Set the significance level (alpha)
+# alpha = 0.10
 
-# Print the results
-print("T-statistic:", t_statistic)
-print("P-value:", p_value)
+# # Find the critical value from the t-distribution table (two-tailed test)
+# critical_value = stats.t.ppf(1 - alpha / 2, df=degrees_of_freedom)
 
-# Compare p-value and alpha for statistical significance
-if p_value <= alpha:
-    print("The results are statistically significant.")
-else:
-    print("The results are not statistically significant.")
+# # Calculate the p-value (two-tailed test)
+# p_value = 2 * (1 - stats.t.cdf(abs(t_statistic), df=degrees_of_freedom))
+
+# # Print the results
+# print("T-statistic:", t_statistic)
+# print("P-value:", p_value)
+
+# # Compare p-value and alpha for statistical significance
+# if p_value <= alpha:
+#     print("The results are statistically significant.")
+# else:
+#     print("The results are not statistically significant.")
+import math
+import numpy as np
+
+with open('signals.json') as f_in:
+    data = json.load(f_in)
+
+sin_sig = data[2]['rps_signal']
+# take two days of timesteps
+steps = 2*2880
+sin_sig = sin_sig[:steps]
+# convert RPS to Locust users
+# alpha = 50/70 # conversion factor, 50 users : 70 RPS
+users_sig = [math.ceil(rps*50/70) for rps in sin_sig]
+time = np.arange(0, steps)
+plt.plot(time, users_sig, label='users')
+plt.plot(time, sin_sig, label='load')
+plt.show()
