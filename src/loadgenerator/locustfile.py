@@ -110,45 +110,16 @@ class WebsiteUser(HttpUser):
 #         current_step = math.floor(run_time / self.step_time) + 1
 #         return (current_step * self.step_load, self.spawn_rate)
 
-# class StepLoadShape(LoadTestShape):
-#     """
-#     A step load shape
-#     """
-#     def __init__(self):
-#         # Open JSON signal
-#         with open('signals.json') as f_in:
-#             data = json.load(f_in)
-
-#         sin_sig = data[1]['rps_signal']
-#         # take two days of timesteps
-#         steps = 2*2880
-#         self.sin_sig = sin_sig[:steps]
-#         # convert RPS to Locust users
-#         # alpha = 50/70 # conversion factor, 50 users : 70 RPS
-#         self.users_sig = [math.ceil(rps*50/70) for rps in sin_sig]
-#         # self.users_sig = [i for i in range(10,1000,5)]
-#         self.time_limit = steps*30 # 2 days in seconds
-
-#     def tick(self):
-#         run_time = self.get_run_time()
-#         if run_time > self.time_limit:
-#             return None
-
-#         current_step = math.floor(run_time / 30) + 1
-#         users = self.users_sig[current_step]
-#         print(f"Users: {users}, load: {self.sin_sig[current_step]}")
-#         return (users, users)
-
-class SinLoadShape(LoadTestShape):
+class StepLoadShape(LoadTestShape):
     """
-    A sinusoidal load shape
+    A step load shape
     """
     def __init__(self):
         # Open JSON signal
         with open('signals.json') as f_in:
             data = json.load(f_in)
 
-        sin_sig = data[2]['rps_signal']
+        sin_sig = data[1]['rps_signal']
         # take two days of timesteps
         steps = 2*2880
         self.sin_sig = sin_sig[:steps]
@@ -167,6 +138,35 @@ class SinLoadShape(LoadTestShape):
         users = self.users_sig[current_step]
         print(f"Users: {users}, load: {self.sin_sig[current_step]}")
         return (users, users)
+
+# class SinLoadShape(LoadTestShape):
+#     """
+#     A sinusoidal load shape
+#     """
+#     def __init__(self):
+#         # Open JSON signal
+#         with open('signals.json') as f_in:
+#             data = json.load(f_in)
+
+#         sin_sig = data[2]['rps_signal']
+#         # take two days of timesteps
+#         steps = 2*2880
+#         self.sin_sig = sin_sig[:steps]
+#         # convert RPS to Locust users
+#         # alpha = 50/70 # conversion factor, 50 users : 70 RPS
+#         self.users_sig = [math.ceil(rps*50/70) for rps in sin_sig]
+#         # self.users_sig = [i for i in range(10,1000,5)]
+#         self.time_limit = steps*30 # 2 days in seconds
+
+#     def tick(self):
+#         run_time = self.get_run_time()
+#         if run_time > self.time_limit:
+#             return None
+
+#         current_step = math.floor(run_time / 30) + 1
+#         users = self.users_sig[current_step]
+#         print(f"Users: {users}, load: {self.sin_sig[current_step]}")
+#         return (users, users)
     
 # class RndSinLoadShape(LoadTestShape):
 #     """
