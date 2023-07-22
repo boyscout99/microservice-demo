@@ -94,13 +94,15 @@ spec:
         - -c
         - |
           python3 /app/health_check.py & \
-          python3 /app/agent_learn.py \
-          --deployment frontend \
+          python3 /app/agent_predict.py \
+          --deployment productcatalogservice \
           --namespace $POD_NAMESPACE \
           --cluster gke \
-          --rew_fun quad_cpu_thr \
+          --rew_fun linear_1 \
           --model A2C \
-          --learn_rate 0.0014
+          --learn_rate 0.0014 \
+          --metrics p95 mem \
+          --model_dir 'best_models/sin_load/sin_load_p95_mem.zip'
         env:
         - name: POD_NAMESPACE
           valueFrom:
