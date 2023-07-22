@@ -63,8 +63,15 @@ steps = 2*2880
 sin_sig = sin_sig[:steps]
 # convert RPS to Locust users
 # alpha = 50/70 # conversion factor, 50 users : 70 RPS
-users_sig = [math.ceil(rps*50/70) for rps in sin_sig]
-time = np.arange(0, steps)
+# users_sig = [math.ceil(rps*50/70) for rps in sin_sig]
+users_sig = np.arange(10,1000,5)
+time = np.arange(0, len(users_sig))*30/60
+
+# for t in range(1400):
+#     current_step = math.floor(t / 30) + 1
+#     users = users_sig[current_step]
+#     print(users)
+
 plt.plot(time, users_sig, label='users')
 plt.plot(time, sin_sig, label='load')
 plt.show()
