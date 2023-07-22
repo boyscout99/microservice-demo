@@ -133,6 +133,6 @@ class SinLoadShape(LoadTestShape):
         if run_time > self.time_limit:
             return None
 
-        current_step = math.floor(run_time / self.step_time) + 1
+        current_step = math.floor(run_time / 30) + 1
         users = self.users_sig[current_step]
         return (users, users)
