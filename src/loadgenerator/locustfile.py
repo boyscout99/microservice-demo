@@ -126,6 +126,7 @@ class SinLoadShape(LoadTestShape):
         # convert RPS to Locust users
         # alpha = 50/70 # conversion factor, 50 users : 70 RPS
         self.users_sig = [math.ceil(rps*50/70) for rps in sin_sig]
+        self.time_limit = steps*30 # 2 days in seconds
 
     def tick(self):
         run_time = self.get_run_time()
