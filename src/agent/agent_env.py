@@ -89,6 +89,8 @@ class GymEnvironment(gym.Env):
             # print(f"Taken action {action}, self.current_replicas: {self.current_replicas}")
             # Get the new observation from Prometheus API
             self.obs = self._get_observation()
+            print("Waiting 30 seconds to stabilise ...")
+            time.sleep(30)
             pass
         elif action == 1:  # Increase replicas
             print("Taking action +1")
