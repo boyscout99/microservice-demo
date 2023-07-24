@@ -101,8 +101,8 @@ spec:
           --rew_fun linear_1 \
           --model A2C \
           --learn_rate 0.0014 \
-          --metrics p95 mem \
-          --model_dir 'best_models/step_load/step_load_p95_mem.zip'
+          --metrics CPU p95 mem \
+          --model_dir 'best_models/rnd_sin_load/rnd_sin_load_CPU_p95_mem.zip'
         env:
         - name: POD_NAMESPACE
           valueFrom:

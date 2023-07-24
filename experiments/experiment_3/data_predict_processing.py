@@ -15,14 +15,14 @@ df.fillna(0, inplace=True)
 timestamps = pd.to_datetime(df['Time'])
 
 # sin load
-sin_p95_agent = df['p95-rl-agent-e1-a2c']
-sin_p95_hpa = df['p95-rl-agent-e1-ppo']
-sin_rep_agent = df['replicas-rl-agent-e1-a2c']
-sin_rep_hpa = df['replicas-rl-agent-e1-ppo']
+sin_p95_agent = df['p95-testing']
+sin_p95_hpa = df['p95-default']
+sin_rep_agent = df['replicas-testing']
+sin_rep_hpa = df['replicas-default']
 sin_cpu_agent = df['CPU-rl-agent-e1-a2c']
 sin_cpu_hpa = df['CPU-rl-agent-e1-ppo']
-sin_rps_agent = df['RPS-rl-agent-e1-a2c']
-sin_rps_hpa = df['RPS-rl-agent-e1-ppo']
+sin_rps_agent = df['RPS-testing']
+sin_rps_hpa = df['RPS-default']
 sin_load_agent = df['dep_RPS-rl-agent-e1-a2c']
 sin_load_hpa = df['dep_RPS-rl-agent-e1-ppo']
 
