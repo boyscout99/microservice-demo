@@ -382,7 +382,7 @@ if __name__ == "__main__":
     #     outfile.write(json_object)
 
     # Plot signals
-    plot = False
+    plot = True
     if plot:
         _ = [i for i in range(0,TIMESTEPS+1)]
         # get optimal replicas
@@ -406,27 +406,27 @@ if __name__ == "__main__":
         plt.title(f"Periodic with random spikes workload signal")
         plt.grid()
         plt.legend(loc='upper right', fontsize='x-small')
-        plt.savefig('rnd_sin_load.png')
+        plt.savefig('step_func.png')
 
     # Generate environment
-    env = setup_environment(alpha, 
-                            cluster, 
-                            url, 
-                            name, 
-                            namespace, 
-                            minReplicas, 
-                            maxReplicas, 
-                            rew_fun,
-                            data,
-                            rps_signal,
-                            METRICS) # adding workload
+    # env = setup_environment(alpha, 
+    #                         cluster, 
+    #                         url, 
+    #                         name, 
+    #                         namespace, 
+    #                         minReplicas, 
+    #                         maxReplicas, 
+    #                         rew_fun,
+    #                         data,
+    #                         rps_signal,
+    #                         METRICS) # adding workload
     
     print("Checking the environment ...")
     # check_env(env)
 
-    env = Monitor(env, tf_logs_dir)
-    model = load_model(env, models_dir, tf_logs_dir)
-    print(f"Model policy: {model.policy}")
+    # env = Monitor(env, tf_logs_dir)
+    # model = load_model(env, models_dir, tf_logs_dir)
+    # print(f"Model policy: {model.policy}")
 
     # create callbacks
     rewards_callback = TensorboardCallback()
@@ -435,10 +435,10 @@ if __name__ == "__main__":
     # replay_buffer = ReplayBuffer(buffer_size, obs_space, action_space)
     # model.collect_rollouts(env, callbacks, train_freq=5, replay_buffer=replay_buffer)
     # train the model
-    train_model(model, 
-                models_dir, 
-                TIMESTEPS,
-                EPISODES,
-                callbacks)
+    # train_model(model, 
+    #             models_dir, 
+    #             TIMESTEPS,
+    #             EPISODES,
+    #             callbacks)
     # close the environment on completion
-    env.close()
+    # env.close()

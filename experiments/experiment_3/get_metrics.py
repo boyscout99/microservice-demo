@@ -53,11 +53,44 @@ class GetMetrics:
                 # print(f"elem {data[elem]['rps']} type: {type(data[elem]['rps'])}, elem+1 {data[elem+1]['rps']}")
                 if (load<metric_list[0]["load"]): # case in which RPS is too low
                     # print("Note - Load too low!")
-                    coeff = np.abs((load-0)/(metric_list[0]["load"]-0)) # relative distance wrt the first element
-                    # print(f"coeff: {coeff}")
-                    for metric in self.metrics:
-                        results.update( {metric: coeff*(metric_list[0][metric]-0)} ) # the adjusted value
-                    break
+                    # coeff = np.abs((load-0)/(metric_list[0]["load"]-0)) # relative distance wrt the first element
+                    # # print(f"coeff: {coeff}")
+                    # for metric in self.metrics:
+                    #     results.update( {metric: coeff*(metric_list[0][metric]-0)} ) # the adjusted value
+                    # break
+                    # perform linear regression for each metric on the last 10 values
+                    # take first 20 elements to perform linear regression
+                    d = metric_list[:20] # list of dictionaries
+                    # create array of 10 elements for x
+                    x = []
+                    for i in range(len(d)):
+                        x.append(d[i]['load'])
+                    # print(f"metric: load, x: {x}")
+                    x2 = [i for i in x] # add last element for plotting
+                    x2.insert(0,load)
+                    # loop each metric
+                    for m in self.metrics:
+                        # take first 20 values for one metric
+                        y = []
+                        for i in range(len(d)):
+                            y.append(d[i][m])
+                        # print(f"metric: {m}, y: {y}")
+                        # compute linear regression
+                        res = linregress(x,y)
+                        # y = ax + b -> metric = res.slope*load + res.intercept
+                        y_final = res.slope*load + res.intercept
+                        results.update({m: y_final}) # the adjusted value
+                        # print(f"results: {results}")
+                        # # plot results
+                        # y.append(y_final)
+                        # plt.plot(x2, y, 'o', label='Original data')
+                        # x_np = np.array(x)
+                        # plt.plot(x_np, res.slope*x_np + res.intercept, label='Fitted line')
+                        # plt.title(f"{m}")
+                        # plt.xlabel('load')
+                        # plt.ylabel(f"{m}")
+                        # plt.legend()
+                        # plt.show()
                 elif (load>metric_list[-1]["load"]):
                     # print("Note - Load too high!")
                     # do some linear regression to estimate the coefficent

@@ -4,17 +4,17 @@ from get_metrics import GetMetrics
 import math
 import matplotlib.pyplot as plt
 
-# d_file = open('exp3_sorted_samples.json', 'r')
-# data = json.load(d_file)
-# d_file.close()
+d_file = open('exp3_sorted_samples.json', 'r')
+data = json.load(d_file)
+d_file.close()
 
-# d = GetMetrics(data, ['CPU', 'p95', 'rps', 'mem']).get_metrics_approx(6,7000)
-# print(d)
+d = GetMetrics(data, ['CPU', 'p95', 'rps', 'mem']).get_metrics_approx(2,150)
+print(d)
 
-# a = GetMetrics(data, ['p95']).plot_data()
+a = GetMetrics(data, ['p95']).plot_data()
 
-# opt_rep = GetMetrics(data, ['CPU', 'p95', 'rps', 'mem']).optimal_rep_given_workload(5000)
-# print(f"opt_rep: {opt_rep}")
+opt_rep = GetMetrics(data, ['CPU', 'p95', 'rps', 'mem']).optimal_rep_given_workload(150)
+print(f"opt_rep: {opt_rep}")
 
 
 # import scipy.stats as stats
@@ -51,27 +51,27 @@ import matplotlib.pyplot as plt
 #     print("The results are statistically significant.")
 # else:
 #     print("The results are not statistically significant.")
-import math
-import numpy as np
+# import math
+# import numpy as np
 
-with open('signals.json') as f_in:
-    data = json.load(f_in)
+# with open('signals.json') as f_in:
+#     data = json.load(f_in)
 
-sin_sig = data[2]['rps_signal']
-# take two days of timesteps
-steps = 2*2880
-sin_sig = sin_sig[:steps]
-# convert RPS to Locust users
-# alpha = 50/70 # conversion factor, 50 users : 70 RPS
-# users_sig = [math.ceil(rps*50/70) for rps in sin_sig]
-users_sig = np.arange(10,1000,5)
-time = np.arange(0, len(users_sig))*30/60
+# sin_sig = data[2]['rps_signal']
+# # take two days of timesteps
+# steps = 2*2880
+# sin_sig = sin_sig[:steps]
+# # convert RPS to Locust users
+# # alpha = 50/70 # conversion factor, 50 users : 70 RPS
+# # users_sig = [math.ceil(rps*50/70) for rps in sin_sig]
+# users_sig = np.arange(10,1000,5)
+# time = np.arange(0, len(users_sig))*30/60
 
-# for t in range(1400):
-#     current_step = math.floor(t / 30) + 1
-#     users = users_sig[current_step]
-#     print(users)
+# # for t in range(1400):
+# #     current_step = math.floor(t / 30) + 1
+# #     users = users_sig[current_step]
+# #     print(users)
 
-plt.plot(time, users_sig, label='users')
-# plt.plot(time, sin_sig, label='load')
-plt.show()
+# plt.plot(time, users_sig, label='users')
+# # plt.plot(time, sin_sig, label='load')
+# plt.show()
