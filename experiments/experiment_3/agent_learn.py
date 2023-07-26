@@ -325,7 +325,7 @@ if __name__ == "__main__":
     models_dir = dirs[0]
     tf_logs_dir = dirs[1]
     pod_logs_dir = dirs[2]
-    logger = enable_logging(pod_logs_dir) # comment to print on stdout
+    # logger = enable_logging(pod_logs_dir) # comment to print on stdout
 
     # Copy samples for synthetic traffic
     data_json_path = os.path.join(script_dir, "exp3_sorted_samples.json")
@@ -370,7 +370,7 @@ if __name__ == "__main__":
     # 1 step
     # 2 sin
     # 3 rnd_sin
-    rps_signal = existing_data[1]['rps_signal']
+    rps_signal = existing_data[3]['rps_signal']
     # print(f"existing_data[2]: {existing_data[2]}")
     # print(f"rps_signal: {rps_signal}")
 
@@ -397,16 +397,17 @@ if __name__ == "__main__":
             # opt_p95.append(_p95)
             # reward.append(_rew)
 
-        plt.plot(_, [i/1000 for i in rps_signal], label='Load/1000')
-        plt.plot(_, opt_rep, label='Expected optimal $N_{s,t}$')
+        # plt.plot(_, [i/1000 for i in rps_signal], label='Load/1000')
+        # plt.plot(_, opt_rep, label='Expected optimal $N_{s,t}$')
         # plt.plot(_, [i/100 for i in reward], label='$E[R_{t}]/100$')
         # plt.plot(_, opt_p95, label='Optimal $L_{s,t}$')
-        plt.xlabel("Timesteps")
+        # plt.xlabel("Timesteps")
         # plt.ylabel("Load to deployment [req/s]")
-        plt.title(f"Periodic with random spikes workload signal")
-        plt.grid()
-        plt.legend(loc='upper right', fontsize='x-small')
-        plt.savefig('step_func.png')
+        # plt.title(f"Periodic with random spikes workload signal")
+        # plt.grid()
+        # plt.legend(loc='upper right', fontsize='x-small')
+        # plt.savefig('step_func.png')
+        print(f"Mean optimal replicas: {np.mean(opt_rep)}")
 
     # Generate environment
     # env = setup_environment(alpha, 
@@ -421,7 +422,7 @@ if __name__ == "__main__":
     #                         rps_signal,
     #                         METRICS) # adding workload
     
-    print("Checking the environment ...")
+    # print("Checking the environment ...")
     # check_env(env)
 
     # env = Monitor(env, tf_logs_dir)

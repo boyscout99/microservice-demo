@@ -23,7 +23,8 @@ plt.rcParams.update({
     "text.usetex": True,
     "font.family": "sans-serif",
     "font.sans-serif": "Georgia",
-    "font.size": 14
+    "font.size": 14,
+    "figure.dpi": 300 
 })
 
 BEST_MODEL = -np.Inf
@@ -243,7 +244,7 @@ if __name__ == "__main__":
     elif rew_fun == "linear_1": alpha = 15 # 15% of optimisation gap
     else: alpha = 1
 
-    TIMESTEPS = 2*20160
+    TIMESTEPS = 2880 # 2*20160
 
     # Generate workload
     # This signal must be passed to the environment for the observation
@@ -283,7 +284,7 @@ if __name__ == "__main__":
     # 1 step
     # 2 sin
     # 3 rnd_sin
-    rps_signal = existing_data[3]['rps_signal']
+    rps_signal = existing_data[3]['rps_signal'][1440:2880+1440]
 
     # Generate environment
     env = setup_environment(alpha, 
@@ -304,7 +305,7 @@ if __name__ == "__main__":
     rewards_callback = TensorboardCallback()
     callbacks = [rewards_callback]
 
-    MODEL_DIR = 'models/rl-agent-2/A2C/2023_07_21_235314__p95/1.zip'
+    MODEL_DIR = 'models/rl-agent-2/A2C/2023_07_21_230631__p95_mem/1.zip'
     MODEL_DIR = os.path.join(script_dir, MODEL_DIR)
     print(f"model dir: {MODEL_DIR}")
     model = load_selected_model(env, MODEL_DIR, tf_logs_dir)
@@ -312,38 +313,45 @@ if __name__ == "__main__":
 
     obs = env.reset()
     # initialise logs to store replicas, tot_rew, p95
-    # logs = {'rep' : [0]}
-    # for metric in METRICS:
-    #     logs[metric] = [0]
-    # # obs = flatten_observation(obs)
-    # # print(f"Flattened observation: {obs}")
-    # # Take actions in a loop
-    # # while True:
-    # for i in range(1, TIMESTEPS):
-    #     # Get the recommended action from the model
-    #     # print(f"Timestep: {i}")
-    #     # print(obs)
-    #     action, _states = model.predict(obs, deterministic=True)
-    #     # Take the recommended action in the environment
-    #     obs, reward, done, info = env.step(action)
-    #     print(f"obs: {obs}, reward: {reward}, done: {done}, info: {info}")
-    #     for key in obs.keys():
-    #         logs[key].append(round(float(obs[key]),2))
-    #     if done:
-    #         break
+    logs = {'rep' : [0]}
+    for metric in METRICS:
+        logs[metric] = [0]
+    # obs = flatten_observation(obs)
+    # print(f"Flattened observation: {obs}")
+    # Take actions in a loop
+    # while True:
+    for i in range(1, TIMESTEPS):
+        # Get the recommended action from the model
+        # print(f"Timestep: {i}")
+        # print(obs)
+        action, _states = model.predict(obs, deterministic=True)
+        # Take the recommended action in the environment
+        obs, reward, done, info = env.step(action)
+        print(f"obs: {obs}, reward: {reward}, done: {done}, info: {info}")
+        for key in obs.keys():
+            logs[key].append(round(float(obs[key]),2))
+        if done:
+            break
 
-    # # Remove first element from each key
-    # for key in logs.keys(): 
-    #     logs[key].pop(0)
-    # # Compute mean and std of replicas
-    # mean_rep = np.mean(logs['rep'])
-    # std_rep = np.std(logs['rep'])
-    # # Compute number of SLA violations
-    # violations = sum(i>5 for i in logs['p95'])/len(logs['p95']) # df_p95[df_p95['Value']>5]['Value'].count()/df_p95['Value'].count()
-    # # print(f"logs: {logs}")
-    # Gt = info['total_reward'][0]
-    # print(f"Total reward: {round(Gt,2)}")
-    # print(f"Replicas: mean: {round(mean_rep,2)}, std: {round(std_rep,2)}")
-    # print(f"SLA violations: {round(violations,2)*100}%")
+    # Remove first element from each key
+    for key in logs.keys(): 
+        logs[key].pop(0)
+    # Compute mean and std of replicas
+    mean_rep = np.mean(logs['rep'])
+    std_rep = np.std(logs['rep'])
+    # Compute number of SLA violations
+    violations = sum(i>5 for i in logs['p95'])/len(logs['p95']) # df_p95[df_p95['Value']>5]['Value'].count()/df_p95['Value'].count()
+    # print(f"logs: {logs}")
+    Gt = info['total_reward'][0]
+    print(f"Total reward: {round(Gt,2)}")
+    print(f"Replicas: mean: {round(mean_rep,2)}, std: {round(std_rep,2)}")
+    print(f"SLA violations: {round(violations,2)*100}%")
+    plt.plot(np.arange(len(logs['p95'])), logs["p95"])
+    plt.grid()
+    plt.title("$L_{s,t}$ inference simulation for $H_{r}$ on $S_{4}$")
+    plt.xlabel('Timesteps')
+    plt.ylabel('ms')
+    plt.ylim(0,20)
+    plt.show()
     # close the environment on completion
     env.close()
