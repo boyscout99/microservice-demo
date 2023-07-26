@@ -148,7 +148,7 @@ class WebsiteUser(HttpUser):
 #         with open('signals.json') as f_in:
 #             data = json.load(f_in)
 
-#         sin_sig = data[2]['rps_signal']
+#         sin_sig = data[5]['rps_signal']
 #         # take two days of timesteps
 #         steps = 2*2880
 #         self.sin_sig = sin_sig[:steps]
@@ -177,7 +177,7 @@ class RndSinLoadShape(LoadTestShape):
         with open('signals.json') as f_in:
             data = json.load(f_in)
 
-        sin_sig = data[3]['rps_signal']
+        sin_sig = data[4]['rps_signal']
         # take two days of timesteps
         steps = 2*2880
         self.sin_sig = sin_sig[:steps]

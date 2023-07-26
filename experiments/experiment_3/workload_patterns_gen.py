@@ -57,7 +57,7 @@ class WorkloadGenerator:
         """
         x_timesteps = np.arange(0, 2*np.pi, 2*np.pi/timesteps) # in radians
         # constrain y_rps between minRPS and maxRPS
-        y_rps = (maxRPS + minRPS)/2 + (maxRPS-(maxRPS + minRPS)/2)*np.sin(x_timesteps*periods)
+        y_rps = (maxRPS + minRPS)/2 + (maxRPS-(maxRPS + minRPS)/2)*np.cos(x_timesteps*periods)
 
         # plt.plot(x_timesteps, y_rps)
         # plt.show()
@@ -71,7 +71,7 @@ class WorkloadGenerator:
         """
         # Parameters
         spike_height_range = (-(maxRPS - minRPS)/4, (maxRPS - minRPS)/4)  # Range of spike heights
-        spike_duration_range = (5, 20)  # Range of spike durations in timesteps
+        spike_duration_range = (10, 30)  # Range of spike durations in timesteps
 
         x_timesteps = np.arange(0, 2*np.pi, 2*np.pi/timesteps) # in radians
         # constrain y_rps between minRPS and maxRPS

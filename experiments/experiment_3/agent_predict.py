@@ -244,19 +244,25 @@ if __name__ == "__main__":
     elif rew_fun == "linear_1": alpha = 15 # 15% of optimisation gap
     else: alpha = 1
 
-    TIMESTEPS = 2880 # 2*20160
+    TIMESTEPS = 2*20160 #2880
 
     # Generate workload
     # This signal must be passed to the environment for the observation
     # set steps=1 for a constant load of minRPS
     # _, rps_signal = WorkloadGenerator.decr_step_function(timesteps=TIMESTEPS+1, 
-    #                                              minRPS=1500,
-    #                                              maxRPS=1500,
+    #                                              minRPS=150,
+    #                                              maxRPS=3500,
     #                                              steps=1)
     # _, rps_signal = WorkloadGenerator.sin_function(timesteps=TIMESTEPS+1, 
     #                                              minRPS=150,
     #                                              maxRPS=4000,
     #                                              periods=21
+    #                                              )
+    # _, rps_signal = WorkloadGenerator.sin_spikes_function(timesteps=TIMESTEPS+1, 
+    #                                              minRPS=150,
+    #                                              maxRPS=4000,
+    #                                              periods=14,
+    #                                              spike_probability=0.01
     #                                              )
     # plt.plot(_, rps_signal)
     # plt.title(f"Workload signal, {len(rps_signal)} timesteps")
@@ -284,7 +290,10 @@ if __name__ == "__main__":
     # 1 step
     # 2 sin
     # 3 rnd_sin
-    rps_signal = existing_data[3]['rps_signal'][1440:2880+1440]
+    # 4 rnd_sin_inf
+    # 5 cos_inf
+    # rps_signal = existing_data[3]['rps_signal'][1440:2880+1440]
+    rps_signal = existing_data[5]['rps_signal']
 
     # Generate environment
     env = setup_environment(alpha, 
@@ -305,7 +314,7 @@ if __name__ == "__main__":
     rewards_callback = TensorboardCallback()
     callbacks = [rewards_callback]
 
-    MODEL_DIR = 'models/rl-agent-2/A2C/2023_07_21_230631__p95_mem/1.zip'
+    MODEL_DIR = 'models/rl-agent-2/A2C/2023_07_22_060642__p95/1.zip'
     MODEL_DIR = os.path.join(script_dir, MODEL_DIR)
     print(f"model dir: {MODEL_DIR}")
     model = load_selected_model(env, MODEL_DIR, tf_logs_dir)
@@ -346,12 +355,12 @@ if __name__ == "__main__":
     print(f"Total reward: {round(Gt,2)}")
     print(f"Replicas: mean: {round(mean_rep,2)}, std: {round(std_rep,2)}")
     print(f"SLA violations: {round(violations,2)*100}%")
-    plt.plot(np.arange(len(logs['p95'])), logs["p95"])
-    plt.grid()
-    plt.title("$L_{s,t}$ inference simulation for $H_{r}$ on $S_{4}$")
-    plt.xlabel('Timesteps')
-    plt.ylabel('ms')
-    plt.ylim(0,20)
-    plt.show()
+    # plt.plot(np.arange(len(logs['p95'])), logs["p95"])
+    # plt.grid()
+    # plt.title("$L_{s,t}$ inference simulation for $H_{r}$ on $S_{4}$")
+    # plt.xlabel('Timesteps')
+    # plt.ylabel('ms')
+    # plt.ylim(0,20)
+    # plt.show()
     # close the environment on completion
     env.close()
