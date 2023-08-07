@@ -6,7 +6,8 @@ import json
 import math
 
 # Read data from DataFrame
-df = pd.read_csv('timeseries/24hrs_new_predict.csv')
+# df = pd.read_csv('timeseries/24hrs_new_predict.csv')
+df = pd.read_csv('timeseries/last_24hrs_new_inference.csv')
 
 # Fill missing values with 0
 df.fillna(0, inplace=True)
@@ -14,13 +15,6 @@ df.fillna(0, inplace=True)
 # Extract timestamps and signals from DataFrame
 timestamps = pd.to_datetime(df['Time'])
 print(f"Length timestamps: {len(timestamps)}")
-
-# Namespaces:
-# 1. default: HPA with new rnd sin v
-# 2. testing: Agent S4 with new rnd sin v
-# 3. rl-agent-e1-a2c: Agent S2 with new rnd sin v
-# 4. rl-agent-e3-1: Agent S4 with cos
-# 5. rl-agent-e3-2: HPA with cos
 
 # rnd sin load on S2
 sin_p95_agent = df['p95-rl-agent-e1-a2c']
@@ -101,20 +95,20 @@ cos_mean_load_hpa = cos_load_hpa.mean()
 print(f"Mean load: agent {cos_mean_load_agent}, HPA {cos_mean_load_hpa}")
 
 # plt.figure(dpi=300)
-# plt.plot(timestamps, sin_load_agent, label='sin agent')
-# plt.plot(timestamps, sin_load_hpa, label='sin HPA')
-# plt.plot(timestamps, rnd_sin_load_agent, label='rnd s4 agent')
-# plt.plot(timestamps, rnd_sin_load_hpa, label='rnd s4 HPA')
+plt.plot(timestamps, sin_load_agent, label='agent e1-a2c')
+# plt.plot(timestamps, sin_load_hpa, label='HPA e1-ppo')
+plt.plot(timestamps, rnds4_sin_load_agent, label='agent testing')
+plt.plot(timestamps, rnds4_sin_load_hpa, label='HPA default')
 # plt.plot(timestamps, rnd_sin_p95_agent, label='rnd s4 agent')
 # plt.plot(timestamps, rnd_sin_p95_hpa, label='rnd s4 HPA')
-# plt.plot(timestamps, rnds4_sin_load_agent, label='rnd s2 agent')
-# plt.plot(timestamps, rnds4_sin_load_hpa, label='rnd s2 HPA')
-# plt.legend()
-# plt.xlabel('Timesteps')
+# plt.plot(timestamps, cos_load_agent, label='agent e3-1')
+# plt.plot(timestamps, cos_load_hpa, label='HPA e3-2')
+plt.legend()
+plt.xlabel('Timesteps')
 # plt.ylabel('ms')
 # plt.ylim(0,20)
 # plt.title("$L_{s,t}$ inference emulation for $H_{r}$ on $S_{4}$")
-# plt.grid()
-# plt.show()
+plt.grid()
+plt.show()
 
 
