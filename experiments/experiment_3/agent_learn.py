@@ -342,11 +342,11 @@ if __name__ == "__main__":
     #                                              maxRPS=4000,
     #                                              steps=8
     #                                              )
-    _, rps_signal = WorkloadGenerator.sin_function(timesteps=TIMESTEPS+1, 
-                                                 minRPS=150,
-                                                 maxRPS=4000,
-                                                 periods=14
-                                                 )
+    # _, rps_signal = WorkloadGenerator.sin_function(timesteps=TIMESTEPS+1, 
+    #                                              minRPS=150,
+    #                                              maxRPS=4000,
+    #                                              periods=14
+    #                                              )
     # _, rps_signal = WorkloadGenerator.sin_spikes_function(timesteps=TIMESTEPS+1, 
     #                                              minRPS=150,
     #                                              maxRPS=4000,
@@ -355,23 +355,23 @@ if __name__ == "__main__":
     #                                              )
 
     # Save signal in JSON file
-    json_list = {
-        'workload': 'cos_inf',
-        'timesteps': list(_),
-        'rps_signal': list(rps_signal)
-    }
+    # json_list = {
+    #     'workload': 'cos_inf',
+    #     'timesteps': list(_),
+    #     'rps_signal': list(rps_signal)
+    # }
 
     # Take saved signal from JSON file
     with open("signals.json", "r") as infile:
         existing_data = json.load(infile)
         # print(existing_data)
 
-    existing_data.append(json_list)
+    # existing_data.append(json_list)
     # print(existing_data)
 
-    json_object = json.dumps(existing_data, indent=4, separators=(',', ':'))
-    with open("signals.json", "w") as outfile:
-        outfile.write(json_object)
+    # json_object = json.dumps(existing_data, indent=4, separators=(',', ':'))
+    # with open("signals.json", "w") as outfile:
+    #     outfile.write(json_object)
 
     # 0 constant
     # 1 step
@@ -379,7 +379,7 @@ if __name__ == "__main__":
     # 3 rnd_sin
     # 4 rnd_sin_inf
     # 5 cos_inf
-    # rps_signal = existing_data[4]['rps_signal']
+    rps_signal = existing_data[1]['rps_signal']
     # print(f"existing_data[2]: {existing_data[2]}")
     # print(f"rps_signal: {rps_signal}")
 
@@ -403,12 +403,12 @@ if __name__ == "__main__":
         plt.plot(_, opt_rep, label='Expected optimal $N_{s,t}$')
         # plt.plot(_, [i/100 for i in reward], label='$E[R_{t}]/100$')
         # plt.plot(_, opt_p95, label='Optimal $L_{s,t}$')
-        # plt.xlabel("Timesteps")
-        # plt.ylabel("Load to deployment [req/s]")
-        # plt.title(f"Periodic with random spikes workload signal")
-        # plt.grid()
-        # plt.legend(loc='upper right', fontsize='x-small')
-        plt.savefig('cos_inf_func.png')
+        plt.xlabel("Timesteps")
+        plt.ylabel("Load to deployment [req/s]")
+        plt.title(f"Stepwise workload")
+        plt.grid()
+        plt.legend(loc='upper right', fontsize='x-small')
+        plt.savefig('step_func.png')
         print(f"Mean optimal replicas: {np.mean(opt_rep)}")
 
     # Generate environment
