@@ -244,7 +244,7 @@ if __name__ == "__main__":
     elif rew_fun == "linear_1": alpha = 15 # 15% of optimisation gap
     else: alpha = 1
 
-    TIMESTEPS = 2*20160 #2880
+    TIMESTEPS = 2880 # 2*20160
 
     # Generate workload
     # This signal must be passed to the environment for the observation

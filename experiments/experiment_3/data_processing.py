@@ -39,7 +39,7 @@ load = df[load_column]
 
 # define the order of the metrics
 metrics_df = [rep, load, rps, p90, cpu, mem]
-metrics_df_order = ["rep", "load", "rps", "p95", "CPU_", "mem"]
+metrics_df_order = ["rep", "load", "rps", "p95", "CPU", "mem"]
 metrics_df_means = pd.DataFrame()
 
 print("load df\n", load)
@@ -61,14 +61,39 @@ for df in metrics_df:
         # plot every signal of that metric
         axs[metric_idx].plot(timestamps, df[col].values, color='b', label=f"{col}")
     # plot the mean signal
-    axs[metric_idx].plot(timestamps, mean_signal, color='r')
+    # axs[metric_idx].plot(timestamps, mean_signal, color='r')
     # save the mean as the new signal
     df = pd.DataFrame({f'{metrics_df_order[metric_idx]}_mean': mean_signal})
     # print("df", df)
     metrics_df_means[metrics_df_order[metric_idx]] = df
     metric_idx += 1
 
-print(metrics_df_means)
+print(metrics_df_means.to_string())
+# plt.figure(2)
+# plt.plot(timestamps, metrics_df_means['rps'])
+# drop rows
+# TODO drop other rows
+metrics_df_means.drop([61,62,63,64,65,66,67,68,
+                       120,121,122,123,124,125,126,127,128,
+                       181,182,183,184,185,186,187,188,
+                       243,244,245,246,247,248,
+                       304,305,306,307,308,
+                       365,366,367,368,369,370,
+                       426,427,428,429,430,431,
+                       488,489,490,491,492,493,
+                       549,550,551,552,553,554,
+                       610,611,612,613,614,615,
+                       670,671,672,673,674,675,676,
+                       730,731,732,733,734,735,736,737,738,
+                       790,791,792,793,794,795,796,897,798,799,
+                       850,851,852,853,854,855,856,857,858,859,860,861], inplace=True)
+print(f"After .drop():\n{metrics_df_means.to_string()}")
+
+# Check metrics trend
+# plt.figure(3)
+# t = np.arange(0,len(metrics_df_means))
+# plt.plot(t, metrics_df_means['rps'])
+
 # Create a dictionary for the JSON
 """
 [
@@ -89,40 +114,40 @@ print(metrics_df_means)
 ]
 """
 
-json_list = []
-json_dict = {}
-for _, row in metrics_df_means.iterrows():
-    # if list is empty
-    if not json_list:
-        d = {'rep': row['rep'], 'metric_rows':[row.drop('rep').to_dict()]}
-        # print(d)
-        # append that dictionary to the list
-        json_list.append(d)
-    else:
-        # check if dicitonary for that replica is already present in the list
-        if not any(d['rep'] == row['rep'] for d in json_list):
-            # create a new dictionary for the number of replicas
-            d = {'rep': row['rep'], 'metric_rows':[row.drop('rep').to_dict()]}
-            # print(d)
-            # append that dictionary to the list
-            json_list.append(d)
-        else:
-            # add metrics for that replica
-            for index in range(len(json_list)):
-                if json_list[index]['rep'] == row['rep']:
-                    json_list[index]['metric_rows'].append(row.drop('rep').to_dict())
-                    # sort by rps
-                    # TODO sort by RPS to deployment
-                    json_list[index]['metric_rows'] = sorted(json_list[index]['metric_rows'], key=lambda metric: metric['load'])
+# json_list = []
+# json_dict = {}
+# for _, row in metrics_df_means.iterrows():
+#     # if list is empty
+#     if not json_list:
+#         d = {'rep': row['rep'], 'metric_rows':[row.drop('rep').to_dict()]}
+#         # print(d)
+#         # append that dictionary to the list
+#         json_list.append(d)
+#     else:
+#         # check if dicitonary for that replica is already present in the list
+#         if not any(d['rep'] == row['rep'] for d in json_list):
+#             # create a new dictionary for the number of replicas
+#             d = {'rep': row['rep'], 'metric_rows':[row.drop('rep').to_dict()]}
+#             # print(d)
+#             # append that dictionary to the list
+#             json_list.append(d)
+#         else:
+#             # add metrics for that replica
+#             for index in range(len(json_list)):
+#                 if json_list[index]['rep'] == row['rep']:
+#                     json_list[index]['metric_rows'].append(row.drop('rep').to_dict())
+#                     # sort by rps
+#                     # TODO sort by RPS to deployment
+#                     json_list[index]['metric_rows'] = sorted(json_list[index]['metric_rows'], key=lambda metric: metric['load'])
 
-# print(json_list)
+# # print(json_list)
 
-# Save file to json
-json_object = json.dumps(json_list, indent=4, separators=(',', ':'))
-with open("exp3_new_sorted_samples.json", "w") as outfile:
-    outfile.write(json_object)
+# # Save file to json
+# json_object = json.dumps(json_list, indent=4, separators=(',', ':'))
+# with open("exp3_new_sorted_samples.json", "w") as outfile:
+#     outfile.write(json_object)
 # # check correct indexing
-# # print("Data:", json_list[0]["p95"])
+# print("Data:", json_list[0]["rep"])
 
 # Add legend
 # plt.legend()

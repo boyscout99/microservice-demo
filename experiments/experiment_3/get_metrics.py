@@ -150,8 +150,9 @@ class GetMetrics:
         for elem in self.data:
             # get current replicas
             rep = elem['rep']
-            # skip first 10 elements
-            d = elem['metric_rows'][5:]
+            # skip first 5 elements
+            # d = elem['metric_rows'][5:]
+            d = elem['metric_rows']
             # create x-axis, common to all metrics
             x = []
             # iterate over every sample in the list of dicts
@@ -178,13 +179,13 @@ class GetMetrics:
                 res = linregress(x,y)
                 plt.plot(x, y, 'o', label=f'Original data {m}')
                 x_np = np.array(x)
-                plt.plot(x_np, res.slope*x_np + res.intercept, label=f'Fitted line {m}')
+                # plt.plot(x_np, res.slope*x_np + res.intercept, label=f'Fitted line {m}')
 
             # plt.plot(x, [i/100 for i in rewards], label='rewards/100')  
-            plt.plot(x,rewards, label='rewards')  
+            # plt.plot(x,rewards, label='rewards')  
             # Show all metrics for the same replica number
-            plt.xlabel('load')
-            # plt.ylabel(f"{m}")
+            # plt.xlabel('load')
+            plt.ylabel(f"{m}")
             plt.legend()
             plt.title(f"Replicas: {rep}")
             plt.show()
