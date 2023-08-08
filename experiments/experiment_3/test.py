@@ -4,7 +4,7 @@ from get_metrics import GetMetrics
 import math
 import matplotlib.pyplot as plt
 
-d_file = open('exp3_new_sorted_samples.json', 'r')
+d_file = open('exp3_sorted_samples.json', 'r')
 data = json.load(d_file)
 d_file.close()
 

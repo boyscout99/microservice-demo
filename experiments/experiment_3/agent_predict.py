@@ -293,7 +293,7 @@ if __name__ == "__main__":
     # 4 rnd_sin_inf
     # 5 cos_inf
     # rps_signal = existing_data[3]['rps_signal'][1440:2880+1440]
-    rps_signal = existing_data[5]['rps_signal']
+    rps_signal = existing_data[2]['rps_signal']
 
     # Generate environment
     env = setup_environment(alpha, 

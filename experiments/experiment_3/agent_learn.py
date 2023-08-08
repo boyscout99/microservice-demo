@@ -317,7 +317,7 @@ if __name__ == "__main__":
     elif rew_fun == "linear_1": alpha = 15 # 15% of optimisation gap
     else: alpha = 1
 
-    TIMESTEPS = 2*20160
+    TIMESTEPS = 2880 # 2*20160
     EPISODES = 1
 
     # Generate directories
@@ -379,7 +379,7 @@ if __name__ == "__main__":
     # 3 rnd_sin
     # 4 rnd_sin_inf
     # 5 cos_inf
-    rps_signal = existing_data[1]['rps_signal']
+    rps_signal = existing_data[4]['rps_signal'][:TIMESTEPS+1]
     # print(f"existing_data[2]: {existing_data[2]}")
     # print(f"rps_signal: {rps_signal}")
 
@@ -405,10 +405,10 @@ if __name__ == "__main__":
         # plt.plot(_, opt_p95, label='Optimal $L_{s,t}$')
         plt.xlabel("Timesteps")
         plt.ylabel("Load to deployment [req/s]")
-        plt.title(f"Stepwise workload")
+        plt.title(f"One day of periodic workload with random spikes $H'$")
         plt.grid()
         plt.legend(loc='upper right', fontsize='x-small')
-        plt.savefig('step_func.png')
+        plt.savefig('one_day_rnd_sin2.png')
         print(f"Mean optimal replicas: {np.mean(opt_rep)}")
 
     # Generate environment
