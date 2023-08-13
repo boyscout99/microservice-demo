@@ -317,7 +317,7 @@ if __name__ == "__main__":
     elif rew_fun == "linear_1": alpha = 15 # 15% of optimisation gap
     else: alpha = 1
 
-    TIMESTEPS = 2880 # 2*20160
+    TIMESTEPS = 2*20160
     EPISODES = 1
 
     # Generate directories
@@ -379,12 +379,20 @@ if __name__ == "__main__":
     # 3 rnd_sin
     # 4 rnd_sin_inf
     # 5 cos_inf
-    rps_signal = existing_data[4]['rps_signal'][:TIMESTEPS+1]
+    # rps_signal = existing_data[2]['rps_signal'][:TIMESTEPS+1]
+    rps_signal = existing_data[4]['rps_signal']
     # print(f"existing_data[2]: {existing_data[2]}")
     # print(f"rps_signal: {rps_signal}")
 
     # Plot signals
-    plot = True
+    _ = [i for i in range(0,TIMESTEPS+1)]
+    plt.plot(_, rps_signal)
+    plt.xlabel("Timesteps")
+    plt.ylabel("Load to deployment [req/s]")
+    plt.title(f"Periodic workload")
+    plt.grid()
+    plt.savefig('rndm_sin2_func.png')
+    plot = False
     if plot:
         _ = [i for i in range(0,TIMESTEPS+1)]
         # get optimal replicas
@@ -400,7 +408,7 @@ if __name__ == "__main__":
             # reward.append(_rew)
 
         plt.plot(_, [i/1000 for i in rps_signal], label='Load/1000')
-        plt.plot(_, opt_rep, label='Expected optimal $N_{s,t}$')
+        # plt.plot(_, opt_rep, label='Expected optimal $N_{s,t}$')
         # plt.plot(_, [i/100 for i in reward], label='$E[R_{t}]/100$')
         # plt.plot(_, opt_p95, label='Optimal $L_{s,t}$')
         plt.xlabel("Timesteps")

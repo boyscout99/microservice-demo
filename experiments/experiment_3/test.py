@@ -4,6 +4,14 @@ from get_metrics import GetMetrics
 import math
 import matplotlib.pyplot as plt
 
+plt.rcParams.update({
+    "text.usetex": True,
+    "font.family": "sans-serif",
+    "font.sans-serif": "Georgia",
+    "font.size": 14,
+    "figure.dpi": 250
+})
+
 d_file = open('exp3_sorted_samples.json', 'r')
 data = json.load(d_file)
 d_file.close()

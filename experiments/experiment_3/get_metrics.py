@@ -94,10 +94,10 @@ class GetMetrics:
                 elif (load>metric_list[-1]["load"]):
                     # print("Note - Load too high!")
                     # do some linear regression to estimate the coefficent
-                    # perform linear regression for each metric on the last 10 values
+                    # perform linear regression for each metric on the last 20 values
                     # take last 20 elements to perform linear regression
                     d = metric_list[-20:] # list of dictionaries
-                    # create array of 10 elements for x
+                    # create array of 20 elements for x
                     x = []
                     for i in range(len(d)):
                         x.append(d[i]['load'])
@@ -106,7 +106,7 @@ class GetMetrics:
                     x2.append(load)
                     # loop each metric
                     for m in self.metrics:
-                        # take last 10 values for one metric
+                        # take last 20 values for one metric
                         y = []
                         for i in range(len(d)):
                             y.append(d[i][m])
