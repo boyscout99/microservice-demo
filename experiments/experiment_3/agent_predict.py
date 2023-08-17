@@ -293,7 +293,7 @@ if __name__ == "__main__":
     # 4 rnd_sin_inf
     # 5 cos_inf
     # rps_signal = existing_data[3]['rps_signal'][1440:2880+1440]
-    rps_signal = existing_data[2]['rps_signal']
+    rps_signal = existing_data[4]['rps_signal'][:TIMESTEPS+1]
 
     # Generate environment
     env = setup_environment(alpha, 
@@ -314,7 +314,7 @@ if __name__ == "__main__":
     rewards_callback = TensorboardCallback()
     callbacks = [rewards_callback]
 
-    MODEL_DIR = 'models/rl-agent-2/A2C/2023_07_22_060642__p95/1.zip'
+    MODEL_DIR = 'models/rl-agent-2/A2C/2023_07_21_230631__p95_mem/1.zip'
     MODEL_DIR = os.path.join(script_dir, MODEL_DIR)
     print(f"model dir: {MODEL_DIR}")
     model = load_selected_model(env, MODEL_DIR, tf_logs_dir)
@@ -355,12 +355,13 @@ if __name__ == "__main__":
     print(f"Total reward: {round(Gt,2)}")
     print(f"Replicas: mean: {round(mean_rep,2)}, std: {round(std_rep,2)}")
     print(f"SLA violations: {round(violations,2)*100}%")
-    # plt.plot(np.arange(len(logs['p95'])), logs["p95"])
-    # plt.grid()
-    # plt.title("$L_{s,t}$ inference simulation for $H_{r}$ on $S_{4}$")
-    # plt.xlabel('Timesteps')
-    # plt.ylabel('ms')
-    # plt.ylim(0,20)
+    plt.plot(np.arange(len(logs['p95'])), logs["p95"])
+    plt.grid()
+    plt.title("Latency in local environment with load $H_{r}'$")
+    plt.xlabel('Timesteps')
+    plt.ylabel('ms')
+    plt.ylim(3,22)
+    plt.savefig("rnd2_s4_loc_p95.png")
     # plt.show()
     # close the environment on completion
     env.close()
