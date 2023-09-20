@@ -6,7 +6,7 @@ The purpose of this repository is to train an agent with reinforcement learning 
 
 The microservice architecture that it is used is built upon [GoogleCloudPlatform/microservices-demo](https://github.com/GoogleCloudPlatform/microservices-demo) v0.5.2. Based on that repository, an RL agent has been developed to take scaling decisions and actually scale-out or -in the services of the Online Boutique when run in Kubernetes.
 
-![Architecture diagram](/docs/img/architecture-diagram.png)
+<img src="/docs/img/architecture-diagram.png" alt="demo-arhitecture" width="700"/>
 
 In the following, there is a guide to deploy the agent in a [Google Kubernetes Engine (GKE)](https://cloud.google.com/kubernetes-engine) cluster and locally using [minikube](https://minikube.sigs.k8s.io/docs/start/).
 The local development environment is used mainly for testing the interaction between the agent, the [Prometheus API](https://prometheus.io/docs/prometheus/latest/querying/api/) and the [Kubernetes API](https://kubernetes.io/docs/concepts/overview/kubernetes-api/) before deploying it in the "production" environment in GKE. Indeed, the GKE cluster is used to check the actual behaviour of the algorithm in a more realistic environment, and compare the standard HPA with the intelligent autoscaler.
@@ -14,11 +14,24 @@ The local development environment is used mainly for testing the interaction bet
 So take your cup of coffee or tea and let's begin! ☕️
 
 ### How it works in a nutshell 🥜
-*The intended outcome at a very general level. The agent has to scale taking metrics from Prometheus, calling the K8s API to take scaling action.*
+<img src="docs/img/architecture_simple.png" alt="architecture" width="500"/>
 
-*Background information in a nutshell: kubernetes architecture, a bit of kubernetes authentication, reinforcement learning, service mesh*
+In the cloud platform, I deployed the Kubernetes cluster, which consists of a Master node and multiple worker nodes, which will host all the pods needed by the microservice application Online Boutique.
+Each pod contains one or multiple Docker containers, represented by a container with rounded angles in the Figure.
+For example, the container *RL agent* contains the code to use the model on the cluster when trained, while *Envoy* represents the sidecar proxy injected by Istio on every pod, next to the *Server* container.
+Each *Server* represents a microservice packaged into a container, for example, *productcatalog*, *frontend*, etc.
+Each pod is assigned to a node by the *kube-scheduler* based on resource availability, and the whole *Online Boutique* application runs in the same namespace.
 
-*Explain again a workflow of the agent including specific terms introduced above.*
+The communication between microservices occurs through the service mesh enabled by Istio.
+Specifically, Envoy proxies monitor each server and publish these data on an endpoint.
+Both Prometheus and Grafana are deployed as pods inside the cluster.
+Prometheus scrapes every 5s the metrics from Istio, which collects these from each Envoy proxy present in the cluster.
+These metrics are stored in the Prometheus time-series database and are scraped by Grafana and the RL agent.
+With Grafana, we can visualise the rate of change of each metric over time in a dashboard, and download this data in our local development environment to process it and make our measurements.
+
+The scaling action is performed by the RL agent container based on the observed state of the cluster.
+In fact, the agent queries Prometheus to receive aggregated pod metrics, representing state $S_{t}$, and takes a scaling action $A_{t}$ accordingly, by calling the *kube-api-server* in the master node.
+Kubernetes is then responsible for executing the scaling action by increasing or decreasing the number of replicas in the target deployment.
 
 ## Developing on a cloud platform ☁️
 Here, the agent is deployed in a cloud environment that is similar to a real-world scenario where scalability, availability and security are the main concerns. 
