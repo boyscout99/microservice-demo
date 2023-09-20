@@ -1,12 +1,1 @@
-{
-    "type": "service_account",
-    "project_id": "master-thesis-hpa",
-    "private_key_id": "d8ecd7c9468dafe5d5e3e6719d2761ff08059119",
-    "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQDyoVeOxZiZXiwN\nojbPb8oFzMHj0Q3PQ77aI9fqewiJKqAfIJgKNAtGZtrobjhij551VgdpfyYVioFo\nsST+IOGlppKqW/n8iq+fYBfVEKWZbRUcLOeC8NdhZtiKD5s4xw4YFzl/c7CrbO47\njjDboe1b+BhY2DOnJE7e6PGMMiNLaCwrKWBuh5BMb3sSZAWeI8EOIIiidGL5dJcf\nlzOa0qWfJvjHy+5YB/5Kfs5Yl28SQhOSx4NyLU8ZCJdDsLwcRspvmZe18Xzpo32W\n/VGTwV24zLJDCKMjqepKKywbl9Lst4yYH3CGbAt63TqgkNajPLhEfr5Y77Lgyip0\nY2X0faarAgMBAAECggEAN/KMRhe6QGM+tUYabWrRotS8QNQL4ycz8wkg2KjWJwr1\nMThK1s95ahp9j+sahV+oolXcD6+KEJ2HiaSPayoZ3iCy4SWkV1+Db7Swyii0htRo\ncb7JA6CViZg1hmBi4ozD6zovv/vlWSIdLQ50pbCJExP6SUJRZtEwfqYoTLOi/9fq\nn4Na7TFymmhn3mMu3ar5414EG1ynXBL1wW06CBerqrObi2f3yN4FOSsJfjQWZ2Sw\namiLg23EfaIks+CndnSAYS0g1dbhLS7LQ4Qm6BbRA5o9f1ohXBLA0+q7R3dhK8Kc\ndTSTk8ajp3aOtlfDe4Si8qs6B9uBtQ0kc9cZ5wEMAQKBgQD+/4cGoHSrgypB+dIY\nNdF9OaqxfWIUDm25xdMEiAuwVMqJhy5QSNBJ1NkOCubAaGP/gwm4W+4d6+0l8UZn\nN+N6Qs4BCYhKcip4fk8eHjCW+kxKO1JpVsSeDyvxewAq1aaMx9x3ZYfs5bVXvRcv\nWBOaTLxkomijuExkBHtCj4JHawKBgQDzlWAKG+yuGxMKoe/j6BY8ijI5X9/71MMS\nq/oyxyCcE8Ia+Yr/NtO48g0+lqRFk1GLvgF0JnzbD/5EF19u7WaV31G4gOnS2vIr\nI4g2xoKp1kxY9dRMqxTIY//rlMHLAF7I7jG/qVLZomZBzlwUMn5i0xBUyC/kdZ9b\n5pA5HCgtwQKBgHXc/jhd6g9srReZtTZjidTr1q37Wl4S3TzE52hsyZpTVtqClTGe\ntkeqDjmjaEz+81mi49dHBqTl69Nh1jzXZFmaj0WDdm+SnXbcSw2MvsDKKIEXMlxm\nMrMsKA+R3t3tqvHfX1QApfclpdBMIm9LsqPbXCjXuK4T/ZstRxvY4UrJAoGBAN+j\ntvCxIMXdj8cEVScvsDLXQzOQRiqF9rCO+4FheBw0u9NeZ/LYWN2GRwi+8IX8szMV\nOWp1586NSYsk1ncXOkfCKNq4aXYxlYRr9CUub0sVuTU4Rzo5HTS7M34NLzx904ix\nwTVSdgHha/dhSwM0NPvxAx6ESgx8vdp3vtTgeDdBAoGAPXQCF6HSglhgyTP9/IHn\nV2d5ym+iw9Oklc5zCoC6YJptUY2ZYDVoPmPp/2YuMdstXMbs7Qaqpi9fEhFMwTnN\nY119FTvKAjTfKOKzMyxEn/OQoJhDZEl0IM2A9GyAg0b34atPi6LvUBszD87FXzl4\nJEYNB/2lJxPM+O8IL7bBRE0=\n-----END PRIVATE KEY-----\n",
-    "client_email": "master-thesis-hpa@appspot.gserviceaccount.com",
-    "client_id": "117921473071887148206",
-    "auth_uri": "https://accounts.google.com/o/oauth2/auth",
-    "token_uri": "https://oauth2.googleapis.com/token",
-    "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
-    "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/master-thesis-hpa%40appspot.gserviceaccount.com"
-}
+{}
